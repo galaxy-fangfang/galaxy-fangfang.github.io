@@ -86,9 +86,9 @@
       labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
     },
     translation: {
-      copy_button: 'Copie',
-      copy_success: 'Copie réussie',
-      copy_failure: 'Copie ratée'
+      copy_button: 'Kopieren',
+      copy_success: 'Kopiert',
+      copy_failure: 'Kopieren fehlgeschlagen'
     }
   };
 </script>
@@ -109,7 +109,7 @@
 <meta property="og:image" content="http://yoursite.com/images/bn/4.png">
 <meta property="og:image" content="http://yoursite.com/images/bn/6.png">
 <meta property="og:image" content="http://yoursite.com/images/bn/5.png">
-<meta property="og:updated_time" content="2019-07-14T07:17:36.259Z">
+<meta property="og:updated_time" content="2019-07-14T09:11:16.945Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="batchnorm-总结">
 <meta name="twitter:description" content="论文： Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift     Batch Renormalization: Towards Reducing Minibatch Dependence in Batch-Normalized Models">
@@ -199,7 +199,7 @@
   </div>
 
   <div class="site-nav-toggle">
-    <button aria-label="Basculer la barre de navigation">
+    <button aria-label="Navigationsleiste an/ausschalten">
       <span class="btn-bar"></span>
       <span class="btn-bar"></span>
       <span class="btn-bar"></span>
@@ -226,7 +226,7 @@
 
     
 
-    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Accueil</a>
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Startseite</a>
 
   </li>
         
@@ -242,7 +242,7 @@
 
     
 
-    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>À propos</a>
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Über</a>
 
   </li>
         
@@ -258,7 +258,7 @@
 
     
 
-    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Mots clés</a>
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Schlagwörter</a>
 
   </li>
         
@@ -274,7 +274,7 @@
 
     
 
-    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Catégories</a>
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Kategorien</a>
 
   </li>
         
@@ -290,7 +290,7 @@
 
     
 
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archiv</a>
 
   </li>
 
@@ -374,14 +374,14 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posté le</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
 
               
                 
               
 
-              <time title="Article créé le: 2018-09-04 10:19:31" itemprop="dateCreated datePublished" datetime="2018-09-04T10:19:31+08:00">2018-09-04</time>
+              <time title="Erstellt: 2018-09-04 10:19:31" itemprop="dateCreated datePublished" datetime="2018-09-04T10:19:31+08:00">2018-09-04</time>
             </span>
           
 
@@ -394,9 +394,9 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 
-                  <span class="post-meta-item-text">Éditer sur</span>
+                  <span class="post-meta-item-text">Bearbeitet am</span>
                 
-                <time title="Mise à jour le: 2019-07-14 15:17:36" itemprop="dateModified" datetime="2019-07-14T15:17:36+08:00">2019-07-14</time>
+                <time title="Geändert am: 2019-07-14 17:11:16" itemprop="dateModified" datetime="2019-07-14T17:11:16+08:00">2019-07-14</time>
               </span>
             
           
@@ -407,14 +407,14 @@
                 <i class="fa fa-folder-o"></i>
               </span>
               
-                <span class="post-meta-item-text">In</span>
+                <span class="post-meta-item-text">in</span>
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">notes</span></a></span>
 
                 
                 
-                  , 
+                  . 
                 
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/notes/object-detection/" itemprop="url" rel="index"><span itemprop="name">object detection</span></a></span>
@@ -461,7 +461,6 @@
 <p><a href="https://arxiv.org/abs/1502.03167" target="_blank" rel="noopener">Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift </a>   </p>
 <p><a href="https://arxiv.org/abs/1702.03275" target="_blank" rel="noopener">Batch Renormalization: Towards Reducing Minibatch Dependence in Batch-Normalized Models </a></p>
 <a id="more"></a>
-
 <h1 id="一、batchnormalization简介"><a href="#一、batchnormalization简介" class="headerlink" title="一、batchnormalization简介"></a>一、batchnormalization简介</h1><h2 id="1-源起"><a href="#1-源起" class="headerlink" title="1.源起"></a>1.源起</h2><h3 id="Internal-Covariate-Shift"><a href="#Internal-Covariate-Shift" class="headerlink" title="Internal Covariate Shift"></a>Internal Covariate Shift</h3><p><img src="/images/bn/1.png" alt></p>
 <p>简而言之就是：在网络训练过程中，随着网络层数加深，网络的输入会很大，跑到激活函数的饱和区，使得梯度消失。<strong>我们定义：在训练时因为网络参数的改变而导致的网络激活的输出的分布的改变，成为内部协变量漂移。</strong></p>
 <h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><ol>
@@ -476,7 +475,7 @@
 <p>相对于普通标准化，这里引入两个变量：$\gamma,\beta$，为了让输出不仅仅是在非线性激活的过原点附近的线性区(以sigmod激活为例).为了适当保留其非线性，使用这两个参数进行分布的调整，至于调整多少，由训练决定。</p>
 <h3 id="bn-in-cnn"><a href="#bn-in-cnn" class="headerlink" title="bn in cnn"></a>bn in cnn</h3><p><img src="/images/bn/3.png" alt></p>
 <p><a href="https://stackoverflow.com/questions/38553927/batch-normalization-in-convolutional-neural-network?newreg=8055ada6494d49c4b4b25769e576c264" target="_blank" rel="noopener">解释：</a></p>
-<p>cnn层的输出是4维tensor， <code>[B, H, W, C]</code>,  <code>B</code> 是batch size, <code>(H, W)</code> 是 <em>feature map<em>大小, <code>C</code> 通道数. 其中索引 <code>(x, y)</code> ， <code>0 &lt;= x &lt; H</code> 和 <code>0 &lt;= y &lt; W</code> 是空间位置</em>spatial location</em>.</p>
+<p>cnn层的输出是4维tensor， <code>[B, H, W, C]</code>,  <code>B</code> 是batch size, <code>(H, W)</code> 是 <em>feature map</em>大小, <code>C</code> 通道数. 其中索引 <code>(x, y)</code> ， <code>0 &lt;= x &lt; H</code> 和 <code>0 &lt;= y &lt; W</code> 是空间位置<em>spatial location</em>.</p>
 <h4 id="usual-bn"><a href="#usual-bn" class="headerlink" title="usual bn"></a>usual bn</h4><p>是使用<code>B</code>元素计算出<code>H*W*C</code> 个均值和 <code>H*W*C</code>标准差 .即不同层的不同位置的元素有自己的均值和标准差(<code>B</code>个元素计算出的).</p>
 <h4 id="cnn-bn"><a href="#cnn-bn" class="headerlink" title="cnn bn"></a>cnn bn</h4><p>cnn的参数对于整张input图像共享。所以我们将每张特征图看作是一个激活，也就是使用<code>B*H*W</code>个元素计算<code>C</code>个均值和方差。</p>
 <h2 id="3-bn反传"><a href="#3-bn反传" class="headerlink" title="3.bn反传"></a>3.bn反传</h2><p><img src="/images/bn/4.png" alt></p>
@@ -488,7 +487,6 @@
 </ul>
 <p>moving average的计算入下：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">running_mean = momentum*running_mean+(<span class="number">1</span>-momentum)*sample_mean</span><br><span class="line">running_variance = momentum*running_variance+(<span class="number">1</span>-momentum)*running_variance</span><br></pre></td></tr></table></figure>
-
 <h2 id="2-关于偏置"><a href="#2-关于偏置" class="headerlink" title="2.关于偏置"></a>2.关于偏置</h2><p>使用batch-normalization之后，不需要偏置b，因为任何偏置最后都会因为正规化输出而被被cancel掉,也就是偏置是无法学习的。</p>
 <h2 id="3-Batch-Normalization-as-Regularization"><a href="#3-Batch-Normalization-as-Regularization" class="headerlink" title="3.Batch Normalization as Regularization"></a>3.Batch Normalization as Regularization</h2><p><strong>dropout</strong>是网络训练正则化的一项重要手段：</p>
 <ul>
@@ -517,15 +515,17 @@
 <blockquote>
 <p>However, if these modifications are interspersed with the optimization steps, then the gradient descent step may attempt to update the parameters in a way that requires the normalization to be updated, which reduces the effect of the gradient step. For example, consider a layer with the input u that adds the learned bias b, and normalizes the result by subtracting the mean of the activation computed over the training data: xb = x - E[x] where x = u + b, X = {x1…N } is the set of values of x over the training set, and E[x] = N1 PN i=1 xi. If a gradient descent step ignores the dependence of E[x] on b, then it will update b ← b + ∆b, where ∆b ∝ -∂ℓ/∂xb. Then u + (b + ∆b) - E[u + (b + ∆b)] = u + b - E[u + b].<br><strong>Thus, the combination of the update to b and subsequent change in normalization led to no change in the output of the layer nor, consequently, the loss. As the training continues, b will grow indefinitely while the loss remains fixed.</strong> This problem can get worse if the normalization not only centers but also scales the activations. We have observed this empirically in initial experiments, where the model blows up when the normalization parameters are computed outside the gradient descent step. </p>
 </blockquote>
-<p>原本第m个mini-batch的均值计算如下：<br>$$<br>\mu_m = \mu_{pre}+\frac{1}{N}\sum_i^N(x_i)=\mu_{pre}+ \mu_m^*<br>$$</p>
-<p>$$<br>\hat{x} = x-\mu_m<br>$$</p>
-<p>比如说，我们更新了一个参数<br>$$<br>x’=x+\Delta x<br>$$</p>
-<p>$$<br>\mu_m’=\mu_{pre}+(\mu_m^<em>)’\=\mu_{pre}+(N\mu_m^</em>+\sum_i^N(\Delta x_i))/N=\mu_{pre}+\mu_m^*+\sum_i^N(\Delta x_i)=\mu_m+\Delta \mu<br>$$</p>
-<p>而采用普通的moving average（非batch renormalization中的moving average计算方式）之后的bn之后的:</p>
-<p>$$\hat{x}’ =x+\Delta x-(\mu_m’)$$</p>
-<p>其中$\mu_m$是前面所以mini-batch的平均值，和本次$x$的更新无关。</p>
-<p>所以<br>$$<br>\hat{x}’=x+\Delta x-(\mu_m+\Delta \mu)\=<br>$$</p>
-<p>emmmmmmmm,推不下去了，反正意思就是说，使用滑动平均的话，其均值就会不依赖于本次mini-batch中的其他数据(我觉得意思就是，这个均值相当于是个定值？？？)。但是！这会使得normalization和SGD的过程混杂在一起，抵消了SGD的梯度更新的作用！比如，上面引用中说的，梯度更新使得某个参数：<strong>比如偏置更新了，或者缩放了权重，但是normalization之后其输出根本没变化，即更新参数之后对激活的输出没有影响，也即loss不会改变。最后模型参数就会无限增长，导致模型爆炸。</strong></p>
+<p>原本第m个mini-batch的均值计算如下：</p>
+<script type="math/tex; mode=display">
+\mu_m = \mu_{pre}+\frac{1}{N}\sum_i^N(x_i)=\mu_{pre}+ \mu_m^*</script><script type="math/tex; mode=display">
+\hat{x} = x-\mu_m</script><p>比如说，我们更新了一个参数</p>
+<script type="math/tex; mode=display">
+x'=x+\Delta x</script><script type="math/tex; mode=display">
+\mu_m'=\mu_{pre}+(\mu_m^*)'\\=\mu_{pre}+(N\mu_m^*+\sum_i^N(\Delta x_i))/N=\mu_{pre}+\mu_m^*+\sum_i^N(\Delta x_i)=\mu_m+\Delta \mu</script><script type="math/tex; mode=display">\mu_m'=\mu_{pre}+(\mu_m^*)'\\=\mu_{pre}+(N\mu_m^*+\sum_i^N(\Delta x_i))/N=\mu_{pre}+\mu_m^*+\sum_i^N(\Delta x_i)=\mu_m+\Delta \mu</script><p>而采用普通的moving average（非batch renormalization中的moving average计算方式）之后的bn之后的:</p>
+<script type="math/tex; mode=display">\hat{x}' =x+\Delta x-(\mu_m')</script><p>其中$\mu_m$是前面所以mini-batch的平均值，和本次$x$的更新无关。</p>
+<p>所以</p>
+<script type="math/tex; mode=display">
+\hat{x}'=x+\Delta x-(\mu_m+\Delta \mu)\\=</script><p>emmmmmmmm,推不下去了，反正意思就是说，使用滑动平均的话，其均值就会不依赖于本次mini-batch中的其他数据(我觉得意思就是，这个均值相当于是个定值？？？)。但是！这会使得normalization和SGD的过程混杂在一起，抵消了SGD的梯度更新的作用！比如，上面引用中说的，梯度更新使得某个参数：<strong>比如偏置更新了，或者缩放了权重，但是normalization之后其输出根本没变化，即更新参数之后对激活的输出没有影响，也即loss不会改变。最后模型参数就会无限增长，导致模型爆炸。</strong></p>
 <h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><ol>
 <li><a href="https://www.youtube.com/watch?v=em6dfRxYkYU" target="_blank" rel="noopener">youtube:Andrew Wu:C2W3L04</a></li>
 <li><a href="https://medium.com/@SeoJaeDuk/deeper-understanding-of-batch-normalization-with-interactive-code-in-tensorflow-manual-back-1d50d6903d35" target="_blank" rel="noopener">deep-understanding-of-batchnorm</a></li>
@@ -633,10 +633,10 @@
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Table Des Matières
+            Inhaltsverzeichnis
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Ensemble
+            Übersicht
           </li>
         </ul>
       
@@ -657,7 +657,7 @@
                   <a href="/archives/">
                 
                     <span class="site-state-item-count">34</span>
-                    <span class="site-state-item-name">articles</span>
+                    <span class="site-state-item-name">Artikel</span>
                   </a>
                 </div>
               
@@ -712,7 +712,7 @@
                       
                     
                     <span class="site-state-item-count">19</span>
-                    <span class="site-state-item-name">catégories</span>
+                    <span class="site-state-item-name">Kategorien</span>
                   </a>
                 </div>
               
@@ -749,7 +749,7 @@
                       
                     
                     <span class="site-state-item-count">10</span>
-                    <span class="site-state-item-name">mots clé</span>
+                    <span class="site-state-item-name">schlagwörter</span>
                   </a>
                 </div>
               
@@ -852,7 +852,7 @@
 </div>
 
 
-  <div class="powered-by">Alimenté par <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+  <div class="powered-by">Erstellt mit  <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
 
 
 
@@ -860,7 +860,7 @@
 
 
 
-  <div class="theme-info">Thème – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+  <div class="theme-info">Design – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
 
 
 
