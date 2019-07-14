@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="引言：如果想要提高定位的准确性，就会面临两个问题：1.产生的proposal必须经过处理。2.这些候选框必须修正过才能达到精确定位。本论文提出了一种联合地进行目标proposal分类和修正空间位置的方法。">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="fast rcnn">
+<meta property="og:url" content="http://yoursite.com/2017/12/25/fast-rcnn/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="引言：如果想要提高定位的准确性，就会面临两个问题：1.产生的proposal必须经过处理。2.这些候选框必须修正过才能达到精确定位。本论文提出了一种联合地进行目标proposal分类和修正空间位置的方法。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/FastR-CNNarchitecture.png">
+<meta property="og:updated_time" content="2019-07-14T07:17:34.844Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="fast rcnn">
+<meta name="twitter:description" content="引言：如果想要提高定位的准确性，就会面临两个问题：1.产生的proposal必须经过处理。2.这些候选框必须修正过才能达到精确定位。本论文提出了一种联合地进行目标proposal分类和修正空间位置的方法。">
+<meta name="twitter:image" content="http://yoursite.com/images/FastR-CNNarchitecture.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2017/12/25/fast-rcnn/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>fast rcnn | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/12/25/fast-rcnn/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">fast rcnn
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2017-12-25 11:13:31" itemprop="dateCreated datePublished" datetime="2017-12-25T11:13:31+08:00">2017-12-25</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:34" itemprop="dateModified" datetime="2019-07-14T15:17:34+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/" itemprop="url" rel="index"><span itemprop="name">paper</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/object-detection/" itemprop="url" rel="index"><span itemprop="name">object detection</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="引言："><a href="#引言：" class="headerlink" title="引言："></a>引言：</h1><p>如果想要提高定位的准确性，就会面临两个问题：1.产生的proposal必须经过处理。2.这些候选框必须修正过才能达到精确定位。<br>本论文提出了一种联合地进行目标proposal分类和修正空间位置的方法。</p>
+<a id="more"></a>
+
+<h2 id="RCNN的缺点"><a href="#RCNN的缺点" class="headerlink" title="RCNN的缺点"></a>RCNN的缺点</h2><ol>
+<li>训练过程是多阶段的。RCNN首先在目标proposal上使用<code>log</code>损失来fine-tune一个卷积网络；然后再去训练SVM;最后还要进行bounding box回归。</li>
+<li>训练过程费时且占内存。对于SVM和bounding box训练，需要从每个object proposal里提取出特征在写入硬盘中。如果用了很深的网络比如VGG16，会占用很多存储空间，也很费时。</li>
+<li>检测的速度慢。检测一张图片(VGG16)需要47秒。 </li>
+</ol>
+<p>RCNN很慢，因为它在每个proposal上都前传了一遍卷积网络，没有共享计算。<br><a href="https://arxiv.org/abs/1406.4729" target="_blank" rel="noopener">SPPNet</a>是RCNN的加速版本，共享了卷积计算。SPPNet计算了一张整个输入图片的特征图，然后用一个从共享的特征图里提取出来的特征向量对每个目标proposal进行分类。通过在proposal内的feature map上进行最大池化操作，将特征提取出来并固定到固定大小(6*6)。多种输出尺寸首先进行池化然后再拼接。</p>
+<h2 id="SPPNet的缺点："><a href="#SPPNet的缺点：" class="headerlink" title="SPPNet的缺点："></a>SPPNet的缺点：</h2><blockquote>
+<ul>
+<li>训练过程是个多阶段的过程，包括提取特征，用<code>log</code>损失来fine-tune网络，训练SVM，最后进行bounding box回归。</li>
+<li>特征同样需要写入硬盘中。</li>
+<li>与RCNN不同的是，SPP 中的fine-tune不能够在空间金字塔池化之前更新卷积层，因此限制了精度。</li>
+</ul>
+</blockquote>
+<h1 id="Fast-RCNN的架构和训练方法"><a href="#Fast-RCNN的架构和训练方法" class="headerlink" title="Fast RCNN的架构和训练方法"></a>Fast RCNN的架构和训练方法</h1><p><img src="/images/FastR-CNNarchitecture.png" alt="FastR-CNNarchitecture"><br><strong>FastR-CNN网络输入一整张图片和一套object proposal。图像先经过几层卷积层和max pooling层产生一张特征图；然后对特征图进行ROIPooling，为每个object proposal提取出固定大小的特征向量；再将每个特征向量送入一序列全连接网络中，最后生成两个分支：一条产生softmax概率，估计K个目标和背景的类别；另一条为每个类别输出四个坐标</strong>。</p>
+<h2 id="ROI-pooling层"><a href="#ROI-pooling层" class="headerlink" title="ROI pooling层"></a>ROI pooling层</h2><p>RoI pooling层使用最大池化(max pooling)将有效的ROI的特征转化成小的特征图，都是固定大小<code>(H*W)</code>，比如(7*7)。本文中，每个RoI有一个四元素的元祖定义，<code>(r,c,h,w)</code>,<code>(r,c)</code>是左上角坐标，<code>(h,w)</code>是高和宽。<br>RoI max pooling 将一个<code>(h*w)</code>的RoI窗口分成<code>(H*W)</code>的网格，每个网格大小接近<code>(h/H,w/W)</code>。然后对每个子网格进行最大池化操作输出网格单元。池化操作在<strong>每个特征图通道</strong>上独立进行。这个RoI层就是SPPnet里面空间金字塔池化的特例，这儿只有一个金字塔层。所有在子窗口上的池化操作都是按照SPPnet中给出的方法进行的。</p>
+<h2 id="从预训练的网络中初始化"><a href="#从预训练的网络中初始化" class="headerlink" title="从预训练的网络中初始化"></a>从预训练的网络中初始化</h2><p>我们试验了3中在IamgeNet上预训练的网络，每个有5层max pooling层和5~13层的卷积层。当使用这三种网络进行初始化Fast RCNN网络时，经历了三种变换。</p>
+<ol>
+<li>最后一层max pooling层被换成了RoI pooling层，宽高被设置成了<code>H</code>和<code>W</code>，为了和网络第一层的全连接层兼容(VGG16中<code>H=W=7</code>)。</li>
+<li>网络最后一层全连接层和softmax层(ImageNet分类中有1000类)被替换成了两个并列层。</li>
+<li>网络输入有两个：一系列图片，一系列ROI输入。</li>
+</ol>
+<h2 id="Fine-tuning-for-detection"><a href="#Fine-tuning-for-detection" class="headerlink" title="Fine-tuning for detection"></a>Fine-tuning for detection</h2><p>SPPnet在空间金字塔池化层下不能更新权重的根本原因是：当一个训练样本来自不同的图片时，后向传播是很没有效率的。<strong>因为每个ROI有一个很大的感受野，通常横跨了整个输入图片。前向传播必须处理整个感受野，因此训练数据也经常是整张图片。</strong><br>我们提出的训练方法更有效，利用了特征共享。首先采样$\textbf{N}$张图片，然后从每张图片采样$\textbf{R/N}$个ROI，进行SGD。重要的是，**来自相同图片中的RoI在前向和后向传播时都会共享计算和存储资源。当$\textbf{N}$变小则会减少mini-batch的计算。比如，$N = 2$和$R = 128$的时候，该训练策略会比RCNN快64倍。<br>有人担心这样收敛速度会变慢，因为同一张图片的ROI会相互关联。事实证明并不会，在$N = 2$和$R = 128$的情况下我们达到了更好的结果，且SGD迭代次数也比RCNN少。<br>Fast RCNN可以联合优化softmax分类器和bounding box回归器，而不是分为三个步骤(训练softmax分类器，SVM,和回归器)。下面详细介绍：</p>
+<h3 id="Multi-task-loss"><a href="#Multi-task-loss" class="headerlink" title="Multi-task loss"></a>Multi-task loss</h3><p>FastR-CNN网络有两个并列输出层。第一个输出每个RoI的一个离散概率分布，$p = (p_0,…,p_K)$，在$K+1$个类别上。$p$是由一个softmax在一个全连接层的$K+1$个输出上计算得到的。第二层输出了bounding box的回归偏差。$t^k = (t_x^k,t_y^k,t_w^k,t_h^k)$,$k$是索引，一共有$K$个类。我们使用RCNN中的参数优化方法，$t^k$是个尺度不变的平移变换并且对数域的高度/宽度变换，相对于目标proposal。<br>每一个训练的ROI被标记成groundtruth的类别$u$和bounding box的回归目标$v$。我们使用一个多任务的损失来联合训练分类和回归：<br>$$\textbf{L}(p,u,t^u,v)=\textbf{L}<em>{cls}(p,u)+\lambda[u\ge1]\textbf{L}</em>{loc}(t^u,v)\qquad (1)$$</p>
+<p>其中，$\textbf{L}_{cls}(p,u)=-log(p_u)$是真实类别$u$的对数损失。<br>第二个损失$\textbf{L}_{loc}$是bounding box回归的损失对于类别$u$,$v=(v_x,v_y,v_w,v_h)$,和预测出的$t^u=(t_x^u,t_y^u,t_w^u,t_h^u)$。$[u\ge1]$表示忽略背景$u=0$的损失。<br>对于bounding box回归，我们使用一下损失：<br>$$\textbf{L}<em>{loc}(t^u,v)=\sum</em>{i\in {x,y,w,h}} smooth_{L_1}(t_i^u-v_i)\qquad (2)$$<br>其中：<br>$$smooth_{L_1}(x)=\begin{cases} 0.5x^2\quad if\ |x|\leq1\|x|-0.5\quad otherwise,\end{cases}\qquad (3)$$<br>这个$L_1$损失比RCNN和SPPNet里面用的$L_2$损失对异常值不那么敏感。<br>公式(1)中的$\lambda$控制了两个损失之间的平衡。我们将回归目标的$v_i$归一化到均值为0，方差为1.所有实验的$\lambda=1$。</p>
+<h3 id="Mini-batch-sampling"><a href="#Mini-batch-sampling" class="headerlink" title="Mini-batch sampling"></a>Mini-batch sampling</h3><p>在fine-tune过程中，每个SGD mini-batch由$N=2$张图片构成，每张图片采样64个RoIs,即$R=128$。和RCNN一样，25%的RoIs是由和groundtruth的IoU重叠大于0.5得到的。这些RoIs包含了前景目标类别的例子，即$u\ge1$。剩下的RoIs由和groundtruth有最大IoU的object proposal采样得到，IoU在$[0.1,0.5)$内。背景样本标记为$u=0$。<br>训练时，将图片水平翻转来做图像增强。</p>
+<h3 id="Back-propagation-through-RoI-pooling-layers"><a href="#Back-propagation-through-RoI-pooling-layers" class="headerlink" title="Back-propagation through RoI pooling layers"></a>Back-propagation through RoI pooling layers</h3><p>假设每个mini-batch里只有一张图片。让$x_i\in \textbf{R}$作为输入到RoI pooling层的第$i$个激活，让$y_{rj}$作为第$r$个RoI的第$j$个输入。RoI pooling层计算$y_{rj}=x_{i^*(r,j)}$,其中，$i^*(r,j)=\text{arg}\max_{i’\in \textbf{R}(r,j)}x_{i’}$。$\textbf{R}(r,j)$是输出单元$y_{rj}$最大池化上的输入的索引集合。一个单独的$x_i$可能被分配到不同的输出$y_{rj}$上。<br>RoI pooling层的后向传播函数计算了损失函数对每个输入变量$x_i$的偏微分：<br>$$\frac{\partial L}{\partial {x_i}}=\sum_r\sum_j[i=i^*(r,j)]\frac{\partial L}{\partial y_{rj}} \qquad (4)$$<br>换句话说，对于每个mini-batch RoI$r$和每个pooling的输出单元$y_{rj}$,微分$\frac{\partial L}{\partial y_{rj}}$会不断积累，如果$i$是由最大池化操作挑出来的最大值。在后向传播中，偏微分$\frac{\partial L}{\partial y_{rj}}$在输入RoI pooling层时已经计算好了。</p>
+<h3 id="SGD-hyper-parameters"><a href="#SGD-hyper-parameters" class="headerlink" title="SGD hyper-parameters"></a>SGD hyper-parameters</h3><p>全连接层使用的softmax分类和bounding box回归由一个服从均值为0、标准差为0.01和0.001的高斯分布来分别初始化。偏直也被初始化为0。每一层权重的学习率为1、偏置的学习率为2，总体的学习率为0.001.<br>当在VOC2007或者VOC2012上训练时，我们在30kmini-batch上跑了SGD,然后把学习率降到0.0001又训练了10k次。在更大的数据集上训练时，需要迭代更多次。动量为0.9，参数学习率衰减为0.0005.</p>
+<h2 id="Scale-invariance【待补】"><a href="#Scale-invariance【待补】" class="headerlink" title="Scale invariance【待补】"></a>Scale invariance【待补】</h2><h1 id="Fast-R-CNN-detection"><a href="#Fast-R-CNN-detection" class="headerlink" title="Fast R-CNN detection"></a>Fast R-CNN detection</h1><p>一旦Fast RCNN网络被fine-tuned好后，检测就相当于是一个前向传播的过程(假设object proposal已经给算好了)。网络输入一张图片和一系列$R$个object proposal。测试环节，$R$通常是2000。<br>对于每个测试的RoI$r$,前向传播先输出一个类的后验概率分布$p$和一堆预测的bounding box偏移量。我们把每个类$k$的检测的置信度置为$r$,使用概率分布$Pr(class = k | r) =^\Delta\ p_k$。然后对每个类独立的用非极大值抑制。<br>对于整张图片的分类，计算全连接层的时间比计算卷积层的时间短很多。相反的，检测过程中，RoI的数目很大几乎一半的时间都在处理ROI。因此使用了<strong>SVD分解</strong>来压缩全连接层来加速。</p>
+<h1 id="Main-Result"><a href="#Main-Result" class="headerlink" title="Main Result"></a>Main Result</h1><h2 id="Experimental-setup"><a href="#Experimental-setup" class="headerlink" title="Experimental setup"></a>Experimental setup</h2><p>使用了三个预训练的网络：AlexNet、VGG CNN M 1024和VGG16</p>
+<h2 id="fine-tune哪一层比较好"><a href="#fine-tune哪一层比较好" class="headerlink" title="fine-tune哪一层比较好"></a>fine-tune哪一层比较好</h2><p>对于SPPnet只用fine-tune最后一层全连接层。但是对于VGG16，从conv3_1开始往后的卷积层fine-tune效果最好。</p>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/22/rcnn/" rel="next" title="rcnn">
+                <i class="fa fa-chevron-left"></i> rcnn
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/31/ssd/" rel="prev" title="ssd">
+                ssd <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#引言："><span class="nav-number">1.</span> <span class="nav-text">引言：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#RCNN的缺点"><span class="nav-number">1.1.</span> <span class="nav-text">RCNN的缺点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SPPNet的缺点："><span class="nav-number">1.2.</span> <span class="nav-text">SPPNet的缺点：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fast-RCNN的架构和训练方法"><span class="nav-number">2.</span> <span class="nav-text">Fast RCNN的架构和训练方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ROI-pooling层"><span class="nav-number">2.1.</span> <span class="nav-text">ROI pooling层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#从预训练的网络中初始化"><span class="nav-number">2.2.</span> <span class="nav-text">从预训练的网络中初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fine-tuning-for-detection"><span class="nav-number">2.3.</span> <span class="nav-text">Fine-tuning for detection</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Multi-task-loss"><span class="nav-number">2.3.1.</span> <span class="nav-text">Multi-task loss</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Mini-batch-sampling"><span class="nav-number">2.3.2.</span> <span class="nav-text">Mini-batch sampling</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Back-propagation-through-RoI-pooling-layers"><span class="nav-number">2.3.3.</span> <span class="nav-text">Back-propagation through RoI pooling layers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SGD-hyper-parameters"><span class="nav-number">2.3.4.</span> <span class="nav-text">SGD hyper-parameters</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Scale-invariance【待补】"><span class="nav-number">2.4.</span> <span class="nav-text">Scale invariance【待补】</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fast-R-CNN-detection"><span class="nav-number">3.</span> <span class="nav-text">Fast R-CNN detection</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Main-Result"><span class="nav-number">4.</span> <span class="nav-text">Main Result</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Experimental-setup"><span class="nav-number">4.1.</span> <span class="nav-text">Experimental setup</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fine-tune哪一层比较好"><span class="nav-number">4.2.</span> <span class="nav-text">fine-tune哪一层比较好</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

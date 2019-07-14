@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="ResNet101+FPN代码详解ResNet结构 FPN代码 FPN论文">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ResNet+FPN代码详解">
+<meta property="og:url" content="http://yoursite.com/2018/06/01/fpn/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="ResNet101+FPN代码详解ResNet结构 FPN代码 FPN论文">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/06/01/fpn/%5Cimages%5Cfpn%5Cres101.png">
+<meta property="og:image" content="http://yoursite.com/2018/06/01/fpn/%5Cimages%5Cfpn%5Cres-block.png">
+<meta property="og:image" content="http://yoursite.com/2018/06/01/fpn/%5Cimages%5Cfpn%5Cfaster-rcnn-resnet101.png">
+<meta property="og:image" content="http://yoursite.com/2018/06/01/fpn/%5Cimages%5Cfpn%5Cfpn.png">
+<meta property="og:image" content="http://yoursite.com/2018/06/01/fpn/%5Cimages%5Cfpn%5Cfpn1.png">
+<meta property="og:image" content="http://yoursite.com/2018/06/01/fpn/%5Cimages%5Cfpn%5Cfpn2.jpg">
+<meta property="og:updated_time" content="2019-07-14T07:17:32.667Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ResNet+FPN代码详解">
+<meta name="twitter:description" content="ResNet101+FPN代码详解ResNet结构 FPN代码 FPN论文">
+<meta name="twitter:image" content="http://yoursite.com/2018/06/01/fpn/%5Cimages%5Cfpn%5Cres101.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/06/01/fpn/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>ResNet+FPN代码详解 | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/01/fpn/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ResNet+FPN代码详解
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-06-01 21:44:15" itemprop="dateCreated datePublished" datetime="2018-06-01T21:44:15+08:00">2018-06-01</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:32" itemprop="dateModified" datetime="2019-07-14T15:17:32+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/code/" itemprop="url" rel="index"><span itemprop="name">code</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/code/two-stage-detector/" itemprop="url" rel="index"><span itemprop="name">two-stage detector</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="ResNet101-FPN代码详解"><a href="#ResNet101-FPN代码详解" class="headerlink" title="ResNet101+FPN代码详解"></a>ResNet101+FPN代码详解</h1><p><a href="https://github.com/galaxy-fangfang/faster-rcnn.pytorch" target="_blank" rel="noopener">ResNet结构</a></p>
+<p><a href="https://github.com/galaxy-fangfang/fpn.pytorch" target="_blank" rel="noopener">FPN代码</a></p>
+<p><a href="https://arxiv.org/abs/1612.03144" target="_blank" rel="noopener">FPN论文</a></p>
+<a id="more"></a>
+
+<h2 id="1-ResNet"><a href="#1-ResNet" class="headerlink" title="1.ResNet"></a>1.ResNet</h2><ul>
+<li>resnet101结构：</li>
+</ul>
+<p><img src="%5Cimages%5Cfpn%5Cres101.png" alt></p>
+<p>resnet101代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">resnet101</span><span class="params">(pretrained=False)</span>:</span></span><br><span class="line">  <span class="string">"""Constructs a ResNet-101 model.</span></span><br><span class="line"><span class="string">  Args:</span></span><br><span class="line"><span class="string">    pretrained (bool): If True, returns a model pre-trained on ImageNet</span></span><br><span class="line"><span class="string">  """</span></span><br><span class="line"><span class="comment"># [3, 4, 23, 3]即为res101的各个block的重复次数</span></span><br><span class="line">  model = ResNet(Bottleneck, [<span class="number">3</span>, <span class="number">4</span>, <span class="number">23</span>, <span class="number">3</span>])</span><br><span class="line">  <span class="keyword">if</span> pretrained:</span><br><span class="line">    model.load_state_dict(model_zoo.load_url(model_urls[<span class="string">'resnet101'</span>]))</span><br><span class="line">  <span class="keyword">return</span> model</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ResNet</span><span class="params">(nn.Module)</span>:</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, block, layers, num_classes=<span class="number">1000</span>)</span>:</span></span><br><span class="line">    self.inplanes = <span class="number">64</span></span><br><span class="line">    super(ResNet, self).__init__()</span><br><span class="line">    self.conv1 = nn.Conv2d(<span class="number">3</span>, <span class="number">64</span>, kernel_size=<span class="number">7</span>, stride=<span class="number">2</span>, padding=<span class="number">3</span>,</span><br><span class="line">                 bias=<span class="literal">False</span>)</span><br><span class="line">    self.bn1 = nn.BatchNorm2d(<span class="number">64</span>)</span><br><span class="line">    self.relu = nn.ReLU(inplace=<span class="literal">True</span>)</span><br><span class="line">    self.maxpool = nn.MaxPool2d(kernel_size=<span class="number">3</span>, stride=<span class="number">2</span>, padding=<span class="number">0</span>, ceil_mode=<span class="literal">True</span>) <span class="comment"># change</span></span><br><span class="line">    self.layer1 = self._make_layer(block, <span class="number">64</span>, layers[<span class="number">0</span>])<span class="comment">#3</span></span><br><span class="line">    self.layer2 = self._make_layer(block, <span class="number">128</span>, layers[<span class="number">1</span>], stride=<span class="number">2</span>)<span class="comment">#4</span></span><br><span class="line">    self.layer3 = self._make_layer(block, <span class="number">256</span>, layers[<span class="number">2</span>], stride=<span class="number">2</span>)<span class="comment">#23</span></span><br><span class="line">    self.layer4 = self._make_layer(block, <span class="number">512</span>, layers[<span class="number">3</span>], stride=<span class="number">2</span>)<span class="comment">#3</span></span><br><span class="line">    <span class="comment"># it is slightly better whereas slower to set stride = 1</span></span><br><span class="line">    <span class="comment"># self.layer4 = self._make_layer(block, 512, layers[3], stride=1)</span></span><br><span class="line">    self.avgpool = nn.AvgPool2d(<span class="number">7</span>)</span><br><span class="line">    self.fc = nn.Linear(<span class="number">512</span> * block.expansion, num_classes)</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, x)</span>:</span></span><br><span class="line">    x = self.conv1(x)</span><br><span class="line">    x = self.bn1(x)</span><br><span class="line">    x = self.relu(x)</span><br><span class="line">    x = self.maxpool(x)</span><br><span class="line"></span><br><span class="line">    x = self.layer1(x)</span><br><span class="line">    x = self.layer2(x)</span><br><span class="line">    x = self.layer3(x)</span><br><span class="line">    x = self.layer4(x)</span><br><span class="line"></span><br><span class="line">    x = self.avgpool(x)</span><br><span class="line">    x = x.view(x.size(<span class="number">0</span>), <span class="number">-1</span>)</span><br><span class="line">    x = self.fc(x)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> x</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>卷积层和BN层的初始化：</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> m <span class="keyword">in</span> self.modules():</span><br><span class="line">  <span class="keyword">if</span> isinstance(m, nn.Conv2d):</span><br><span class="line">    n = m.kernel_size[<span class="number">0</span>] * m.kernel_size[<span class="number">1</span>] * m.out_channels</span><br><span class="line">    <span class="comment">#//卷积层的初始化采用正态分布</span></span><br><span class="line">    m.weight.data.normal_(<span class="number">0</span>, math.sqrt(<span class="number">2.</span> / n))</span><br><span class="line">  <span class="keyword">elif</span> isinstance(m, nn.BatchNorm2d):</span><br><span class="line">    m.weight.data.fill_(<span class="number">1</span>)</span><br><span class="line">    m.bias.data.zero_()</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>每个block结构：</li>
+</ul>
+<p><img src="%5Cimages%5Cfpn%5Cres-block.png" alt></p>
+<p>block代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bottleneck</span><span class="params">(nn.Module)</span>:</span></span><br><span class="line">  expansion = <span class="number">4</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, inplanes, planes, stride=<span class="number">1</span>, downsample=None)</span>:</span></span><br><span class="line">    super(Bottleneck, self).__init__()</span><br><span class="line">    self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=<span class="number">1</span>, stride=stride, bias=<span class="literal">False</span>) <span class="comment"># change</span></span><br><span class="line">    self.bn1 = nn.BatchNorm2d(planes)</span><br><span class="line">    self.conv2 = nn.Conv2d(planes, planes, kernel_size=<span class="number">3</span>, stride=<span class="number">1</span>, <span class="comment"># change</span></span><br><span class="line">                 padding=<span class="number">1</span>, bias=<span class="literal">False</span>)</span><br><span class="line">    self.bn2 = nn.BatchNorm2d(planes)</span><br><span class="line">    self.conv3 = nn.Conv2d(planes, planes * <span class="number">4</span>, kernel_size=<span class="number">1</span>, bias=<span class="literal">False</span>)</span><br><span class="line">    self.bn3 = nn.BatchNorm2d(planes * <span class="number">4</span>)</span><br><span class="line">    self.relu = nn.ReLU(inplace=<span class="literal">True</span>)</span><br><span class="line">    self.downsample = downsample</span><br><span class="line">    self.stride = stride</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, x)</span>:</span><span class="comment">#im_data:[[1,896,600,3]]</span></span><br><span class="line">    residual = x<span class="comment">#[1, 64, 224, 150]</span></span><br><span class="line"></span><br><span class="line">    out = self.conv1(x)<span class="comment">#[1, 64, 224, 150])</span></span><br><span class="line">    out = self.bn1(out)</span><br><span class="line">    out = self.relu(out)</span><br><span class="line"></span><br><span class="line">    out = self.conv2(out)<span class="comment">#[1, 64, 224, 150])</span></span><br><span class="line">    out = self.bn2(out)</span><br><span class="line">    out = self.relu(out)</span><br><span class="line"></span><br><span class="line">    out = self.conv3(out)<span class="comment">#[1, 256, 224, 150]</span></span><br><span class="line">    out = self.bn3(out)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> self.downsample <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">      residual = self.downsample(x)<span class="comment">#[1, 256, 224, 150]</span></span><br><span class="line">	<span class="comment">#element-wise add</span></span><br><span class="line">    out += residual</span><br><span class="line">    out = self.relu(out)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> out</span><br></pre></td></tr></table></figure>
+
+<p>resnet101设置：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">resnet</span><span class="params">(_fasterRCNN)</span>:</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, classes, num_layers=<span class="number">101</span>, pretrained=False, class_agnostic=False)</span>:</span></span><br><span class="line">    self.model_path = <span class="string">'data/pretrained_model/resnet101_caffe.pth'</span></span><br><span class="line">    self.dout_base_model = <span class="number">1024</span></span><br><span class="line">    self.pretrained = pretrained</span><br><span class="line">    self.class_agnostic = class_agnostic</span><br><span class="line"></span><br><span class="line">    _fasterRCNN.__init__(self, classes, class_agnostic)</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">_init_modules</span><span class="params">(self)</span>:</span></span><br><span class="line">    <span class="comment">#本代码使用res101网络设置</span></span><br><span class="line">	resnet = resnet101()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> self.pretrained == <span class="literal">True</span>:</span><br><span class="line">      print(<span class="string">"Loading pretrained weights from %s"</span> %(self.model_path))</span><br><span class="line">      state_dict = torch.load(self.model_path)</span><br><span class="line">      resnet.load_state_dict(&#123;k:v <span class="keyword">for</span> k,v <span class="keyword">in</span> state_dict.items() <span class="keyword">if</span> k <span class="keyword">in</span> resnet.state_dict()&#125;)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Build resnet.即conv1,layer1,layer2,layer3</span></span><br><span class="line">    self.RCNN_base = nn.Sequential(resnet.conv1, resnet.bn1,resnet.relu,</span><br><span class="line">      resnet.maxpool,resnet.layer1,resnet.layer2,resnet.layer3)</span><br><span class="line">	<span class="comment">#即layer4</span></span><br><span class="line">    self.RCNN_top = nn.Sequential(resnet.layer4)</span><br><span class="line"></span><br><span class="line">    self.RCNN_cls_score = nn.Linear(<span class="number">2048</span>, self.n_classes)</span><br><span class="line">    <span class="keyword">if</span> self.class_agnostic:</span><br><span class="line">      self.RCNN_bbox_pred = nn.Linear(<span class="number">2048</span>, <span class="number">4</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">      self.RCNN_bbox_pred = nn.Linear(<span class="number">2048</span>, <span class="number">4</span> * self.n_classes)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Fix blocks</span></span><br><span class="line">    <span class="comment">#固定conv1的参数</span></span><br><span class="line">    <span class="keyword">for</span> p <span class="keyword">in</span> self.RCNN_base[<span class="number">0</span>].parameters(): p.requires_grad=<span class="literal">False</span></span><br><span class="line">    <span class="keyword">for</span> p <span class="keyword">in</span> self.RCNN_base[<span class="number">1</span>].parameters(): p.requires_grad=<span class="literal">False</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">assert</span> (<span class="number">0</span> &lt;= cfg.RESNET.FIXED_BLOCKS &lt; <span class="number">4</span>)</span><br><span class="line">    <span class="keyword">if</span> cfg.RESNET.FIXED_BLOCKS &gt;= <span class="number">3</span>:</span><br><span class="line">      <span class="keyword">for</span> p <span class="keyword">in</span> self.RCNN_base[<span class="number">6</span>].parameters(): p.requires_grad=<span class="literal">False</span></span><br><span class="line">    <span class="keyword">if</span> cfg.RESNET.FIXED_BLOCKS &gt;= <span class="number">2</span>:</span><br><span class="line">      <span class="keyword">for</span> p <span class="keyword">in</span> self.RCNN_base[<span class="number">5</span>].parameters(): p.requires_grad=<span class="literal">False</span></span><br><span class="line">    <span class="comment">#cfg.RESNET.FIXED_BLOCKS=1，所以layer1参数固定，</span></span><br><span class="line">    <span class="comment">#训练时layer2，layer3，layer4参数微调</span></span><br><span class="line">    <span class="keyword">if</span> cfg.RESNET.FIXED_BLOCKS &gt;= <span class="number">1</span>:</span><br><span class="line">      <span class="keyword">for</span> p <span class="keyword">in</span> self.RCNN_base[<span class="number">4</span>].parameters(): p.requires_grad=<span class="literal">False</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">set_bn_fix</span><span class="params">(m)</span>:</span></span><br><span class="line">      classname = m.__class__.__name__</span><br><span class="line">      <span class="keyword">if</span> classname.find(<span class="string">'BatchNorm'</span>) != <span class="number">-1</span>:</span><br><span class="line">        <span class="keyword">for</span> p <span class="keyword">in</span> m.parameters(): p.requires_grad=<span class="literal">False</span></span><br><span class="line">	<span class="comment">#设置BN层的参数固定</span></span><br><span class="line">    self.RCNN_base.apply(set_bn_fix)</span><br><span class="line">    self.RCNN_top.apply(set_bn_fix)</span><br></pre></td></tr></table></figure>
+
+<p>Faster RCNN利用了<strong>conv1到conv4-x的91层作为共享卷积层</strong>（即代码中的conv1,layer1,layer2,layer3）。从conv4-x开始分叉，一路经过RPN进行proposal选择，另一路送入ROIPooling层，把RPN结果输入ROI Pooling层，变成$7\times7$的特征。然后所有的输出经过con5-x计算，这里conv5-x起到全连接层fc的作用，然后经过分类器和边界框回归得到最终结果。整体框架如下：</p>
+<p><img src="%5Cimages%5Cfpn%5Cfaster-rcnn-resnet101.png" alt></p>
+<p>对应代码在<code>/faster-rcnn.pytorch/lib/model/faster_rcnn/faster_rcnn.py</code>中，如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">_fasterRCNN</span><span class="params">(nn.Module)</span>:</span></span><br><span class="line">    <span class="string">""" faster RCNN """</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, classes, class_agnostic)</span>:</span></span><br><span class="line">        super(_fasterRCNN, self).__init__()</span><br><span class="line">        self.classes = classes</span><br><span class="line">        self.n_classes = len(classes)</span><br><span class="line">        self.class_agnostic = class_agnostic</span><br><span class="line">        <span class="comment"># loss</span></span><br><span class="line">        self.RCNN_loss_cls = <span class="number">0</span></span><br><span class="line">        self.RCNN_loss_bbox = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># define rpn</span></span><br><span class="line">        self.RCNN_rpn = _RPN(self.dout_base_model)</span><br><span class="line">        self.RCNN_proposal_target = _ProposalTargetLayer(self.n_classes)</span><br><span class="line">        self.RCNN_roi_pool = _RoIPooling(cfg.POOLING_SIZE, cfg.POOLING_SIZE, <span class="number">1.0</span>/<span class="number">16.0</span>)</span><br><span class="line">        self.RCNN_roi_align = RoIAlignAvg(cfg.POOLING_SIZE, cfg.POOLING_SIZE, <span class="number">1.0</span>/<span class="number">16.0</span>)</span><br><span class="line"></span><br><span class="line">        self.grid_size = cfg.POOLING_SIZE * <span class="number">2</span> <span class="keyword">if</span> cfg.CROP_RESIZE_WITH_MAX_POOL <span class="keyword">else</span> cfg.POOLING_SIZE<span class="comment">#7</span></span><br><span class="line">        self.RCNN_roi_crop = _RoICrop()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, im_data, im_info, gt_boxes, num_boxes)</span>:</span></span><br><span class="line">        batch_size = im_data.size(<span class="number">0</span>)<span class="comment">#1</span></span><br><span class="line"></span><br><span class="line">        im_info = im_info.data<span class="comment">#[896,600,1.79]</span></span><br><span class="line">        gt_boxes = gt_boxes.data<span class="comment">#[1,1,5]</span></span><br><span class="line">        num_boxes = num_boxes.data</span><br><span class="line"></span><br><span class="line">        <span class="comment"># feed image data to base model to obtain base feature map</span></span><br><span class="line">        <span class="comment">#此处base feature map即为conv1,layer1,layer2,layer3输出的特征图。</span></span><br><span class="line">    	<span class="comment">#self.RCNN_base = nn.Sequential(resnet.conv1, esnet.bn1,resnet.relu,</span></span><br><span class="line">        <span class="comment">#resnet.maxpool,resnet.layer1,resnet.layer2,resnet.layer3)</span></span><br><span class="line">        base_feat = self.RCNN_base(im_data)<span class="comment">#class resnet</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># feed base feature map tp RPN to obtain rois</span></span><br><span class="line">        rois, rpn_loss_cls, rpn_loss_bbox = self.RCNN_rpn(base_feat, im_info, gt_boxes, num_boxes)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># if it is training phrase, then use ground trubut bboxes for refining</span></span><br><span class="line">        <span class="keyword">if</span> self.training:</span><br><span class="line">            roi_data = self.RCNN_proposal_target(rois, gt_boxes, num_boxes)</span><br><span class="line">            rois, rois_label, rois_target, rois_inside_ws, rois_outside_ws = roi_data</span><br><span class="line"></span><br><span class="line">            rois_label = Variable(rois_label.view(<span class="number">-1</span>).long())</span><br><span class="line">            rois_target = Variable(rois_target.view(<span class="number">-1</span>, rois_target.size(<span class="number">2</span>)))</span><br><span class="line">            rois_inside_ws = Variable(rois_inside_ws.view(<span class="number">-1</span>, rois_inside_ws.size(<span class="number">2</span>)))</span><br><span class="line">            rois_outside_ws = Variable(rois_outside_ws.view(<span class="number">-1</span>, rois_outside_ws.size(<span class="number">2</span>)))</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            rois_label = <span class="literal">None</span></span><br><span class="line">            rois_target = <span class="literal">None</span></span><br><span class="line">            rois_inside_ws = <span class="literal">None</span></span><br><span class="line">            rois_outside_ws = <span class="literal">None</span></span><br><span class="line">            rpn_loss_cls = <span class="number">0</span></span><br><span class="line">            rpn_loss_bbox = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">        rois = Variable(rois)</span><br><span class="line">        <span class="comment"># do roi pooling based on predicted rois</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> cfg.POOLING_MODE == <span class="string">'crop'</span>:</span><br><span class="line">            <span class="comment"># pdb.set_trace()</span></span><br><span class="line">            <span class="comment"># pooled_feat_anchor = _crop_pool_layer(base_feat, rois.view(-1, 5))</span></span><br><span class="line">            grid_xy = _affine_grid_gen(rois.view(<span class="number">-1</span>, <span class="number">5</span>), base_feat.size()[<span class="number">2</span>:], self.grid_size)</span><br><span class="line">            grid_yx = torch.stack([grid_xy.data[:,:,:,<span class="number">1</span>], grid_xy.data[:,:,:,<span class="number">0</span>]], <span class="number">3</span>).contiguous()</span><br><span class="line">            pooled_feat = self.RCNN_roi_crop(base_feat, Variable(grid_yx).detach())</span><br><span class="line">            <span class="keyword">if</span> cfg.CROP_RESIZE_WITH_MAX_POOL:</span><br><span class="line">                pooled_feat = F.max_pool2d(pooled_feat, <span class="number">2</span>, <span class="number">2</span>)</span><br><span class="line">        <span class="keyword">elif</span> cfg.POOLING_MODE == <span class="string">'align'</span>:</span><br><span class="line">            pooled_feat = self.RCNN_roi_align(base_feat, rois.view(<span class="number">-1</span>, <span class="number">5</span>))</span><br><span class="line">        <span class="keyword">elif</span> cfg.POOLING_MODE == <span class="string">'pool'</span>:</span><br><span class="line">            pooled_feat = self.RCNN_roi_pool(base_feat, rois.view(<span class="number">-1</span>,<span class="number">5</span>))</span><br><span class="line"></span><br><span class="line">        <span class="comment"># feed pooled features to top model</span></span><br><span class="line">        pooled_feat = self._head_to_tail(pooled_feat)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># compute bbox offset</span></span><br><span class="line">        bbox_pred = self.RCNN_bbox_pred(pooled_feat)</span><br><span class="line">        <span class="keyword">if</span> self.training <span class="keyword">and</span> <span class="keyword">not</span> self.class_agnostic:</span><br><span class="line">            <span class="comment"># select the corresponding columns according to roi labels</span></span><br><span class="line">            bbox_pred_view = bbox_pred.view(bbox_pred.size(<span class="number">0</span>), int(bbox_pred.size(<span class="number">1</span>) / <span class="number">4</span>), <span class="number">4</span>)</span><br><span class="line">            bbox_pred_select = torch.gather(bbox_pred_view, <span class="number">1</span>, rois_label.view(rois_label.size(<span class="number">0</span>), <span class="number">1</span>, <span class="number">1</span>).expand(rois_label.size(<span class="number">0</span>), <span class="number">1</span>, <span class="number">4</span>))</span><br><span class="line">            bbox_pred = bbox_pred_select.squeeze(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># compute object classification probability</span></span><br><span class="line">        cls_score = self.RCNN_cls_score(pooled_feat)</span><br><span class="line">        cls_prob = F.softmax(cls_score)</span><br><span class="line"></span><br><span class="line">        RCNN_loss_cls = <span class="number">0</span></span><br><span class="line">        RCNN_loss_bbox = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> self.training:</span><br><span class="line">            <span class="comment"># classification loss</span></span><br><span class="line">            RCNN_loss_cls = F.cross_entropy(cls_score, rois_label)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># bounding box regression L1 loss</span></span><br><span class="line">            RCNN_loss_bbox = _smooth_l1_loss(bbox_pred, rois_target, rois_inside_ws, rois_outside_ws)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        cls_prob = cls_prob.view(batch_size, rois.size(<span class="number">1</span>), <span class="number">-1</span>)</span><br><span class="line">        bbox_pred = bbox_pred.view(batch_size, rois.size(<span class="number">1</span>), <span class="number">-1</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> rois, cls_prob, bbox_pred, rpn_loss_cls, rpn_loss_bbox, RCNN_loss_cls, RCNN_loss_bbox, rois_label</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-FPN"><a href="#2-FPN" class="headerlink" title="2.FPN"></a>2.FPN</h2><p><img src="%5Cimages%5Cfpn%5Cfpn.png" alt></p>
+<h3 id="Bottom-up-pathway"><a href="#Bottom-up-pathway" class="headerlink" title="Bottom-up pathway"></a>Bottom-up pathway</h3><p>自下而上的通路是卷积网络backbone的前向计算，每个尺度的<code>步长是2</code>.对于<code>resnet</code>来说，我们使用最后的残差块的输出${C_2,C_3,C_4,C_5}$,对应于<code>conv2,conv3,conv4,conv5</code>的输出。每层的步长分别为${4,8,16,32}$.</p>
+<h3 id="Top-down-pathway-and-lateral-connections"><a href="#Top-down-pathway-and-lateral-connections" class="headerlink" title="Top-down pathway and lateral connections"></a>Top-down pathway and lateral connections</h3><p>如何结合高低层的语义信息呢？就是：<strong>把更抽象、语义更强的高层特征图进行上采样，然后吧特征横向连接至前一层特征，因此得到加强的高层特征。</strong>自顶向下的过程采用了上采样进行，而横向连接则是将上采样的结果和自底向上生成的相同大小的feature map进行融合。如下图，<strong>这里$1\times1$的卷积核作用就是减少通道数,通过element-wise 相加</strong>。重复迭代过程，直至产生最精细的特征图。</p>
+<p><img src="%5Cimages%5Cfpn%5Cfpn1.png" alt></p>
+<p>金字塔中的所有层级共享分类、回归层。因此作者固定了所有特征图的维度，即通道数，表示为d.$d=256$.因此所有的额外的卷积层（比如P2）具有256维的输出。</p>
+<h3 id="在fasterRCNN中的应用"><a href="#在fasterRCNN中的应用" class="headerlink" title="在fasterRCNN中的应用"></a>在fasterRCNN中的应用</h3><h4 id="RPN"><a href="#RPN" class="headerlink" title="RPN"></a>RPN</h4><p>原本的RPN实现中，有一个$3\times3$的窗口在特征图上滑动，执行二分类和边界框回归。<strong>我们把$3\times3$的卷积层和后面接着的$1\times1$的用来分类和回归的卷积层叫做<em>head</em>,</strong>。是不是目标的标准和边界框回归的<em>target</em>是由<em>anchor</em>定义的。</p>
+<p>FPN应用到RPN中时，我们调整如下：<strong>使用FPN代替了单一尺度的RPN。在每个特征金字塔层都加上刚刚说的$3\times3$和$1\times1$的<em>head</em>.</strong>因为<em>head</em>网络在每个位置都滑动，所以单独层没必要执行多尺度。</p>
+<p>最后的定义：<strong>原本RPN中，anchor是在$13\times13$的特征图应用9中不同的尺度anchor，而本文，在多尺度的特征图上，应用每层固定scale的anchor尺寸</strong>。FPN中anchor在${P_2,P_3,P_4,P_5,P_6}$上分别对应尺度：${32^2,64^2,128^2,256^2,512^2},$ 每层使用的纵横比为{1:2,1:1,2:1}。最后特征金字塔共有15种anchor。</p>
+<p><strong>代码：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">_RPN_FPN</span><span class="params">(nn.Module)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, din)</span>:</span></span><br><span class="line">        super(_RPN_FPN, self).__init__()</span><br><span class="line"></span><br><span class="line">        self.din = din  <span class="comment"># get depth of input feature map, e.g., 512</span></span><br><span class="line">        self.anchor_ratios = cfg.ANCHOR_RATIOS</span><br><span class="line">        self.anchor_scales = cfg.ANCHOR_SCALES</span><br><span class="line">        self.feat_stride = cfg.FEAT_STRIDE[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line">        <span class="comment"># define the convrelu layers processing input feature map</span></span><br><span class="line">        self.RPN_Conv = nn.Conv2d(self.din, <span class="number">512</span>, <span class="number">3</span>, <span class="number">1</span>, <span class="number">1</span>, bias=<span class="literal">True</span>)<span class="comment">#din=256</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># define bg/fg classifcation score layer</span></span><br><span class="line">        <span class="comment"># self.nc_score_out = len(self.anchor_scales) * len(self.anchor_ratios) * 2 # 2(bg/fg) * 9 (anchors)</span></span><br><span class="line">        self.nc_score_out = <span class="number">1</span> * len(self.anchor_ratios) * <span class="number">2</span> <span class="comment"># 2(bg/fg) * 3 (anchor ratios) * 1 (anchor scale)</span></span><br><span class="line">        self.RPN_cls_score = nn.Conv2d(<span class="number">512</span>, self.nc_score_out, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># define anchor box offset prediction layer</span></span><br><span class="line">        <span class="comment"># self.nc_bbox_out = len(self.anchor_scales) * len(self.anchor_ratios) * 4 # 4(coords) * 9 (anchors)</span></span><br><span class="line">        self.nc_bbox_out = <span class="number">1</span> * len(self.anchor_ratios) * <span class="number">4</span> <span class="comment"># 4(coords) * 3 (anchors) * 1 (anchor scale)</span></span><br><span class="line">        self.RPN_bbox_pred = nn.Conv2d(<span class="number">512</span>, self.nc_bbox_out, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># define proposal layer</span></span><br><span class="line">        self.RPN_proposal = _ProposalLayer_FPN(self.feat_stride, self.anchor_scales, self.anchor_ratios)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># define anchor target layer</span></span><br><span class="line">        self.RPN_anchor_target = _AnchorTargetLayer_FPN(self.feat_stride, self.anchor_scales, self.anchor_ratios)</span><br><span class="line"></span><br><span class="line">        self.rpn_loss_cls = <span class="number">0</span></span><br><span class="line">        self.rpn_loss_box = <span class="number">0</span></span><br><span class="line">        </span><br><span class="line">   <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, rpn_feature_maps, im_info, gt_boxes, num_boxes)</span>:</span>        </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        n_feat_maps = len(rpn_feature_maps)<span class="comment">#5</span></span><br><span class="line"></span><br><span class="line">        rpn_cls_scores = []</span><br><span class="line">        rpn_cls_probs = []</span><br><span class="line">        rpn_bbox_preds = []</span><br><span class="line">        rpn_shapes = []</span><br><span class="line"><span class="comment">#将p2,p3,p4,p5,p6层上的预测的分类分数和坐标偏移都计算出来，然后拼接起来</span></span><br><span class="line"><span class="comment">#在全部送入到proposal层。</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(n_feat_maps):</span><br><span class="line">            feat_map = rpn_feature_maps[i]</span><br><span class="line">            batch_size = feat_map.size(<span class="number">0</span>)</span><br><span class="line">            </span><br><span class="line">            <span class="comment"># return feature map after convrelu layer</span></span><br><span class="line">            rpn_conv1 = F.relu(self.RPN_Conv(feat_map), inplace=<span class="literal">True</span>)</span><br><span class="line">            <span class="comment"># get rpn classification score</span></span><br><span class="line">            rpn_cls_score = self.RPN_cls_score(rpn_conv1)</span><br><span class="line"></span><br><span class="line">            rpn_cls_score_reshape = self.reshape(rpn_cls_score, <span class="number">2</span>)</span><br><span class="line">            rpn_cls_prob_reshape = F.softmax(rpn_cls_score_reshape)</span><br><span class="line">            rpn_cls_prob = self.reshape(rpn_cls_prob_reshape, self.nc_score_out)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># get rpn offsets to the anchor boxes</span></span><br><span class="line">            rpn_bbox_pred = self.RPN_bbox_pred(rpn_conv1)</span><br><span class="line"></span><br><span class="line">            rpn_shapes.append([rpn_cls_score.size()[<span class="number">2</span>], rpn_cls_score.size()[<span class="number">3</span>]])</span><br><span class="line">            rpn_cls_scores.append(rpn_cls_score_reshape.permute(<span class="number">0</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>).contiguous().view(batch_size, <span class="number">-1</span>, <span class="number">2</span>))</span><br><span class="line">            rpn_cls_probs.append(rpn_cls_prob_reshape.permute(<span class="number">0</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>).contiguous().view(batch_size, <span class="number">-1</span>, <span class="number">2</span>))</span><br><span class="line">            rpn_bbox_preds.append(rpn_bbox_pred.permute(<span class="number">0</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>).contiguous().view(batch_size, <span class="number">-1</span>, <span class="number">4</span>))</span><br><span class="line"></span><br><span class="line">        rpn_cls_score_alls = torch.cat(rpn_cls_scores, <span class="number">1</span>)<span class="comment">#([1, 95400, 2])</span></span><br><span class="line">        rpn_cls_prob_alls = torch.cat(rpn_cls_probs, <span class="number">1</span>)</span><br><span class="line">        rpn_bbox_pred_alls = torch.cat(rpn_bbox_preds, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        n_rpn_pred = rpn_cls_score_alls.size(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># proposal layer</span></span><br><span class="line">        cfg_key = <span class="string">'TRAIN'</span> <span class="keyword">if</span> self.training <span class="keyword">else</span> <span class="string">'TEST'</span></span><br><span class="line"></span><br><span class="line">        rois = self.RPN_proposal((rpn_cls_prob_alls.data, rpn_bbox_pred_alls.data,</span><br><span class="line">                                 im_info, cfg_key, rpn_shapes))</span><br><span class="line"></span><br><span class="line">        self.rpn_loss_cls = <span class="number">0</span></span><br><span class="line">        self.rpn_loss_box = <span class="number">0</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="Fast-RCNN"><a href="#Fast-RCNN" class="headerlink" title="Fast RCNN"></a>Fast RCNN</h4><p><strong>1.特征图</strong></p>
+<p>在ROI Pooling时，输入为ROI和对应的特征图，因此需要对不同层级的金字塔定制不同尺度的ROI. <strong>即需要对不同尺度的ROI确定应该使用哪一层的特征图作为ROI Pooling层的输入。</strong>因此定义了一个系数：<br>$$<br>k=[k_0+log_2(\sqrt{wh}/224)].\qquad(1)<br>$$<br>例如：ImageNet的标准输入是224，$k_0$基准设置为5，代表$P_5$层的输出。加入ROI尺寸为$w=112,h=112$,那么$k=5-1=4$.意味着该ROI应该使用$P_4$特征图作为输入。同时使用取整处理。</p>
+<p><strong>代码：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#这个函数是确定某个ROI应该使用哪一层特征图进行ROIPooling的。</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_PyramidRoI_Feat</span><span class="params">(self, feat_maps, rois, im_info)</span>:</span></span><br><span class="line">        <span class="string">''' roi pool on pyramid feature maps'''</span></span><br><span class="line">        <span class="comment"># do roi pooling based on predicted rois</span></span><br><span class="line">        <span class="comment">#计算原图面积</span></span><br><span class="line">        img_area = im_info[<span class="number">0</span>][<span class="number">0</span>] * im_info[<span class="number">0</span>][<span class="number">1</span>]</span><br><span class="line">        <span class="comment">#得到图像宽高</span></span><br><span class="line">        h = rois.data[:, <span class="number">4</span>] - rois.data[:, <span class="number">2</span>] + <span class="number">1</span></span><br><span class="line">        w = rois.data[:, <span class="number">3</span>] - rois.data[:, <span class="number">1</span>] + <span class="number">1</span></span><br><span class="line">        <span class="comment"># 分两步计算每个 ROI 框需要在哪个层的特征图中进行 pooling</span></span><br><span class="line">        <span class="comment">#对应公式1</span></span><br><span class="line">        roi_level = torch.log(torch.sqrt(h * w) / <span class="number">224.0</span>)</span><br><span class="line">        roi_level = torch.round(roi_level + <span class="number">4</span>)</span><br><span class="line">        </span><br><span class="line">        <span class="comment">#规范roi level的范围为2：5之间</span></span><br><span class="line">        roi_level[roi_level &lt; <span class="number">2</span>] = <span class="number">2</span></span><br><span class="line">        roi_level[roi_level &gt; <span class="number">5</span>] = <span class="number">5</span></span><br><span class="line">        <span class="comment"># roi_level.fill_(5)</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">#然后进行roi pooling/crop/align,这个版本的代码定义了参数可以使用三种方式进行roi的特征提取。</span></span><br><span class="line">        <span class="keyword">if</span> cfg.POOLING_MODE == <span class="string">'crop'</span>:</span><br><span class="line">		……………………………………</span><br><span class="line">        <span class="keyword">elif</span> cfg.POOLING_MODE == <span class="string">'align'</span>:</span><br><span class="line">            ………………………………</span><br><span class="line">        <span class="keyword">elif</span> cfg.POOLING_MODE == <span class="string">'pool'</span>:</span><br><span class="line">        …………………………………………</span><br><span class="line">        <span class="keyword">return</span> roi_pool_feat</span><br></pre></td></tr></table></figure>
+
+<p>2.全连接</p>
+<p><strong>Fast RCNN</strong>论文中，<em>head</em>是指<strong>特定类别的分类器和回归器</strong>；</p>
+<p><strong>ResNet</strong>论文中，作者使用<strong>conv5</strong>作为Fast RCNN的<em>head</em>,对于不同level，这些<em>head</em>的参数共享。</p>
+<p><strong>FPN</strong>中，已经使用了conv5来构建特征金字塔，因此，作者<strong>加了两个隐含的1024维的全连接</strong>层，在分类层和回归层之前。</p>
+<h4 id="完整结构："><a href="#完整结构：" class="headerlink" title="完整结构："></a><strong>完整结构：</strong></h4><p><img src="%5Cimages%5Cfpn%5Cfpn2.jpg" alt></p>
+<h4 id="FPN代码："><a href="#FPN代码：" class="headerlink" title="FPN代码："></a>FPN代码：</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">_FPN</span><span class="params">(nn.Module)</span>:</span></span><br><span class="line">    <span class="string">""" FPN """</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, classes, class_agnostic)</span>:</span></span><br><span class="line">        super(_FPN, self).__init__()</span><br><span class="line">        self.classes = classes</span><br><span class="line">        self.n_classes = len(classes)</span><br><span class="line">        self.class_agnostic = class_agnostic</span><br><span class="line">        <span class="comment"># loss</span></span><br><span class="line">        self.RCNN_loss_cls = <span class="number">0</span></span><br><span class="line">        self.RCNN_loss_bbox = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">        self.maxpool2d = nn.MaxPool2d(<span class="number">1</span>, stride=<span class="number">2</span>)</span><br><span class="line">        <span class="comment"># define rpn</span></span><br><span class="line">        self.RCNN_rpn = _RPN_FPN(self.dout_base_model)</span><br><span class="line">        self.RCNN_proposal_target = _ProposalTargetLayer(self.n_classes)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># <span class="doctag">NOTE:</span> the original paper used pool_size = 7 for cls branch, and 14 for mask branch, to save the</span></span><br><span class="line">        <span class="comment"># computation time, we first use 14 as the pool_size, and then do stride=2 pooling for cls branch.</span></span><br><span class="line">        self.RCNN_roi_pool = _RoIPooling(cfg.POOLING_SIZE, cfg.POOLING_SIZE, <span class="number">1.0</span>/<span class="number">16.0</span>)</span><br><span class="line">        self.RCNN_roi_align = RoIAlignAvg(cfg.POOLING_SIZE, cfg.POOLING_SIZE, <span class="number">1.0</span>/<span class="number">16.0</span>)</span><br><span class="line">        self.grid_size = cfg.POOLING_SIZE * <span class="number">2</span> <span class="keyword">if</span> cfg.CROP_RESIZE_WITH_MAX_POOL <span class="keyword">else</span> cfg.POOLING_SIZE</span><br><span class="line">        self.RCNN_roi_crop = _RoICrop()</span><br><span class="line"></span><br><span class="line">        <span class="comment">#参数初始化</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_init_weights</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">normal_init</span><span class="params">(m, mean, stddev, truncated=False)</span>:</span></span><br><span class="line">            <span class="string">"""</span></span><br><span class="line"><span class="string">            weight initalizer: truncated normal and random normal.</span></span><br><span class="line"><span class="string">            """</span></span><br><span class="line">            <span class="comment"># x is a parameter</span></span><br><span class="line">            ………………………………</span><br><span class="line"></span><br><span class="line">        <span class="comment"># custom weights initialization called on netG and netD</span></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">weights_init</span><span class="params">(m, mean, stddev, truncated=False)</span>:</span></span><br><span class="line">            …………………………</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">create_architecture</span><span class="params">(self)</span>:</span></span><br><span class="line">        self._init_modules()</span><br><span class="line">        self._init_weights()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_upsample_add</span><span class="params">(self, x, y)</span>:</span></span><br><span class="line">        <span class="string">'''Upsample and add two feature maps.</span></span><br><span class="line"><span class="string">        Args:</span></span><br><span class="line"><span class="string">          x: (Variable) top feature map to be upsampled.</span></span><br><span class="line"><span class="string">          y: (Variable) lateral feature map.</span></span><br><span class="line"><span class="string">        Returns:</span></span><br><span class="line"><span class="string">          (Variable) added feature map.</span></span><br><span class="line"><span class="string">        Note in PyTorch, when input size is odd, the upsampled feature map</span></span><br><span class="line"><span class="string">        with `F.upsample(..., scale_factor=2, mode='nearest')`</span></span><br><span class="line"><span class="string">        maybe not equal to the lateral feature map size.</span></span><br><span class="line"><span class="string">        e.g.</span></span><br><span class="line"><span class="string">        original input size: [N,_,15,15] -&gt;</span></span><br><span class="line"><span class="string">        conv2d feature map size: [N,_,8,8] -&gt;</span></span><br><span class="line"><span class="string">        upsampled feature map size: [N,_,16,16]</span></span><br><span class="line"><span class="string">        So we choose bilinear upsample which supports arbitrary output sizes.</span></span><br><span class="line"><span class="string">        '''</span></span><br><span class="line"><span class="comment">#这里说了上采样可能会和前一层的特征图的尺寸不一致的情况，比如，输入为【15，15】，输出特征图为【8，8】，但是上采样后的特征图为【16，16】。所以我们采用双线性上采样，这样可以支持任意的输出尺寸。</span></span><br><span class="line">        _,_,H,W = y.size()</span><br><span class="line">        <span class="keyword">return</span> F.upsample(x, size=(H,W), mode=<span class="string">'bilinear'</span>) + y</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, im_data, im_info, gt_boxes, num_boxes)</span>:</span></span><br><span class="line">        batch_size = im_data.size(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">        im_info = im_info.data</span><br><span class="line">        gt_boxes = gt_boxes.data</span><br><span class="line">        num_boxes = num_boxes.data</span><br><span class="line">        </span><br><span class="line"><span class="comment">#以下的就和FPN结构一样，先自底向上，再自顶向下，并横向连接，</span></span><br><span class="line">        <span class="comment"># feed image data to base model to obtain base feature map</span></span><br><span class="line">        <span class="comment"># Bottom-up</span></span><br><span class="line">        c1 = self.RCNN_layer0(im_data)<span class="comment">#im_data:[1,3,850,600],c1[1,64,212,150]</span></span><br><span class="line">        c2 = self.RCNN_layer1(c1)<span class="comment">#c2[1, 256, 212, 150]</span></span><br><span class="line">        c3 = self.RCNN_layer2(c2)<span class="comment">#c3[1, 512, 106, 75]</span></span><br><span class="line">        c4 = self.RCNN_layer3(c3)<span class="comment">#c4[1, 1024, 53, 38]</span></span><br><span class="line">        c5 = self.RCNN_layer4(c4)<span class="comment">#c5[1, 2048, 53, 38]</span></span><br><span class="line">        <span class="comment"># Top-down</span></span><br><span class="line">        p5 = self.RCNN_toplayer(c5)<span class="comment">#p5[1,256,53,38]</span></span><br><span class="line">        p4 = self._upsample_add(p5, self.RCNN_latlayer1(c4))<span class="comment">#p4([1, 256, 53, 38])</span></span><br><span class="line">        p4 = self.RCNN_smooth1(p4)</span><br><span class="line">        p3 = self._upsample_add(p4, self.RCNN_latlayer2(c3))</span><br><span class="line">        p3 = self.RCNN_smooth2(p3)<span class="comment">#p3([1, 256, 106, 75])</span></span><br><span class="line">        p2 = self._upsample_add(p3, self.RCNN_latlayer3(c2))<span class="comment">#p2[1, 256, 212, 150])</span></span><br><span class="line">        p2 = self.RCNN_smooth3(p2)</span><br><span class="line"></span><br><span class="line">        p6 = self.maxpool2d(p5)<span class="comment">#p6[1, 256, 27, 19])</span></span><br><span class="line"></span><br><span class="line">        rpn_feature_maps = [p2, p3, p4, p5, p6]</span><br><span class="line">        mrcnn_feature_maps = [p2, p3, p4, p5]</span><br><span class="line"></span><br><span class="line">        rois, rpn_loss_cls, rpn_loss_bbox = self.RCNN_rpn(rpn_feature_maps, im_info, gt_boxes, num_boxes)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># if it is training phrase, then use ground trubut bboxes for refining</span></span><br><span class="line">        ………………</span><br><span class="line"></span><br><span class="line">        <span class="comment"># pooling features based on rois, output 14x14 map</span></span><br><span class="line">        roi_pool_feat = self._PyramidRoI_Feat(mrcnn_feature_maps, rois, im_info)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># feed pooled features to top model</span></span><br><span class="line">        pooled_feat = self._head_to_tail(roi_pool_feat)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="comment"># compute bbox offset</span></span><br><span class="line">        bbox_pred = self.RCNN_bbox_pred(pooled_feat)</span><br><span class="line">     </span><br><span class="line"></span><br><span class="line">        <span class="comment"># compute object classification probability</span></span><br><span class="line">        cls_score = self.RCNN_cls_score(pooled_feat)</span><br><span class="line">        cls_prob = F.softmax(cls_score)</span><br><span class="line"></span><br><span class="line">        RCNN_loss_cls = <span class="number">0</span></span><br><span class="line">        RCNN_loss_bbox = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">        …………………………</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> rois, cls_prob, bbox_pred, rpn_loss_cls, rpn_loss_bbox, RCNN_loss_cls, RCNN_loss_bbox, rois_label</span><br></pre></td></tr></table></figure>
+
+<p>注意：代码很长，只截取了部分能够表示FPN结构的，大部分细节被删掉了，详细见<a href="https://github.com/jwyang/fpn.pytorch" target="_blank" rel="noopener">源码</a>.这个版本的代码还有点问题，训练出来的模型的精度竟然比faster rcnn的还低一丢丢！作者说：他正在调bug……</p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p>1.<a href="https://blog.csdn.net/jesse_mx/article/details/54588085" target="_blank" rel="noopener">FPN论文阅读笔记</a></p>
+<p>2.<a href="https://zhuanlan.zhihu.com/p/35854548" target="_blank" rel="noopener">FPN代码细节</a></p>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/26/OHEMvsFocalLoss/" rel="next" title="OHEM_vs_OHNM_vs_FocalLoss">
+                <i class="fa fa-chevron-left"></i> OHEM_vs_OHNM_vs_FocalLoss
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/06/10/Recommendations/" rel="prev" title="DNN for YouTube Recommendations">
+                DNN for YouTube Recommendations <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ResNet101-FPN代码详解"><span class="nav-number">1.</span> <span class="nav-text">ResNet101+FPN代码详解</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-ResNet"><span class="nav-number">1.1.</span> <span class="nav-text">1.ResNet</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-FPN"><span class="nav-number">1.2.</span> <span class="nav-text">2.FPN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Bottom-up-pathway"><span class="nav-number">1.2.1.</span> <span class="nav-text">Bottom-up pathway</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Top-down-pathway-and-lateral-connections"><span class="nav-number">1.2.2.</span> <span class="nav-text">Top-down pathway and lateral connections</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在fasterRCNN中的应用"><span class="nav-number">1.2.3.</span> <span class="nav-text">在fasterRCNN中的应用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#RPN"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">RPN</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Fast-RCNN"><span class="nav-number">1.2.3.2.</span> <span class="nav-text">Fast RCNN</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#完整结构："><span class="nav-number">1.2.3.3.</span> <span class="nav-text">完整结构：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#FPN代码："><span class="nav-number">1.2.3.4.</span> <span class="nav-text">FPN代码：</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Reference"><span class="nav-number">2.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="NMS(Non-Maximum Suppression)在计算机视觉任务中有着广泛应用，如目标检测、边缘检测等。 本文重点介绍目标检测中的NMS及其改进，以及边缘检测、角点检测中的非极大值抑制。">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nms专题">
+<meta property="og:url" content="http://yoursite.com/2018/08/24/nms专题/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="NMS(Non-Maximum Suppression)在计算机视觉任务中有着广泛应用，如目标检测、边缘检测等。 本文重点介绍目标检测中的NMS及其改进，以及边缘检测、角点检测中的非极大值抑制。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/nms/606386-20170826152837558-1289161833.png">
+<meta property="og:image" content="http://yoursite.com/images/nms/1.jpg">
+<meta property="og:image" content="http://yoursite.com/images/nms/nms.png">
+<meta property="og:image" content="http://yoursite.com/images/nms/soft-nms.png">
+<meta property="og:image" content="http://yoursite.com/images/nms/soft-nms1.png">
+<meta property="og:image" content="http://yoursite.com/images/nms/soft-nms2.png">
+<meta property="og:image" content="http://yoursite.com/images/nms/soft-nms3.png">
+<meta property="og:image" content="http://yoursite.com/images/nms/IOU-NMS1.png">
+<meta property="og:image" content="http://yoursite.com/images/megnet/iou-net2.png">
+<meta property="og:image" content="http://yoursite.com/images/nms/IOU-NMS.png">
+<meta property="og:updated_time" content="2019-07-14T07:17:30.708Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="nms专题">
+<meta name="twitter:description" content="NMS(Non-Maximum Suppression)在计算机视觉任务中有着广泛应用，如目标检测、边缘检测等。 本文重点介绍目标检测中的NMS及其改进，以及边缘检测、角点检测中的非极大值抑制。">
+<meta name="twitter:image" content="http://yoursite.com/images/nms/606386-20170826152837558-1289161833.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/08/24/nms专题/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>nms专题 | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/24/nms专题/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">nms专题
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-08-24 15:14:51" itemprop="dateCreated datePublished" datetime="2018-08-24T15:14:51+08:00">2018-08-24</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:30" itemprop="dateModified" datetime="2019-07-14T15:17:30+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">notes</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/notes/object-detection/" itemprop="url" rel="index"><span itemprop="name">object detection</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>NMS(Non-Maximum Suppression)</strong>在计算机视觉任务中有着广泛应用，如目标检测、边缘检测等。</p>
+<p>本文重点介绍目标检测中的NMS及其改进，以及边缘检测、角点检测中的非极大值抑制。</p>
+<a id="more"></a>
+
+<h1 id="一、NMS-in-Object-Detection"><a href="#一、NMS-in-Object-Detection" class="headerlink" title="一、NMS in Object Detection"></a>一、NMS in Object Detection</h1><p>首先可以看下cousera上吴恩达关于<a href="https://www.coursera.org/lecture/convolutional-neural-networks/non-max-suppression-dvrjH" target="_blank" rel="noopener">NMS的讲解视频</a>.</p>
+<p><img src="/images/nms/606386-20170826152837558-1289161833.png" alt></p>
+<p>​        非极大值抑制，就是局部最大搜索。例如在人脸检测中，滑动窗口经过特征提取，分类器分类识别后，每个窗口都会得到一个分数，但是会有很多重叠交叉的边界框，因此需要NMS来选取这些邻域内分数最大的，并抑制那些分数低的窗口。我们的目的就是去除冗余的检测框，保留最好的那个。如上图所示。</p>
+<h2 id="1-单类别"><a href="#1-单类别" class="headerlink" title="1.单类别"></a>1.单类别</h2><p>对于Bounding Box的列表B及其对应的置信度S,采用下面的计算方式.选择具有最大score的检测框M,将其从B集合中移除并加入到最终的检测结果D中.通常将B中剩余检测框中与M的IoU大于阈值Nt的框从B中移除.重复这个过程,直到B为空.</p>
+<p>假设有6个矩形框，根据分类器的类别分类概率做排序，假设从小到大属于车辆的概率 分别为A、B、C、D、E、F。</p>
+<ol>
+<li>从最大概率的框F开始，分别判断A,B,C,D,E与F的重叠率IOU是否大于<strong>阈值</strong></li>
+<li>假设B,D与F的<strong>IOU大于阈值</strong>，则去除B,D;并标记F是我们在第一轮中保留下来的</li>
+<li>从剩下的A,C,E中，找到概率最大的E,判断A,C与E的IOU是否大于阈值。大于则扔掉，否则保留。并标记E是我们第二轮留下来的矩形框。</li>
+<li>重复进行直到找到所有保留的框框。</li>
+</ol>
+<p><strong>代码：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">py_cpu_nms</span><span class="params">(dets, thresh)</span>:</span> </span><br><span class="line">    <span class="string">"""Pure Python NMS baseline."""</span> </span><br><span class="line">    <span class="comment">#x1、y1、x2、y2、以及score赋值 </span></span><br><span class="line">    x1 = dets[:, <span class="number">0</span>] </span><br><span class="line">    y1 = dets[:, <span class="number">1</span>] </span><br><span class="line">    x2 = dets[:, <span class="number">2</span>] </span><br><span class="line">    y2 = dets[:, <span class="number">3</span>] </span><br><span class="line">    scores = dets[:, <span class="number">4</span>] </span><br><span class="line">    <span class="comment">#每一个检测框的面积 </span></span><br><span class="line">    areas = (x2 - x1 + <span class="number">1</span>) * (y2 - y1 + <span class="number">1</span>) </span><br><span class="line">    <span class="comment">#按照score置信度降序排序 </span></span><br><span class="line">    order = scores.argsort()[::<span class="number">-1</span>] keep = [] </span><br><span class="line">    <span class="comment">#保留的结果框集合 </span></span><br><span class="line">    <span class="keyword">while</span> order.size &gt; <span class="number">0</span>: </span><br><span class="line">        i = order[<span class="number">0</span>] keep.append(i) </span><br><span class="line">        <span class="comment">#保留该类剩余box中得分最高的一个 </span></span><br><span class="line">        <span class="comment">#得到相交区域,左上及右下 </span></span><br><span class="line">        xx1 = np.maximum(x1[i], x1[order[<span class="number">1</span>:]]) </span><br><span class="line">        yy1 = np.maximum(y1[i], y1[order[<span class="number">1</span>:]]) </span><br><span class="line">        xx2 = np.minimum(x2[i], x2[order[<span class="number">1</span>:]]) </span><br><span class="line">        yy2 = np.minimum(y2[i], y2[order[<span class="number">1</span>:]]) </span><br><span class="line">        <span class="comment">#计算相交的面积,不重叠时面积为0 </span></span><br><span class="line">        w = np.maximum(<span class="number">0.0</span>, xx2 - xx1 + <span class="number">1</span>) </span><br><span class="line">        h = np.maximum(<span class="number">0.0</span>, yy2 - yy1 + <span class="number">1</span>) </span><br><span class="line">        inter = w * h </span><br><span class="line">        <span class="comment">#计算IoU：重叠面积 /（面积1+面积2-重叠面积） </span></span><br><span class="line">        ovr = inter / (areas[i] + areas[order[<span class="number">1</span>:]] - inter) </span><br><span class="line">        <span class="comment">#保留IoU小于阈值的box </span></span><br><span class="line">        inds = np.where(ovr &lt;= thresh)[<span class="number">0</span>] </span><br><span class="line">        <span class="comment">#因为ovr数组的长度比order数组少一个,所以这里要将所有下标后移一位</span></span><br><span class="line">        order = order[inds + <span class="number">1</span>] </span><br><span class="line">         </span><br><span class="line">    <span class="keyword">return</span> keep</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-多类别"><a href="#2-多类别" class="headerlink" title="2.多类别"></a>2.多类别</h2><p>多类别的就是在单类别上多加一层for循环，对每类进行NMS而已。</p>
+<p><a href="https://github.com/fizyr/keras-retinanet/blob/master/keras_retinanet/layers/filter_detections.py" target="_blank" rel="noopener">keras-retinanet中的特定类别NMS</a></p>
+<p><strong>代码：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> class_specific_filter:</span><br><span class="line">        all_indices = []</span><br><span class="line">        <span class="comment"># perform per class filtering</span></span><br><span class="line">        <span class="comment">#对每个类比进行NMS</span></span><br><span class="line">        <span class="keyword">for</span> c <span class="keyword">in</span> range(int(classification.shape[<span class="number">1</span>])):</span><br><span class="line">            scores = classification[:, c]</span><br><span class="line">            labels = c * keras.backend.ones((keras.backend.shape(scores)[<span class="number">0</span>],), dtype=<span class="string">'int64'</span>)</span><br><span class="line">            all_indices.append(_filter_detections(scores, labels))</span><br><span class="line"></span><br><span class="line">        <span class="comment"># concatenate indices to single tensor</span></span><br><span class="line">        indices = keras.backend.concatenate(all_indices, axis=<span class="number">0</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        scores  = keras.backend.max(classification, axis    = <span class="number">1</span>)</span><br><span class="line">        labels  = keras.backend.argmax(classification, axis = <span class="number">1</span>)</span><br><span class="line">        indices = _filter_detections(scores, labels)</span><br><span class="line"></span><br><span class="line"><span class="comment">#NMS</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_filter_detections</span><span class="params">(scores, labels)</span>:</span></span><br><span class="line">        <span class="comment"># threshold based on score</span></span><br><span class="line">        indices = backend.where(keras.backend.greater(scores, score_threshold))</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> nms:</span><br><span class="line">            filtered_boxes  = backend.gather_nd(boxes, indices)</span><br><span class="line">            filtered_scores = keras.backend.gather(scores, indices)[:, <span class="number">0</span>]</span><br><span class="line"></span><br><span class="line">            <span class="comment"># perform NMS</span></span><br><span class="line">            nms_indices = backend.non_max_suppression(filtered_boxes, filtered_scores, max_output_size=max_detections, iou_threshold=nms_threshold)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># filter indices based on NMS</span></span><br><span class="line">            indices = keras.backend.gather(indices, nms_indices)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># add indices to list of all indices</span></span><br><span class="line">        labels = backend.gather_nd(labels, indices)</span><br><span class="line">        indices = keras.backend.stack([indices[:, <span class="number">0</span>], labels], axis=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> indices</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-NMS损失"><a href="#3-NMS损失" class="headerlink" title="3.NMS损失"></a>3.NMS损失</h2><p>如果对每个类别进行NMS，会出现一种情况：当检测结果中包含两个被分配到不同类别的bbox且他们的IOU较大时，结果将不可接受。</p>
+<p><img src="/images/nms/1.jpg" alt></p>
+<p><a href="https://ieeexplore.ieee.org/document/8296411/" target="_blank" rel="noopener">《Rotated Region Based CNN for Ship Detection》</a>中，引入了NMS损失，添加在训练的多任务损失中。</p>
+<p><img src="/images/nms/nms.png" alt></p>
+<p>NMS损失和分类损失的定义相同。<br>$$<br>Lnms=Lcls(p,u)=-logp_u<br>$$<br>即为真实类别u对应的log损失，p是C个类别的预测概率。NMS损失实际是增加分类损失。</p>
+<h2 id="4-Soft-NMS"><a href="#4-Soft-NMS" class="headerlink" title="4.Soft-NMS"></a>4.Soft-NMS</h2><p>论文：<a href="https://arxiv.org/pdf/1704.04503.pdf" target="_blank" rel="noopener">Improving Object Detection With One Line of Code</a> . </p>
+<p>project：<a href="https://github.com/bharatsingh430/soft-nms" target="_blank" rel="noopener">soft-nms-caffe</a></p>
+<h3 id="1-Hard-NMS"><a href="#1-Hard-NMS" class="headerlink" title="1.Hard NMS"></a>1.Hard NMS</h3><p>也就是传统的NMS,有一个问题，就是当两个gt的确存在目标，且重叠度很高时（大于NMS的阈值），NMS会将置信度较低的框去掉（score置为0），导致这个object丢失，最后ap下降。如下图所示：</p>
+<p><img src="/images/nms/soft-nms.png" alt></p>
+<p>选取NMS的阈值也有<strong>两个问题</strong>：</p>
+<p>设<strong>$Ot$表示我们在检测评估时，设的将一个proposal划分为正样本的阈值</strong>（与gt的重叠率阈值）：</p>
+<blockquote>
+<p> threshold $Nt$很低时，周围的box都会被抑制掉，导致错误率上升</p>
+<p>$Nt$很高时，导致$Ot$比较小的一些框框被保留下来，导致准确率的下降，false positive上升，true positive下降。</p>
+</blockquote>
+<h3 id="2-Soft-NMS"><a href="#2-Soft-NMS" class="headerlink" title="2. Soft NMS"></a>2. Soft NMS</h3><p>思想：如果一个Bbox与M（置信度最高的框）的重叠率很大，应该赋予它一个很低的分数，而不是直接将score置为0；如果重叠度很低，那么就保留他原来的分数。见下图：</p>
+<p><img src="/images/nms/soft-nms1.png" alt></p>
+<p>这里文章中提出了两种关于$s_if(iou(M,bi))$的式子：</p>
+<h4 id="linear-function"><a href="#linear-function" class="headerlink" title="linear function:"></a><strong>linear function:</strong></h4><p>$$<br>s_i=\begin{cases}s_i,\quad iou(M,bi)&lt;N_t \s_i(1-iou(M,bi)),\quad iou(M,bi)\ge N_t\end{cases}<br>$$</p>
+<pre><code>该线性函数不是连续的。我们希望：惩罚函数最好是连续的。当没有重叠时，既没有惩罚；当有很高的IOU时，惩罚因子也高。当IOU很低时，惩罚应该逐渐提高。因此，提出下面的函数：</code></pre><h4 id="Gaussian-Function"><a href="#Gaussian-Function" class="headerlink" title="Gaussian Function:"></a><strong>Gaussian Function:</strong></h4><p>$$<br>s_i=s_i e^{-\frac{iou(M,b_i)^2}{\sigma}},\quad \forall b_i\notin D<br>$$</p>
+<p>​    <strong>时间复杂度分析：</strong></p>
+<p>​    对于每个detection box,需要计算的是$O(N)$,</p>
+<p>​    对于$N$个detection box，需要计算$O(N^2)$.</p>
+<p>​    因此时间复杂度和原本的相比没什么区别。</p>
+<h4 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h4><p><img src="/images/nms/soft-nms2.png" alt></p>
+<p>在基于proposal方法的模型结果上应用比较好,检测效果提升:</p>
+<p><img src="/images/nms/soft-nms3.png" alt></p>
+<p>在R-FCN以及Faster-RCNN基于proposal的模型中的测试阶段运用Soft-NMS,在MS-COCO数据集上<code>mAP@[0.5:0.95]</code>能够获得大约1%的提升。因为他们的recall更高，在$Ot$更高的情况下有更高的提升空间。如果图片中出现羊群，鸟群，斑马群这样的易重叠的图片，map能提高的更多：3-6%。<br>但是<strong>对于SSD,YOLO这样不是基于proposal的检测器来说，几乎没有提升。</strong></p>
+<h4 id="代码"><a href="#代码" class="headerlink" title="代码"></a><strong>代码</strong></h4><p>参见caffe-c++代码：<a href="https://github.com/bharatsingh430/soft-nms/blob/master/lib/nms/cpu_nms.pyx" target="_blank" rel="noopener"><strong>soft-nms</strong></a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">cpu_soft_nms</span><span class="params">(np.ndarray[float, ndim=<span class="number">2</span>] boxes, float sigma=<span class="number">0.5</span>, float Nt=<span class="number">0.3</span>, float threshold=<span class="number">0.001</span>, unsigned int method=<span class="number">0</span>)</span>:</span></span><br><span class="line">    ……</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(N):</span><br><span class="line">        ……</span><br><span class="line"></span><br><span class="line">            area = (x2 - x1 + <span class="number">1</span>) * (y2 - y1 + <span class="number">1</span>)</span><br><span class="line">            iw = (min(tx2, x2) - max(tx1, x1) + <span class="number">1</span>)</span><br><span class="line">            <span class="keyword">if</span> iw &gt; <span class="number">0</span>:</span><br><span class="line">                ih = (min(ty2, y2) - max(ty1, y1) + <span class="number">1</span>)</span><br><span class="line">                <span class="keyword">if</span> ih &gt; <span class="number">0</span>:</span><br><span class="line">                    ua = float((tx2 - tx1 + <span class="number">1</span>) * (ty2 - ty1 + <span class="number">1</span>) + area - iw * ih)</span><br><span class="line">                    ov = iw * ih / ua <span class="comment">#iou between max box and detection box</span></span><br><span class="line"><span class="comment">#两个nms的函数:</span></span><br><span class="line">                    <span class="keyword">if</span> method == <span class="number">1</span>: <span class="comment"># linear</span></span><br><span class="line">                        <span class="keyword">if</span> ov &gt; Nt: </span><br><span class="line">                            weight = <span class="number">1</span> - ov</span><br><span class="line">                        <span class="keyword">else</span>:</span><br><span class="line">                            weight = <span class="number">1</span></span><br><span class="line">                    <span class="keyword">elif</span> method == <span class="number">2</span>: <span class="comment"># gaussian</span></span><br><span class="line">                        weight = np.exp(-(ov * ov)/sigma)</span><br><span class="line">                    <span class="keyword">else</span>: <span class="comment"># original NMS</span></span><br><span class="line">                        <span class="keyword">if</span> ov &gt; Nt: </span><br><span class="line">                            weight = <span class="number">0</span></span><br><span class="line">                        <span class="keyword">else</span>:</span><br><span class="line">                            weight = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">                    boxes[pos, <span class="number">4</span>] = weight*boxes[pos, <span class="number">4</span>]</span><br><span class="line">		    </span><br><span class="line">		    <span class="comment"># if box score falls below threshold, discard the box by swapping with last box</span></span><br><span class="line">		    <span class="comment"># update N</span></span><br><span class="line">                    <span class="keyword">if</span> boxes[pos, <span class="number">4</span>] &lt; threshold:</span><br><span class="line">                        boxes[pos,<span class="number">0</span>] = boxes[N<span class="number">-1</span>, <span class="number">0</span>]</span><br><span class="line">                        boxes[pos,<span class="number">1</span>] = boxes[N<span class="number">-1</span>, <span class="number">1</span>]</span><br><span class="line">                        boxes[pos,<span class="number">2</span>] = boxes[N<span class="number">-1</span>, <span class="number">2</span>]</span><br><span class="line">                        boxes[pos,<span class="number">3</span>] = boxes[N<span class="number">-1</span>, <span class="number">3</span>]</span><br><span class="line">                        boxes[pos,<span class="number">4</span>] = boxes[N<span class="number">-1</span>, <span class="number">4</span>]</span><br><span class="line">                        N = N - <span class="number">1</span></span><br><span class="line">                        pos = pos - <span class="number">1</span></span><br><span class="line"></span><br><span class="line">            pos = pos + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    keep = [i <span class="keyword">for</span> i <span class="keyword">in</span> range(N)]</span><br><span class="line">    <span class="keyword">return</span> keep</span><br></pre></td></tr></table></figure>
+
+<h1 id="二、IOU-guided-NMS"><a href="#二、IOU-guided-NMS" class="headerlink" title="二、IOU-guided NMS"></a>二、IOU-guided NMS</h1><p>在传统NMS中使用分类置信度作为排名标准，会导致分类和定位之间不匹配的问题，即IOU大、分类置信度较低的box被抑制掉。如下图所示；</p>
+<p><img src="/images/nms/IOU-NMS1.png" alt></p>
+<p>尽管很多关于NMS改进算法提出了，比如<a href="https://arxiv.org/abs/1704.04503" target="_blank" rel="noopener">soft-nms</a>,<a href="https://www.vision.ee.ethz.ch/publications/papers/proceedings/eth_biwi_01126.pdf" target="_blank" rel="noopener">2</a>,但是都是<strong>基于参数的(parameter-based)，因此计算过程需要更多的计算资源。</strong></p>
+<p>作者统计了IOU和分类置信度和定位置信度之间的皮尔森系数，发现定位置信度与分类置信度之间的相关性并不强.见下图：</p>
+<p><img src="/images/megnet/iou-net2.png" alt></p>
+<p>本文提出的IOU-net能够在前向过程中，直接预测proposal的IOU分数，然后利用和GT的IOU最高的box来抑制与他IOU超过阈值的其他的box，同时更新他的分类置信度。具体算法如下：</p>
+<p><img src="/images/nms/IOU-NMS.png" alt></p>
+<p>更多内容详见原论文：<a href="https://arxiv.org/abs/1807.11590" target="_blank" rel="noopener">Acquisition of Localization Confidence for Accurate Object Detection </a></p>
+<p><a href="https://cloud.tencent.com/developer/article/1179953" target="_blank" rel="noopener">IOU-net论文笔记</a></p>
+<p><a href="https://pan.baidu.com/s/1boWth2R" target="_blank" rel="noopener">slide</a></p>
+<p><a href="https://blog.csdn.net/np4rHI455vg29y2/article/details/78954803" target="_blank" rel="noopener">【机器视觉】旷视研究院解读COCO2017物体检测夺冠论文</a></p>
+<h1 id="三、NMS-in-Canny"><a href="#三、NMS-in-Canny" class="headerlink" title="三、NMS in Canny"></a>三、NMS in Canny</h1><p>John Canny提出的Canny算子的论文中，非最大值抑制就只是在0、90、45、135四个梯度方向上进行的，每个像素点梯度方向按照相近程度用这四个方向来代替。这种情况下，非最大值抑制所比较的相邻两个像素就是：</p>
+<p>​      1） 0：左边 和 右边</p>
+<p>​          2）45：右上 和 左下</p>
+<p>​          3）90： 上边 和 下边      </p>
+<p>​          4）135： 左上 和 右下  </p>
+<h1 id="四、NMS-in-Harris"><a href="#四、NMS-in-Harris" class="headerlink" title="四、NMS in Harris"></a>四、NMS in Harris</h1><p>在3×3或5×5的邻域内进行非最大值抑制，局部最大值点即为图像中的角点。</p>
+<p><a href="https://github.com/RonnyYoung/ImageFeatures/blob/master/source/harris.cpp" target="_blank" rel="noopener">Harris角点检测的C++实现代码</a></p>
+<h1 id="Refenece"><a href="#Refenece" class="headerlink" title="Refenece"></a>Refenece</h1><ol>
+<li><p><a href="https://www.cnblogs.com/makefile/p/nms.html" target="_blank" rel="noopener">nms</a></p>
+</li>
+<li><p><a href="https://blog.csdn.net/kezunhai/article/details/11620357" target="_blank" rel="noopener">canny nms</a></p>
+</li>
+<li><p><a href="https://www.cnblogs.com/ronny/p/4009425.html" target="_blank" rel="noopener">harris nms</a></p>
+<p>​</p>
+<p>​</p>
+</li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/21/large-scale-detector专题/" rel="next" title="large-scale detector专题">
+                <i class="fa fa-chevron-left"></i> large-scale detector专题
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/27/卷积在GPU上的优化/" rel="prev" title="卷积在GPU上的优化">
+                卷积在GPU上的优化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、NMS-in-Object-Detection"><span class="nav-number">1.</span> <span class="nav-text">一、NMS in Object Detection</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-单类别"><span class="nav-number">1.1.</span> <span class="nav-text">1.单类别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-多类别"><span class="nav-number">1.2.</span> <span class="nav-text">2.多类别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-NMS损失"><span class="nav-number">1.3.</span> <span class="nav-text">3.NMS损失</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Soft-NMS"><span class="nav-number">1.4.</span> <span class="nav-text">4.Soft-NMS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Hard-NMS"><span class="nav-number">1.4.1.</span> <span class="nav-text">1.Hard NMS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Soft-NMS"><span class="nav-number">1.4.2.</span> <span class="nav-text">2. Soft NMS</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#linear-function"><span class="nav-number">1.4.2.1.</span> <span class="nav-text">linear function:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Gaussian-Function"><span class="nav-number">1.4.2.2.</span> <span class="nav-text">Gaussian Function:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#结果"><span class="nav-number">1.4.2.3.</span> <span class="nav-text">结果</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码"><span class="nav-number">1.4.2.4.</span> <span class="nav-text">代码</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、IOU-guided-NMS"><span class="nav-number">2.</span> <span class="nav-text">二、IOU-guided NMS</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三、NMS-in-Canny"><span class="nav-number">3.</span> <span class="nav-text">三、NMS in Canny</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#四、NMS-in-Harris"><span class="nav-number">4.</span> <span class="nav-text">四、NMS in Harris</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Refenece"><span class="nav-number">5.</span> <span class="nav-text">Refenece</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

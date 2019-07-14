@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="本文主要讲了几种处理类别不平衡的方法的总结，详细的请参阅focal loss OHEMreference 思想：根据输入样本的损失进行筛选，找出hard example.表示对分类和检测影响较大的样本，然后将筛选得到的样本应用在随机梯度下降中训练。">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OHEM_vs_OHNM_vs_FocalLoss">
+<meta property="og:url" content="http://yoursite.com/2018/05/26/OHEMvsFocalLoss/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="本文主要讲了几种处理类别不平衡的方法的总结，详细的请参阅focal loss OHEMreference 思想：根据输入样本的损失进行筛选，找出hard example.表示对分类和检测影响较大的样本，然后将筛选得到的样本应用在随机梯度下降中训练。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/05/26/OHEMvsFocalLoss/%5Cimages%5Cohem_focalloss%5C8904720-d3a4fff4e5afd0aa.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/26/OHEMvsFocalLoss/%5Cimages%5Cohem_focalloss%5C1.png">
+<meta property="og:updated_time" content="2019-07-14T07:17:30.437Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OHEM_vs_OHNM_vs_FocalLoss">
+<meta name="twitter:description" content="本文主要讲了几种处理类别不平衡的方法的总结，详细的请参阅focal loss OHEMreference 思想：根据输入样本的损失进行筛选，找出hard example.表示对分类和检测影响较大的样本，然后将筛选得到的样本应用在随机梯度下降中训练。">
+<meta name="twitter:image" content="http://yoursite.com/2018/05/26/OHEMvsFocalLoss/%5Cimages%5Cohem_focalloss%5C8904720-d3a4fff4e5afd0aa.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/05/26/OHEMvsFocalLoss/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>OHEM_vs_OHNM_vs_FocalLoss | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/26/OHEMvsFocalLoss/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">OHEM_vs_OHNM_vs_FocalLoss
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-05-26 09:56:02" itemprop="dateCreated datePublished" datetime="2018-05-26T09:56:02+08:00">2018-05-26</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:30" itemprop="dateModified" datetime="2019-07-14T15:17:30+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">notes</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/notes/data-class-imbalance/" itemprop="url" rel="index"><span itemprop="name">data/class imbalance</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文主要讲了几种处理类别不平衡的方法的总结，详细的请参阅<a href="https://galaxy-fangfang.github.io/2018/05/01/focal-loss/#more" target="_blank" rel="noopener">focal loss</a></p>
+<h1 id="OHEM"><a href="#OHEM" class="headerlink" title="OHEM"></a>OHEM</h1><p><a href="https://blog.csdn.net/u012905422/article/details/52760669" target="_blank" rel="noopener">reference</a></p>
+<h2 id="思想："><a href="#思想：" class="headerlink" title="思想："></a>思想：</h2><p>根据输入样本的损失进行筛选，找出hard example.表示对分类和检测影响较大的样本，然后将筛选得到的样本应用在随机梯度下降中训练。</p>
+<a id="more"></a>
+<h2 id="优点："><a href="#优点：" class="headerlink" title="优点："></a>优点：</h2><ol>
+<li>对于数据不平衡问题不需要设置正负样本比例的方式来解决。这种在线选择的方式针对性更强。</li>
+<li>随着数据集的增大，算法的提升更加明显。（COCO 比VOC提升明显）</li>
+</ol>
+<h2 id="详解："><a href="#详解：" class="headerlink" title="详解："></a>详解：</h2><h3 id="hard-example"><a href="#hard-example" class="headerlink" title="hard example:"></a>hard example:</h3><p>多样性和高损失的样本:根据每个ROI的损失来选择，选择损失最大的一些ROI.但是，重合率比较大的一些ROI之间的损失也比较相似。因此作者采用NMS去除一些重合率大的ROI,这里作者设的阈值为0.7.</p>
+<p><strong>注意作者没有采用设定背景和目标样本数比例方式来处理数据的类别不平衡问题。因为如果哪个类别不平衡，那么这个类别的损失就会比较大，这样被采样的概率也很大。</strong></p>
+<h3 id="网络："><a href="#网络：" class="headerlink" title="网络："></a>网络：</h3><p>Fast RCNN.</p>
+<p><strong>不仅解决了正负样本类别不均衡问题，同时提高了算法准确率。</strong></p>
+<h2 id="Hard-Negative-example"><a href="#Hard-Negative-example" class="headerlink" title="Hard Negative  example"></a>Hard Negative  example</h2><p><a href="https://www.zhihu.com/question/46292829" target="_blank" rel="noopener">reference</a></p>
+<p><a href="https://github.com/tensorflow/models/issues/2544" target="_blank" rel="noopener">discussion</a></p>
+<p>定义：<code>negative</code>是负样本，<code>hard</code>是难样本，也就是说在对负样本进行分类的时候<code>loss</code>比较大的样本</p>
+<p>hard negative：</p>
+<ol>
+<li>是容易将负样本看出正样本的那些样本，即与背景的重叠率一般，bg得分不高</li>
+<li>如果rois中二分之一是物体，标签仍为负样本，这时候分类器就容易把它看成正样本，这就是hard negative。</li>
+</ol>
+<p>hard negative mining:</p>
+<p><strong>多找一些hard negative加入负样本集，进行训练，这样会比easy negative组成的负样本效果更好，这样虚检率更低。</strong></p>
+<h2 id="Easy-Negative"><a href="#Easy-Negative" class="headerlink" title="Easy Negative"></a>Easy Negative</h2><p><a href="https://www.jianshu.com/p/204d9ad9507f" target="_blank" rel="noopener">reference</a></p>
+<p>大多数负样本不在前景和背景的过渡区域，分类很明确，就是所谓的<code>easy negative</code>.  </p>
+<p><code>easy negative:</code></p>
+<ol>
+<li>是容易将负样本看成负样本的那些样本，即于背景的重叠率高，训练的时候bg得分高</li>
+<li>例如，ROI中没有物体，全是背景，这时候分类器很容易正确分类成那个背景，也就是<code>easy negative</code></li>
+</ol>
+<p>也就是说<code>easy negative</code><strong>的loss小，，则对参数收敛的作用有限。</strong> </p>
+<p><img src="%5Cimages%5Cohem_focalloss%5C8904720-d3a4fff4e5afd0aa.png" alt></p>
+<h1 id="OHNMvsOHEM-vs-Focal-Loss"><a href="#OHNMvsOHEM-vs-Focal-Loss" class="headerlink" title="OHNMvsOHEM vs Focal Loss"></a>OHNMvsOHEM vs Focal Loss</h1><p><a href="https://blog.csdn.net/weixin_35653315/article/details/78327408" target="_blank" rel="noopener">reference</a></p>
+<ol>
+<li>focal loss, 直接在loss上进行变换，<strong>不需要像ohem样forward两遍</strong>，看起来即简洁又实用。</li>
+<li>Online Hard Example Mining, <code>OHEM</code>（2016）。将所有sample根据当前loss排序，选出loss最大的N个，其余的抛弃。这个方法就<strong>只处理<code>easy sample</code>的问题</strong></li>
+<li>Oline Hard Negative Mining, <code>OHNM</code>， SSD（2016）里使用的一个OHEM变种， 在Focal Loss里代号为<code>OHEM 1：3</code>。在计算loss时， 使用所有的positive anchor, 使用OHEM选择3倍于positive anchor的negative anchor。同时<strong>考虑了类间平衡与easy sample</strong></li>
+<li><code>Class Balanced Loss</code>。计算loss时，正负样本上的loss分别计算， 然后<strong>通过权重来平衡两者</strong>。暂时没找到是在哪提出来的，反正就这么被用起来了。它<strong>只考虑了类间平衡</strong>。</li>
+<li><code>Focal Loss</code>（2017）， 最近提出来的。<em>不会像OHEM那样抛弃一部分样本</em>， 而是和Class Balance<strong>一样考虑了每个样本</strong>， 不同的是<strong>难易样本上的loss权重是根据样本难度计算出来的。</strong></li>
+</ol>
+<p><img src="%5Cimages%5Cohem_focalloss%5C1.png" alt></p>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/25/fasterRCNN训练流程代码详解/" rel="next" title="faster_pytorch训练流程代码详解">
+                <i class="fa fa-chevron-left"></i> faster_pytorch训练流程代码详解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/06/01/fpn/" rel="prev" title="ResNet+FPN代码详解">
+                ResNet+FPN代码详解 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#OHEM"><span class="nav-number">1.</span> <span class="nav-text">OHEM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#思想："><span class="nav-number">1.1.</span> <span class="nav-text">思想：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优点："><span class="nav-number">1.2.</span> <span class="nav-text">优点：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#详解："><span class="nav-number">1.3.</span> <span class="nav-text">详解：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#hard-example"><span class="nav-number">1.3.1.</span> <span class="nav-text">hard example:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#网络："><span class="nav-number">1.3.2.</span> <span class="nav-text">网络：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hard-Negative-example"><span class="nav-number">1.4.</span> <span class="nav-text">Hard Negative  example</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Easy-Negative"><span class="nav-number">1.5.</span> <span class="nav-text">Easy Negative</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#OHNMvsOHEM-vs-Focal-Loss"><span class="nav-number">2.</span> <span class="nav-text">OHNMvsOHEM vs Focal Loss</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

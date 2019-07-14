@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="YOLO3介绍paper 效果">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="YOLOv3">
+<meta property="og:url" content="http://yoursite.com/2018/05/06/YOLOv3/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="YOLO3介绍paper 效果">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5C20180329130047560.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5C20180329123629193.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5C1_d4Eg17IVJ0L41e7CTWLLSg.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5Cv2-ffbc5b713c98c13e2659bb528b05fd67_r.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5Cyolo_Scales-1.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5Cyolo-5.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5CScreen-Shot-2018-04-10-at-3.18.08-PM.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5Cyolo-regression-1.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5C0_u4UXzV2E_opHIkNs.png">
+<meta property="og:updated_time" content="2019-07-14T07:17:27.826Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="YOLOv3">
+<meta name="twitter:description" content="YOLO3介绍paper 效果">
+<meta name="twitter:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5C20180329130047560.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/05/06/YOLOv3/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>YOLOv3 | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/06/YOLOv3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">YOLOv3
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-05-06 09:56:02" itemprop="dateCreated datePublished" datetime="2018-05-06T09:56:02+08:00">2018-05-06</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:27" itemprop="dateModified" datetime="2019-07-14T15:17:27+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/" itemprop="url" rel="index"><span itemprop="name">paper</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/object-detection/" itemprop="url" rel="index"><span itemprop="name">object detection</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>YOLO3介绍<br><a href="https://arxiv.org/abs/1804.02767" target="_blank" rel="noopener">paper</a></p>
+<h1 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h1><p><img src="%5Cimages%5CYOLOv3%5C20180329130047560.png" alt></p>
+<a id="more"></a>
+
+<h1 id="DarkNet53"><a href="#DarkNet53" class="headerlink" title="DarkNet53"></a>DarkNet53</h1><p>YOLOv2使用的框架是DarkNet19,负责提取特征，再加上11层来进行目标检测。只有30层的网络结构对于小目标的检测来说很困难。因为网络中对输入进行了下采样，使得底层的精细化的特征丢失。所以v2使用了单位映射，把前面层的特征图拼接到当前层。但是，仍然没有一些比如残差块residual block，跨层连接skip connection，上采样upsampling这样的操作。</p>
+<p><strong>YOLO v3使用了53层预训练网络，然后又添加了53层进行检测，最后是106层的全卷积框架。</strong> 因此v3比v2慢。</p>
+<p>yolov3的特征提取模型是一个杂交的模型，它使用了yolov2，Darknet-19以及Resnet，这个模型使用了很多有良好表现的$3\times3$和$1\times1$的卷积层，也在后边增加了一些shortcut connection结构。最终他有53个卷积层，因此作者也把它们叫成Darknet-53。它们的结构是这样的：</p>
+<p><img src="%5Cimages%5CYOLOv3%5C20180329123629193.png" alt></p>
+<p>最后论文说明这个模型的优良之后还说了一句，Resnet模型后边有太多层并且不是很有效。</p>
+<h1 id="Multiscale-detection"><a href="#Multiscale-detection" class="headerlink" title="Multiscale detection"></a>Multiscale detection</h1><p><img src="%5Cimages%5CYOLOv3%5C1_d4Eg17IVJ0L41e7CTWLLSg.png" alt></p>
+<p>YOLOv3在3个尺度行进行检测。</p>
+<p><img src="%5Cimages%5CYOLOv3%5Cv2-ffbc5b713c98c13e2659bb528b05fd67_r.jpg" alt></p>
+<p>ü检测时的卷积核大小为1 x 1 x(B x (5 + C) ).B是一个cell的Bbox的数目。YOLOv3上COCO上，B=3,C=80,所以卷积核大小是1 x 1x 255。</p>
+<p>输入$416\times415$图片，三层的步长是32,16,8，也就是说预测的特征图是$13\times13,26\times26,52\times52$.第一次检测是在82层，在第81层会有一个步长为32，特征图尺寸是$13\times13$,然后经过$1\times1$的卷积核，得到检测特征图为$13\times13\times255$.</p>
+<p>然后，第79层的特征图经过上采样，因子为2，变成$26\times26$,再和第61层的特征图通道拼接，经过几个$1\times1$的卷积层进行特征融合，最后第二个detection在第94层的特征图上进行，检测特征图为$26\times26\times255$.</p>
+<p>第91层的特征图经过几个卷积层然后和第36层的特征图进行通道拼接，拼接的特征图经过几个$1\times1$的卷积层进行特征融合，最后在第106层进行最后一策检测，检测特征图为$52\times52\times255$.</p>
+<p><img src="%5Cimages%5CYOLOv3%5Cyolo_Scales-1.png" alt></p>
+<p>作者说，这使得YOLOv3在检测小目标上的性能提升了。因为上采样的原因，可以和之前的layers进行拼接是的保留了精细化的特征，更好的检测小目标。不同尺度进行检测大、中、小的目标。</p>
+<h1 id="边界框的预测"><a href="#边界框的预测" class="headerlink" title="边界框的预测"></a>边界框的预测</h1><h2 id="全卷积网络"><a href="#全卷积网络" class="headerlink" title="全卷积网络"></a>全卷积网络</h2><p>YOLO全是卷积层组成的，有75层卷积层，跨层连接，上采样层。</p>
+<p><strong>YOLO没有pooling层，直接使用一个步长为2的卷积层进行下采样。</strong> 这样可以防止丢失低层的特征。</p>
+<p>作为全卷积层，YOLO对输入图像的尺寸不敏感，但是实际操作中必须固定输入尺寸避免一些问题，比如如果想批处理的话。</p>
+<p><strong>一般来说，网络的步长就是输出尺寸比输入小的倍数。</strong></p>
+<h2 id="Interpreting-Output"><a href="#Interpreting-Output" class="headerlink" title="Interpreting Output"></a>Interpreting Output</h2><p>在YOLO中使用$1\times1$的卷积层输出的特征图进行预测。在特征图上，有$B\times(5+C)$个预测量，$B$表示在检测特定目标时，每个cell预测的bounding box数目 。每个bounding box有$5+C$个属性，表示中心坐标，维度，objectness score和C个类别概率。YOLO3每个cell预测3个bounding box.****</p>
+<p><strong>我们希望在特征图上，通过每个cell的一个bounding box预测目标的中心是否在这个cell的感受野内。</strong>在训练时候，给定目标，只有一个bounding box负责检测。我们首先得确定这个bounding box属于哪个cell。</p>
+<p>举个例子：输入$416\times416$的图片，网络步长为32，最后特征图就是$13\times13$的，我们把输入图片划分成$13\times13$的。<br><img src="%5Cimages%5CYOLOv3%5Cyolo-5.png" alt></p>
+<p>包含groundtruth中心的那个cell来预测目标，图中就是那个红色的cell，包含了小狗的真实标签的中心。</p>
+<h2 id="Anchor-box"><a href="#Anchor-box" class="headerlink" title="Anchor box"></a>Anchor box</h2><p><strong>预测bounding box的宽高在训练的时候会导致梯度传播不稳定</strong>。于是，利用对数域的变换，或者直接预测预定义的default box的偏移。YOLOv3每个cell有3个anchor。</p>
+<p>每个尺度上，每个cell预测3个bounding box，（即3个anchor）。anchor总数为9.</p>
+<p>也就是，和groundtruth拥有最高IOU分数的那个anchor来负责检测小狗。</p>
+<h2 id="Making-Predictions"><a href="#Making-Predictions" class="headerlink" title="Making Predictions"></a>Making Predictions</h2><p><img src="%5Cimages%5CYOLOv3%5CScreen-Shot-2018-04-10-at-3.18.08-PM.png" alt></p>
+<p>$t_x,t_y$是网络的输出，$c_x,c_y$是网格左上角的坐标，$p_w,p_h$是anchor的维度。$b_x,b_y,b_w,b_h$是预测的中心坐标，和宽高。</p>
+<p><img src="%5Cimages%5CYOLOv3%5Cyolo-regression-1.png" alt></p>
+<h3 id="中心坐标预测："><a href="#中心坐标预测：" class="headerlink" title="中心坐标预测："></a>中心坐标预测：</h3><p>输出经过了一个激活函数，使得输出在0-1之间，YOLO没有预测bounding box中心的绝对坐标，他是预测了偏移：</p>
+<ol>
+<li>预测目标的那个网格，相对于左上角的坐标</li>
+<li>然后该offset被该cell的宽高归一化</li>
+</ol>
+<p>例如：小狗的中心预测是（0.4，0.7），那么在$13\times13$的特征图上就是（6.4，6.7）。但是如果偏移预测值是（1.2，0.7）咋办，那么对应的坐标就是（7.2，6.7)了，<strong>中心点就跑到了红色cell的右边，打破了yolo的规则：希望groundtruth中心所在的红色cell来负责预测小狗。</strong> 因此，为了防止这种事情发生，就将输出经过一个sigmod函数，强制变到0-1之间。</p>
+<h3 id="bounding-box的维度预测："><a href="#bounding-box的维度预测：" class="headerlink" title="bounding box的维度预测："></a>bounding box的维度预测：</h3><p>应用对数域变换，再乘以anchor的维度。预测的结果是$b_w,b_h$ ,经过归一化了。</p>
+<p>比如：例如$b_x,b_y$预测值是（0.3,0.8），那么真实的特征图上的宽高就是$13\times0.3,13\times0.8$。</p>
+<h3 id="Objectness-Score"><a href="#Objectness-Score" class="headerlink" title="Objectness Score"></a>Objectness Score</h3><p>red cell及周围的cell的objectness score是约等于1，grid角落的几乎是0.</p>
+<h1 id="分类class-confidence"><a href="#分类class-confidence" class="headerlink" title="分类class confidence"></a>分类class confidence</h1><p>v3之前的版本类别分数,是softmax函数，现在作者采用logistics函数。IOU分数也变成logisitic函数求得的。因为softmax预测的类别是互斥的。</p>
+<p><img src="%5Cimages%5CYOLOv3%5C0_u4UXzV2E_opHIkNs.png" alt></p>
+<h2 id="输出处理"><a href="#输出处理" class="headerlink" title="输出处理"></a>输出处理</h2><p>对于$416\times416$的输入图片，YOLO预测了$((52\times52)+(26\times26)+(13\times13))\times3=10647$个边界框。当图中只有一个目标，怎么把检测从10674减到1呢。</p>
+<ol>
+<li>Object Confidence Threshold:低于阈值的忽略掉</li>
+<li>非极大值抑制</li>
+</ol>
+<h1 id="作者总结"><a href="#作者总结" class="headerlink" title="作者总结"></a>作者总结</h1><p>① 想对Anchor box的x，y偏移使用<strong>线性激活方式</strong>做一个对box宽高倍数的预测，结果发现没有好的表现并且是模型不稳定。</p>
+<p>②对anchor box的x, y使用线性的预测，而不是使用逻辑回归，实验结果发现这样做使他们模型的mAP掉了。</p>
+<p>③使用<strong>Focal loss</strong>，测试结果还是掉mAP。（想法的确挺好的）</p>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/01/focal-loss/" rel="next" title="focal_loss">
+                <i class="fa fa-chevron-left"></i> focal_loss
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/09/faster-pytorch框架/" rel="prev" title="faster-RCNN 流程详解">
+                faster-RCNN 流程详解 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#效果"><span class="nav-number">1.</span> <span class="nav-text">效果</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DarkNet53"><span class="nav-number">2.</span> <span class="nav-text">DarkNet53</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Multiscale-detection"><span class="nav-number">3.</span> <span class="nav-text">Multiscale detection</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#边界框的预测"><span class="nav-number">4.</span> <span class="nav-text">边界框的预测</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#全卷积网络"><span class="nav-number">4.1.</span> <span class="nav-text">全卷积网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Interpreting-Output"><span class="nav-number">4.2.</span> <span class="nav-text">Interpreting Output</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Anchor-box"><span class="nav-number">4.3.</span> <span class="nav-text">Anchor box</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Making-Predictions"><span class="nav-number">4.4.</span> <span class="nav-text">Making Predictions</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#中心坐标预测："><span class="nav-number">4.4.1.</span> <span class="nav-text">中心坐标预测：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bounding-box的维度预测："><span class="nav-number">4.4.2.</span> <span class="nav-text">bounding box的维度预测：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Objectness-Score"><span class="nav-number">4.4.3.</span> <span class="nav-text">Objectness Score</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#分类class-confidence"><span class="nav-number">5.</span> <span class="nav-text">分类class confidence</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#输出处理"><span class="nav-number">5.1.</span> <span class="nav-text">输出处理</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#作者总结"><span class="nav-number">6.</span> <span class="nav-text">作者总结</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

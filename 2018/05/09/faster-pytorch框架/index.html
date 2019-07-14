@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="本文着重于faster_rcnn_pytorch工程的代码实现层面的流程框架。">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="faster-RCNN 流程详解">
+<meta property="og:url" content="http://yoursite.com/2018/05/09/faster-pytorch框架/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="本文着重于faster_rcnn_pytorch工程的代码实现层面的流程框架。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cimg_5a9ffec911c19.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cimg_5aa0053323ac5.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cimg_5aa05d3ecef3e.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cimg_5aa0695484e3e.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cimg_5aa5766d53b63-1024x593.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cimg_5aa13d4d911d3-1024x463.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cimg_5aa1cd250f265.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cimg_5aa32302afc0b.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cimg_5aa402baba3a1.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cimg_5aa4255fdacb6.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cimg_5aa55c81eac0a.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cimg_5aa0695484e3e.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cimg_5aa70ff399c57.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cresnet50.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cresnet50_1.png">
+<meta property="og:updated_time" content="2019-07-14T07:17:34.416Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="faster-RCNN 流程详解">
+<meta name="twitter:description" content="本文着重于faster_rcnn_pytorch工程的代码实现层面的流程框架。">
+<meta name="twitter:image" content="http://yoursite.com/2018/05/09/faster-pytorch框架/%5Cimages%5Cfaster-rcnn%5Cimg_5a9ffec911c19.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/05/09/faster-pytorch框架/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>faster-RCNN 流程详解 | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/09/faster-pytorch框架/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">faster-RCNN 流程详解
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-05-09 14:37:39" itemprop="dateCreated datePublished" datetime="2018-05-09T14:37:39+08:00">2018-05-09</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:34" itemprop="dateModified" datetime="2019-07-14T15:17:34+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/code/" itemprop="url" rel="index"><span itemprop="name">code</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/code/two-stage-detector/" itemprop="url" rel="index"><span itemprop="name">two-stage detector</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文着重于faster_rcnn_pytorch工程的代码实现层面的流程框架。</p>
+<a id="more"></a>
+
+<p><a href="https://github.com/jwyang/faster-rcnn.pytorch" target="_blank" rel="noopener">pytorch_faster_rcnn</a></p>
+<h1 id="总框图"><a href="#总框图" class="headerlink" title="总框图"></a>总框图</h1><p>![](\images\faster-rcnn\Faster R-CNN.png)</p>
+<h1 id="1-image-pre-processing"><a href="#1-image-pre-processing" class="headerlink" title="1.image pre-processing"></a>1.image pre-processing</h1><p>在测试或者训练之前，必须图像预处理，并且这些步骤在前向推理和训练时候都必须一致。均值向量（$3\times1$)不是图像所有像素的均值，而是一个配置文件中的值，在训练和测试所有的图像上都是一致的。</p>
+<ol>
+<li><p>读取图片</p>
+</li>
+<li><p>减均值，均值是一个固定的元祖</p>
+</li>
+<li><p>rescale:</p>
+<p><strong>a</strong>.$targetSize=600$:图片短边的维度</p>
+<p><strong>b</strong>.$maxSize=1000$:图片维度不能超过的最大值</p>
+<p><strong>c</strong>.$w=image width,h=image height,minDim=min(w,h),maxDim=max(w,h)$</p>
+<p>$scale=target/minDim$,如果$scale\times maxDim&gt;maxSize,scale=maxSize/maxDim$.</p>
+</li>
+<li><p>输出图片</p>
+</li>
+</ol>
+<p><strong>代码：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PIXEL_MEANS = np.array([[[<span class="number">102.9801</span>, <span class="number">115.9465</span>, <span class="number">122.7717</span>]]])</span><br><span class="line">SCALES = (<span class="number">600</span>,)</span><br><span class="line">MAX_SIZE = <span class="number">1000</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> target_size <span class="keyword">in</span> self.SCALES:</span><br><span class="line">            im_scale = float(target_size) / float(im_size_min)</span><br><span class="line">            <span class="comment"># Prevent the biggest axis from being more than MAX_SIZE</span></span><br><span class="line">            <span class="keyword">if</span> np.round(im_scale * im_size_max) &gt; self.MAX_SIZE:</span><br><span class="line">                im_scale = float(self.MAX_SIZE) / float(im_size_max)</span><br><span class="line">            im = cv2.resize(im_orig, <span class="literal">None</span>, <span class="literal">None</span>, fx=im_scale, fy=im_scale,interpolation=cv2.INTER_LINEAR)</span><br><span class="line">            <span class="comment">#im.shape:427*2212*3-&gt;193*1000*3最长边变成1000</span></span><br><span class="line">            </span><br><span class="line">            im_scale_factors.append(im_scale)</span><br><span class="line">            processed_ims.append(im)</span><br></pre></td></tr></table></figure>
+
+<h1 id="2-network-organization"><a href="#2-network-organization" class="headerlink" title="2.network organization"></a>2.network organization</h1><p>RCNNs主要包括三种类型的网络：</p>
+<ol>
+<li>特征提取网络</li>
+<li>RPN</li>
+<li>分类网络</li>
+</ol>
+<h2 id="1-特征提取网络"><a href="#1-特征提取网络" class="headerlink" title="1.特征提取网络"></a>1.特征提取网络</h2><p>通常称为head网络，使用预训练模型来初始化前网络的前几层，比如ResNet50这样的网络。</p>
+<p>​    能够使用一个不同问题不同数据集上训练的网络来初始化模型原因是，神经网络可以迁移学习<a href="https://arxiv.org/abs/1411.1792" target="_blank" rel="noopener">Yosinski, Jason</a>。网络的前几层可以学习到一般化的特征，比如边缘颜色斑点之类，在很多不同的问题上都具有辨识度的特征。后面更深层学习到的就是特定问题更加具体的特征。这些层可以去掉或者在后向传播中fine-tune他们的权重。</p>
+<p>​    【特征提取网络产生的卷积特征图然后被送入到RPN网络中，使用一系列卷积和全连接层来产生可能包含前景的感兴趣区域。这些ROIs然后再在特征图上crop出对应的区域，这些region再被从到分类网络来判断是否包含物体。】</p>
+<p>​    ResNet初始化的时候是下面这种方法：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">n = m.kernel_size[<span class="number">0</span>] * m.kernel_size[<span class="number">1</span>] * m.out_channels</span><br><span class="line">m.weight.data.normal_(<span class="number">0</span>, math.sqrt(<span class="number">2.</span> / n))</span><br></pre></td></tr></table></figure>
+
+<p>原因参见<a href="https://arxiv.org/abs/1502.01852" target="_blank" rel="noopener">论文</a>或<a href="http://lamda.nju.edu.cn/weixs/project/CNNTricks/CNNTricks.html" target="_blank" rel="noopener">tips in CNN</a></p>
+<h2 id="2-整体架构"><a href="#2-整体架构" class="headerlink" title="2.整体架构"></a>2.整体架构</h2><p><img src="%5Cimages%5Cfaster-rcnn%5Cimg_5a9ffec911c19.png" alt></p>
+<h1 id="3-training"><a href="#3-training" class="headerlink" title="3.training"></a>3.training</h1><p>训练RCNN时候分成了好几层，如下：</p>
+<p><img src="%5Cimages%5Cfaster-rcnn%5Cimg_5aa0053323ac5.png" alt></p>
+<ul>
+<li><strong>anchor generation layer:</strong> 这一层产生了固定数目的anchor，然后将这些anchor平移到均匀分布的空间格点上。</li>
+<li><strong>proposal layer</strong> ：根据Bbox回归的系数来得到变换后的anchor。然后通过NMS来减少anchor。</li>
+<li><strong>anchor target layer</strong>： 这一层的输出就是产生回归的系数来训练RPN的，不用到分类层。给定anchor generation layer生成的一组anchor，这一层负责确定哪些是前景哪些是背景。这一层还会输出一组bbox的regressor。</li>
+<li><strong>RPNloss:</strong>训练RPN时候用到的，包括两部分：分类，回归</li>
+<li><strong>Proposal Target Layer</strong>: 这一层主要是为了修剪由proposal layer产生的一堆anchor，产生特别类别的bounding box回归targets，这样可以用来训练分类层并且产生目标类别和回归目标。</li>
+</ul>
+<h2 id="Anchor-Generation-Layer"><a href="#Anchor-Generation-Layer" class="headerlink" title="Anchor Generation Layer"></a>Anchor Generation Layer</h2><p>这一层产生的一组anchor是各个尺寸和纵横比上的。对于所有图像来说，这些anchor都是一样的。其中一些会包含目标前景但是大部分都不包含。RPN网络的目的就是学会判定哪些box是好的-也就是包含目标前景并且能够产生目标回归系数，并能够用到anchor上使他变成bounding box。</p>
+<p><img src="%5Cimages%5Cfaster-rcnn%5Cimg_5aa05d3ecef3e.png" alt></p>
+<h2 id="Region-Proposal-Layer"><a href="#Region-Proposal-Layer" class="headerlink" title="Region Proposal Layer"></a>Region Proposal Layer</h2><p>目标检测方法需要输入一组特征。RCNN使用selective search方法来产生region proposal，在Faster RCNN里面，使用滑动窗来产生候选区域然后利用RPN网络来对region proposal进行打分。这一层两个目的：</p>
+<ol>
+<li>从一系列的anchor中，确定前景anchor和 背景anchor，</li>
+<li>通过一组回归系数来修正位置，宽高，来提高anchor的质量。</li>
+</ol>
+<p>这一层包含了3各层，proposal layer，anchor target layer，proposal target layer。</p>
+<h3 id="Region-Proposal-Network"><a href="#Region-Proposal-Network" class="headerlink" title="Region Proposal Network"></a>Region Proposal Network</h3><p><img src="%5Cimages%5Cfaster-rcnn%5Cimg_5aa0695484e3e.png" alt></p>
+<p>region proposal layer在head network产生的feature map上使用一个卷积层跑，跟着一个relu激活。输出再送入两个$1\times1$的卷积层，产生前景和背景的类别分数和对应的Bbox回归系数，head network的步长赌赢了产生anchor时的步长，所以anchor的数目和region proposal网络产生的anchor是一一对应的。（anchor box数目=class score数目=Bbox 回归系数的数目=$\frac{w}{16}\times \frac{h}{16}\times9$)</p>
+<h2 id="Proposal-layer"><a href="#Proposal-layer" class="headerlink" title="Proposal layer"></a>Proposal layer</h2><p><strong>proposal layer 的输入是anchor generation layer产生的anchor box，然后通过前景分数来进行NMS减少anchor的数目。同时也产生了变换后的bounding box通过RPN产生的回归系数。</strong></p>
+<p><img src="%5Cimages%5Cfaster-rcnn%5Cimg_5aa5766d53b63-1024x593.png" alt></p>
+<p>具体步骤：</p>
+<ol>
+<li><strong>Generate proposals</strong> from bbox deltas and shifted anchors</li>
+<li><strong>clip predicted boxes</strong> to image</li>
+<li>remove predicted boxes with either <strong>height or width &lt; threshold</strong></li>
+<li><strong>sort</strong> all (proposal, score) pairs by score from highest to lowest</li>
+<li>take top <strong>pre_nms_topN</strong> (e.g. 6000)</li>
+<li>apply <strong>nms</strong> (e.g. threshold = 0.7)</li>
+<li>take <strong>after_nms_topN</strong> (e.g. 300)</li>
+<li>return the top proposals (-&gt; RoIs top)</li>
+</ol>
+<p>代码：shifted anchor+box delta变成proposal</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">bbox_transform_inv</span><span class="params">(boxes, deltas)</span>:</span><span class="comment">#boxes:base anchor,deltas:the predicted offset</span></span><br><span class="line">    <span class="keyword">if</span> boxes.shape[<span class="number">0</span>] == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> np.zeros((<span class="number">0</span>,), dtype=deltas.dtype)</span><br><span class="line"></span><br><span class="line">    boxes = boxes.astype(deltas.dtype, copy=<span class="literal">False</span>)<span class="comment">#62*12*9=6696</span></span><br><span class="line"></span><br><span class="line">    widths = boxes[:, <span class="number">2</span>] - boxes[:, <span class="number">0</span>] + <span class="number">1.0</span><span class="comment">#6696-d</span></span><br><span class="line">    heights = boxes[:, <span class="number">3</span>] - boxes[:, <span class="number">1</span>] + <span class="number">1.0</span><span class="comment">#6696-d</span></span><br><span class="line">    ctr_x = boxes[:, <span class="number">0</span>] + <span class="number">0.5</span> * widths</span><br><span class="line">    ctr_y = boxes[:, <span class="number">1</span>] + <span class="number">0.5</span> * heights</span><br><span class="line"></span><br><span class="line">    dx = deltas[:, <span class="number">0</span>::<span class="number">4</span>]</span><br><span class="line">    dy = deltas[:, <span class="number">1</span>::<span class="number">4</span>]</span><br><span class="line">    dw = deltas[:, <span class="number">2</span>::<span class="number">4</span>]</span><br><span class="line">    dh = deltas[:, <span class="number">3</span>::<span class="number">4</span>]</span><br><span class="line"></span><br><span class="line">    pred_ctr_x = dx * widths[:, np.newaxis] + ctr_x[:, np.newaxis]</span><br><span class="line">    pred_ctr_y = dy * heights[:, np.newaxis] + ctr_y[:, np.newaxis]</span><br><span class="line">    pred_w = np.exp(dw) * widths[:, np.newaxis]</span><br><span class="line">    pred_h = np.exp(dh) * heights[:, np.newaxis]</span><br><span class="line"></span><br><span class="line">    pred_boxes = np.zeros(deltas.shape, dtype=deltas.dtype)</span><br><span class="line">    <span class="comment"># x1</span></span><br><span class="line">    pred_boxes[:, <span class="number">0</span>::<span class="number">4</span>] = pred_ctr_x - <span class="number">0.5</span> * pred_w</span><br><span class="line">    <span class="comment"># y1</span></span><br><span class="line">    pred_boxes[:, <span class="number">1</span>::<span class="number">4</span>] = pred_ctr_y - <span class="number">0.5</span> * pred_h</span><br><span class="line">    <span class="comment"># x2</span></span><br><span class="line">    pred_boxes[:, <span class="number">2</span>::<span class="number">4</span>] = pred_ctr_x + <span class="number">0.5</span> * pred_w</span><br><span class="line">    <span class="comment"># y2</span></span><br><span class="line">    pred_boxes[:, <span class="number">3</span>::<span class="number">4</span>] = pred_ctr_y + <span class="number">0.5</span> * pred_h</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> pred_boxes</span><br></pre></td></tr></table></figure>
+
+<h2 id="Anchor-target-layer"><a href="#Anchor-target-layer" class="headerlink" title="Anchor target layer"></a>Anchor target layer</h2><p>该层的目的是挑选合适的anchor用来训练RPN.</p>
+<ol>
+<li>产生anchors；</li>
+<li>并且给这些anchors分配标签；</li>
+<li>计算anchors与ground truth boxes的偏移量，用于RPN层回归参数的学习。</li>
+</ol>
+<h4 id="4-Calculating-RPN-Loss"><a href="#4-Calculating-RPN-Loss" class="headerlink" title="4.Calculating RPN Loss"></a>4.Calculating RPN Loss</h4><p>RPN层需要学习来给anchor box分类成前景还是背景，并计算回归系数用来你修正位置和宽高。RPN的损失就是基于此计算的。</p>
+<p>RPN损失是分类和回归损失之和，<br>$$<br>RPNloss=L_{cls}+L_{loc}=L_{cls}+\sum_{u\in all foreground anchors}l_u\=L_{cls}+\\sum_{u\in all foreground anchors}\sum_{i\in x,y,w,h}smooth_{L_1}(u_i(predicted)-u_i(target))<br>$$<br>$$<br>smooth_{L_1}(x)=\begin{cases}\frac{\sigma^2x^2}{2}\qquad ||x||&lt;\frac{1}{\theta^2}\||x||-\frac{0.5}{\sigma^2}\qquad otherwise\end{cases}<br>$$<br>$\sigma$取值随意，这里设为3.在python实现中，为前景anchor使用了一mask 数组（bbox_inside_weights)，这样就能用向量来计算损失，而不是for-if循环。</p>
+<p>所有为了计算损失，我们必须计算出下面几个东西：</p>
+<ol>
+<li>class label（background，foreground），anchor box的分数。</li>
+<li>foreground target的回归系数</li>
+</ol>
+<p>跟着anchor target layer的实现来看这些量是怎么计算的：</p>
+<p>首先挑选图像内的anchor box,然后计算和所有anchor box的IOU,通过重叠信息，以下两类会被认为是前景：</p>
+<ol>
+<li>对于每个ground truth box，所有的那些和ground truth box有最大IOU的anchor。</li>
+<li>和一些ground truth的最大IOU超过了阈值</li>
+</ol>
+<p><img src="%5Cimages%5Cfaster-rcnn%5Cimg_5aa13d4d911d3-1024x463.png" alt></p>
+<p>​    anchor和GT的IOU超过了一个阈值的是前景box,这样是为了防止无休止的训练那些离GT太远的anchor的回归系数。低于阈值的被认为是负样本，标记为背景框。既不是前景也不是背景的框框不予考虑。</p>
+<p>​    这一层输入输出参数有以下这些：</p>
+<ul>
+<li>TRAIN.RPN_POSITIVE_OVERLAP:用来挑选是否为前景的阈值（默认0.7）</li>
+<li>TRAIN.RPN_POSITIVE_OVERLAP:如果anchor和groundtruth的IOU比阈值低，就是背景。默认0.3</li>
+<li>TRAIN.RPN_BATCHSIZE:默认的背景和前景anchor的总数，256</li>
+<li>TRAIN.RPN_FG_FRACTION:batch_size中正样本的比例，默认0.5，如果正样本比例超过0.5，则超过的就是无关的样本。</li>
+</ul>
+<p>输入：</p>
+<ul>
+<li>RPN网络输出（预测的前景/背景的类别标签，回归系数）</li>
+<li>anchor box,（anchor generation layer产生的）</li>
+<li>ground truth boxes</li>
+</ul>
+<p>输出：</p>
+<ul>
+<li>Good foreground/background boxes and associated class labels</li>
+<li>Target regression coefficients</li>
+</ul>
+<p>其他层：proposal target layer，ROIPooling layer和分类层是产生计算分类损失所需要的信息。</p>
+<h2 id="Calculating-Classification-Layer-Loss"><a href="#Calculating-Classification-Layer-Loss" class="headerlink" title="Calculating Classification Layer Loss"></a>Calculating Classification Layer Loss</h2><p>和RPN损失类似，分类层的损失由两部分组成：分类损失和边界框回归损失：</p>
+<p><strong>关键的不同是：RPN层处理的是两类—-前景和背景，分类层是处理的所有目标类别（加上背景）。</strong></p>
+<p>分类损失包括交叉熵损失：<img src="%5Cimages%5Cfaster-rcnn%5Cimg_5aa1cd250f265.png" alt></p>
+<p>边界框回归损失和RPN计算的类似，<strong>就是现在回归系数和类别有关了。 target regression coefficient只针对正确的类别，也就是和anchor box有着最大重叠面积的GT的目标类别。</strong> </p>
+<p>计算损失的时候，会有一个mask来标记每个anchor用到的那个类别。对于不正确的类别，回归系数处理的时候直接忽略掉。这个mask使得损失计算直接变成矩阵相乘，不用for循环。</p>
+<p>所以，计算这个分类损失需要以下几个量：</p>
+<ol>
+<li>预测的类别标签和边界框回归系数（就是分类网络的输出）</li>
+<li>每个anchor的类别标签</li>
+<li>target bounding box regression coefficients</li>
+</ol>
+<p>这几个量都是在proposal layer和分类layer里面算的：</p>
+<h2 id="Proposal-Target-Layer"><a href="#Proposal-Target-Layer" class="headerlink" title="Proposal Target Layer"></a>Proposal Target Layer</h2><ol>
+<li>给PRN提供的proposals分配标签；</li>
+<li>计算proposals和ground truth boxes的偏移量，用于网络最后一层（bbox_pred）回归参数的学习。</li>
+</ol>
+<p><strong>这一层的目的是挑选proposal layer输出的ROIs集合中的promising ROIs.</strong> 这些ROIs是用来在feature map上进行crop pooling，然后再送入后面的网络进行预测类别分数和边界框回归系数。</p>
+<p>和anchor target layer类似，需要<strong>选出好的proposal送到分类层，否则，学习任务就是毫无希望的</strong>。</p>
+<p>开始的时候，使用每个ROI和GTbox的最大重叠率来分类前景样本和背景样本。<strong>IOU&gt;0.5是前景，0.1&lt;IOU&lt;0.5是背景样本</strong>。</p>
+<p>还要<strong>确保前景和背景区域的总数是恒定的</strong>。如果找到的背景区域太少，它会尝试通过随机重复一些背景索引来弥补缺口。</p>
+<p>然后，边界框回归的目标（targets）是计算每个ROI与其最近的匹配的ground truth之间得到的。（包括背景ROI，因为他们也和GT存在重叠）。这些回归的目标会扩展到每个类上。</p>
+<p><img src="%5Cimages%5Cfaster-rcnn%5Cimg_5aa32302afc0b.png" alt></p>
+<p>bbox_inside_weights数组就像是一个掩模，对每个前景ROI，在正确类别处是1，其他地方是0，背景ROI也是0.因此，当计算分类层损失的bbox回归部分的时候，只会考虑前景region的回归系数。背景ROI属于background 类。</p>
+<p>输入：</p>
+<ul>
+<li>proposal 层产生的ROI</li>
+<li>ground truth的信息</li>
+</ul>
+<p>输出：</p>
+<ul>
+<li>挑选出的符合重叠标准的前景和背景ROIs</li>
+<li>每个ROIs指定类别的target 回归系数</li>
+</ul>
+<p>参数：</p>
+<ul>
+<li>TRAIN.FG_THRESH:默认0.5.用来挑选前景的ROIs.ROIs和ground truth的最大重叠超过该阈值的时候标记为前景。</li>
+<li>TRAIN.BG_THRESH_HI：默认0.5</li>
+<li>TRAIN.BG_THRESH_LO：默认0.1。这两个阈值用来挑选背景ROIs.ROI的最大重叠面积落在这BG_THRESH_HI和BG_THRESH_LO之间的被标记为背景。</li>
+<li>TRAIN.BATCH_SIZE:默认128.挑选的前景和背景box的总数</li>
+<li>TRAIN.FG_FRACTION:默认0.25，前景box的数目不能超过BATCH_SIZE*FG_FRACTION</li>
+</ul>
+<h2 id="Crop-Pooling"><a href="#Crop-Pooling" class="headerlink" title="Crop Pooling"></a>Crop Pooling</h2><p>proposal target layer产生了promising 的ROIs（最大重叠面积符合标准的）。下一步就是提取出这些ROI在卷积特征图上对应的区域。提取出来的特征图然后送入后半段网络来产生每个ROI的类别概率分布和回归系数。<strong>Crop pooling的作用就是执行在卷积特征图上crop对应的区域。</strong></p>
+<p>crop pooling的关键思想是论文<a href="https://arxiv.org/abs/1506.02025" target="_blank" rel="noopener">Spatial Transform Newworks</a> .其目的是应用一个函数（$2\times3$的仿射变换矩阵）来变换输入的特征图。如下图所示：</p>
+<p><img src="%5Cimages%5Cfaster-rcnn%5Cimg_5aa402baba3a1.png" alt></p>
+<p>crop pooling包含两步：</p>
+<ol>
+<li>对应一组坐标，应用仿射变换产生一组源坐标。<br>$$\bigl[\begin{smallmatrix}{x_i^s}\{y_i^s} \end{smallmatrix}\bigr]=\bigl[\begin{smallmatrix}{\theta_{11}\quad{\theta_{12}}\quad{\theta_{13}}} \{\theta_{21}}\quad{\theta_{22}}\quad{\theta_{23}}\end{smallmatrix}\bigr]\bigl[\begin{smallmatrix}{x_i^t}\{y_i^t}\1\end{smallmatrix}\bigr]$$<br>其中$x_i^s,y_i^s,x_i^t,y_i^t​$是经过宽高归一化之后的坐标，即范围在（-1,1）之间。</li>
+<li>第二步，在源坐标上采样输入的特征图来产生输出特征图。每个($x_i^s,y_i^s$)表示输入的空间位置，通过一个采样核来得到输出特征图上的像素值。</li>
+</ol>
+<p>pytorch中实现crop pooling的函数：<code>torch.nn.functional.affine_grid，torch.nn.functional.grid_sample</code>  后向传播的梯度可以由Pytroch自己计算。</p>
+<p>我们需要做的是：</p>
+<ol>
+<li>把ROI的坐标除以head 网络的步长（16）。因为ROIs的坐标是原始图片的领域的。</li>
+<li>为了使用pytorch的API,需要使用仿射变换矩阵。计算如下。</li>
+<li>还需要在目标特征图上$x,y$维度的点数，配置文件中cfg.POOLING_SIZE(默认7)。</li>
+</ol>
+<p><img src="%5Cimages%5Cfaster-rcnn%5Cimg_5aa4255fdacb6.png" alt></p>
+<h2 id="Classification-Layer"><a href="#Classification-Layer" class="headerlink" title="Classification Layer"></a>Classification Layer</h2><p>crop pooling输入proposal target layer产生的ROIbox，和head网络产生的特征图，输出方形的特征图。这些特征图然后被送入ResNet第四层，接着平均池化层。最后的结果（fc7）是一个一维的向量。</p>
+<p><img src="%5Cimages%5Cfaster-rcnn%5Cimg_5aa55c81eac0a.png" alt></p>
+<p>这个特征向量然后输入两个全连接层，<code>bbox_pred_net,cls_score_net</code>.分类层使用softmax来产生每个边界框的类别分数。回归层产生特定类别的边界框的回归系数，再和原始的bounding box的坐标结合产生最后的边界框。</p>
+<p><img src="%5Cimages%5Cfaster-rcnn%5Cimg_5aa0695484e3e.png" alt></p>
+<p><strong>RPN网络产生的回归系数和分类网络产生的回归系数的不同：</strong></p>
+<ol>
+<li>第一组是用来训练RPN来产生好的前景边界框（和目标的边界框更加贴合）。那么target回归系数就是用来绑定一个ROIbox和它最近的匹配上的GT边界框（由anchor target layer产生的）。</li>
+<li>第二组是由分类层产生的。这些系数是特定类别的，也就是为每个ROIbox的每个目标类别产生的系数。<strong>这些target回归系数是由proposal target layer产生的。</strong> </li>
+</ol>
+<p>在训练该分类层时，误差梯度也会后向传播到RPN网络。因为在crop pooling中使用的ROI box的坐标是RPN网络自己产生的，因为这些坐标是将RPN产生的回归系数应用到anchor box上去得到的。在后向传播中，误差梯度也会通过crop pooling传播到RPN层。<strong>就是faster rcnn中说的训练方法的第三种：非近似训练（考虑了ROI pooling层的梯度传播）</strong> 。 </p>
+<h1 id="4-Implementation-Details-Inference"><a href="#4-Implementation-Details-Inference" class="headerlink" title="4.Implementation Details: Inference"></a>4.Implementation Details: Inference</h1><p><img src="%5Cimages%5Cfaster-rcnn%5Cimg_5aa70ff399c57.png" alt></p>
+<p>前向推断的时候不会用到<strong>anchor target 和proposal target层</strong>。RPN网络已经能够分类前景和背景anchor了，并且能产生好的边界框回归系数。proposal layer可以直接使用这些回归系数应用到分数最高的anchor box上，再使用NMS来去除有很多重叠的box。最后的box再被送入到分类层，产生类别分数和特定类别的边界框回归系数。</p>
+<h1 id="5-Appendix"><a href="#5-Appendix" class="headerlink" title="5.Appendix"></a>5.Appendix</h1><h2 id="ResNet50"><a href="#ResNet50" class="headerlink" title="ResNet50"></a>ResNet50</h2><p><img src="%5Cimages%5Cfaster-rcnn%5Cresnet50.png" alt></p>
+<p><img src="%5Cimages%5Cfaster-rcnn%5Cresnet50_1.png" alt></p>
+<h2 id="ROI-Pooling-c"><a href="#ROI-Pooling-c" class="headerlink" title="ROI Pooling.c"></a>ROI Pooling.c</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">roi_pooling_forward</span><span class="params">(<span class="keyword">int</span> pooled_height, <span class="keyword">int</span> pooled_width, <span class="keyword">float</span> spatial_scale,</span></span></span><br><span class="line"><span class="function"><span class="params">                        THFloatTensor * features, THFloatTensor * rois, THFloatTensor * output)</span></span></span><br><span class="line"><span class="function">                        <span class="comment">//features:[1,512,12,62],</span></span></span><br><span class="line"><span class="function">                        <span class="comment">//rois:[300,5],</span></span></span><br><span class="line"><span class="function">                        <span class="comment">//output:[300,512,7,7],</span></span></span><br><span class="line"><span class="function">                        <span class="comment">//argmax[300,512,7,7]</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// Grab the input tensor</span></span><br><span class="line">    <span class="keyword">float</span> * data_flat = THFloatTensor_data(features);</span><br><span class="line">    <span class="keyword">float</span> * rois_flat = THFloatTensor_data(rois);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">float</span> * output_flat = THFloatTensor_data(output);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Number of ROIs</span></span><br><span class="line">    <span class="keyword">int</span> num_rois = THFloatTensor_size(rois, <span class="number">0</span>);<span class="comment">//300</span></span><br><span class="line">    <span class="keyword">int</span> size_rois = THFloatTensor_size(rois, <span class="number">1</span>);<span class="comment">//5</span></span><br><span class="line">    <span class="comment">// batch size</span></span><br><span class="line">    <span class="keyword">int</span> batch_size = THFloatTensor_size(features, <span class="number">0</span>);<span class="comment">//1</span></span><br><span class="line">    <span class="keyword">if</span>(batch_size != <span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// data height</span></span><br><span class="line">    <span class="keyword">int</span> data_height = THFloatTensor_size(features, <span class="number">1</span>);<span class="comment">//12</span></span><br><span class="line">    <span class="comment">// data width</span></span><br><span class="line">    <span class="keyword">int</span> data_width = THFloatTensor_size(features, <span class="number">2</span>);<span class="comment">//62</span></span><br><span class="line">    <span class="comment">// Number of channels</span></span><br><span class="line">    <span class="keyword">int</span> num_channels = THFloatTensor_size(features, <span class="number">3</span>);<span class="comment">//512</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// Set all element of the output tensor to -inf.</span></span><br><span class="line">    THFloatStorage_fill(THFloatTensor_storage(output), <span class="number">-1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// For each ROI R = [batch_index x1 y1 x2 y2]: max pool over R</span></span><br><span class="line">    <span class="keyword">int</span> index_roi = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> index_output = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">    <span class="keyword">for</span> (n = <span class="number">0</span>; n &lt; num_rois; ++n)<span class="comment">//0:300</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> roi_batch_ind = rois_flat[index_roi + <span class="number">0</span>];<span class="comment">//rois[0]获取当前roi属于输入的feature map 中batch中第几张图</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">//获得roi区域对应的feature map上的区域，这里round是四舍五入求近似，spatial_scale:1/16</span></span><br><span class="line">        <span class="keyword">int</span> roi_start_w = round(rois_flat[index_roi + <span class="number">1</span>] * spatial_scale);</span><br><span class="line">        <span class="keyword">int</span> roi_start_h = round(rois_flat[index_roi + <span class="number">2</span>] * spatial_scale);</span><br><span class="line">        <span class="keyword">int</span> roi_end_w = round(rois_flat[index_roi + <span class="number">3</span>] * spatial_scale);</span><br><span class="line">        <span class="keyword">int</span> roi_end_h = round(rois_flat[index_roi + <span class="number">4</span>] * spatial_scale);</span><br><span class="line">        <span class="comment">//      CHECK_GE(roi_batch_ind, 0);</span></span><br><span class="line">        <span class="comment">//      CHECK_LT(roi_batch_ind, batch_size);</span></span><br><span class="line">        </span><br><span class="line"><span class="comment">//获取roi区域对应到feature map上大小</span></span><br><span class="line">        <span class="keyword">int</span> roi_height = fmaxf(roi_end_h - roi_start_h + <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">int</span> roi_width = fmaxf(roi_end_w - roi_start_w + <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line"><span class="comment">//根据获一个roi映射到feature map上的区域的大小和roi-pool后的map</span></span><br><span class="line">        <span class="comment">//大小，获取pool的map上一个元素在feature map上的大小</span></span><br><span class="line">        <span class="keyword">float</span> bin_size_h = (<span class="keyword">float</span>)(roi_height) / (<span class="keyword">float</span>)(pooled_height);</span><br><span class="line">        <span class="keyword">float</span> bin_size_w = (<span class="keyword">float</span>)(roi_width) / (<span class="keyword">float</span>)(pooled_width);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> index_data = roi_batch_ind * data_height * data_width * num_channels;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">int</span> output_area = pooled_width * pooled_height;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> c, ph, pw;</span><br><span class="line">        <span class="keyword">for</span> (ph = <span class="number">0</span>; ph &lt; pooled_height; ++ph)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">for</span> (pw = <span class="number">0</span>; pw &lt; pooled_width; ++pw)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">int</span> hstart = (<span class="built_in">floor</span>((<span class="keyword">float</span>)(ph) * bin_size_h));</span><br><span class="line">                <span class="keyword">int</span> wstart = (<span class="built_in">floor</span>((<span class="keyword">float</span>)(pw) * bin_size_w));</span><br><span class="line">                <span class="keyword">int</span> hend = (<span class="built_in">ceil</span>((<span class="keyword">float</span>)(ph + <span class="number">1</span>) * bin_size_h));</span><br><span class="line">                <span class="keyword">int</span> wend = (<span class="built_in">ceil</span>((<span class="keyword">float</span>)(pw + <span class="number">1</span>) * bin_size_w));</span><br><span class="line"></span><br><span class="line">                hstart = fminf(fmaxf(hstart + roi_start_h, <span class="number">0</span>), data_height);</span><br><span class="line">                hend = fminf(fmaxf(hend + roi_start_h, <span class="number">0</span>), data_height);</span><br><span class="line">                wstart = fminf(fmaxf(wstart + roi_start_w, <span class="number">0</span>), data_width);</span><br><span class="line">                wend = fminf(fmaxf(wend + roi_start_w, <span class="number">0</span>), data_width);</span><br><span class="line"></span><br><span class="line">                <span class="keyword">const</span> <span class="keyword">int</span> pool_index = index_output + (ph * pooled_width + pw);</span><br><span class="line">                <span class="keyword">int</span> is_empty = (hend &lt;= hstart) || (wend &lt;= wstart);</span><br><span class="line">                <span class="keyword">if</span> (is_empty)</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="keyword">for</span> (c = <span class="number">0</span>; c &lt; num_channels * output_area; c += output_area)</span><br><span class="line">                    &#123;</span><br><span class="line">                        output_flat[pool_index + c] = <span class="number">0</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="keyword">int</span> h, w, c;</span><br><span class="line">                    <span class="keyword">for</span> (h = hstart; h &lt; hend; ++h)</span><br><span class="line">                    &#123;</span><br><span class="line">                        <span class="keyword">for</span> (w = wstart; w &lt; wend; ++w)</span><br><span class="line">                        &#123;</span><br><span class="line">                            <span class="keyword">for</span> (c = <span class="number">0</span>; c &lt; num_channels; ++c)</span><br><span class="line">                            &#123;</span><br><span class="line">                                <span class="keyword">const</span> <span class="keyword">int</span> index = (h * data_width + w) * num_channels + c;</span><br><span class="line">                                <span class="keyword">if</span> (data_flat[index_data + index] &gt; output_flat[pool_index + c * output_area])</span><br><span class="line">                                &#123;</span><br><span class="line">                                    output_flat[pool_index + c * output_area] = data_flat[index_data + index];</span><br><span class="line">                                &#125;</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Increment ROI index</span></span><br><span class="line">        index_roi += size_rois;<span class="comment">//5</span></span><br><span class="line">        index_output += pooled_height * pooled_width * num_channels;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="6-关于RPN网络和FastRCNN网络正负样本阈值选取的思考"><a href="#6-关于RPN网络和FastRCNN网络正负样本阈值选取的思考" class="headerlink" title="6.关于RPN网络和FastRCNN网络正负样本阈值选取的思考"></a>6.关于RPN网络和FastRCNN网络正负样本阈值选取的思考</h1><p><a href="https://www.zhihu.com/question/265171400/answer/291708234" target="_blank" rel="noopener">reference</a></p>
+<p>作者对faster rcnn这个两阶段框架的总结：<code>a two-stage cascade consisting of class-agnostic proposals and class-specific detections</code> </p>
+<h2 id="1-RPN"><a href="#1-RPN" class="headerlink" title="1.RPN:"></a>1.RPN:</h2><h4 id="二分类"><a href="#二分类" class="headerlink" title="二分类"></a>二分类</h4><p>RPN的正负样本确定的标准是和gt的<strong>iou大于0.7为正样本，小于0.3是负样本</strong>；</p>
+<p>首先，图像送入网络前进行了缩放，尺寸大概是$1000\times600$的样子，经过特征提取网络后，步长16，特征图尺寸下降16倍，所以anchor数量$w/16\times h/16\times9=21000$个，<strong>数量级为万</strong>。</p>
+<p>通常在proposal阶段，我们必须生成许多ROI。为什么？如果在第一阶段（区域提议）中未检测到对象，则无法在第二阶段对其进行正确分类。这就是为什么这个region proposal有很高的召回率非常重要。这是通过生成大量proposal（例如，每帧几千）来实现的。在检测算法的第二阶段中，大多数将被归类为背景。</p>
+<p>选取正负样本是为了计算loss，选取样本过多会导致<strong>模型无法收敛</strong>，所以使用更加严苛的条件筛选样本，活得更少的样本参与loss计算，比如512个，利用收敛。</p>
+<p><code>&quot;leads to faster optimization and a more stable training&quot;</code>。来自SSD原文。</p>
+<p>RPN原文中说达到<strong>至多1:1的比例</strong>。实际经验中1:3也是常用的技巧了。</p>
+<h2 id="2-per-region-classifier"><a href="#2-per-region-classifier" class="headerlink" title="2.per-region classifier"></a>2.per-region classifier</h2><h4 id="多分类与回归"><a href="#多分类与回归" class="headerlink" title="多分类与回归"></a>多分类与回归</h4><p>精确训练阶段，rpn网络会生产大约2000个候选区域，这些候选区域不会都拿去训练的，比如有一些实现中，iou值大于0.5的，大概排序后选取32个，而对于负样本是选取iou小于0.5的，且是倒序选取最小的一些，大约96个，基本正负比例在1:3。这样选取后再进行精确的回归和分类。从上面也能看出此阶段的<strong>iou设置阈值为0.5是为了能获得更多的roi，毕竟总共才2000，有时iou大于0.5的anchor不够了，还要从排序结果中再选取一些，即使iou小于0.5</strong></p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="http://www.telesens.co/2018/03/11/object-detection-and-classification-using-r-cnns/" target="_blank" rel="noopener">reference</a></p>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/06/YOLOv3/" rel="next" title="YOLOv3">
+                <i class="fa fa-chevron-left"></i> YOLOv3
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/09/yolo3_pytorch_网络解析/" rel="prev" title="yolov3_PyTorch">
+                yolov3_PyTorch <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#总框图"><span class="nav-number">1.</span> <span class="nav-text">总框图</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-image-pre-processing"><span class="nav-number">2.</span> <span class="nav-text">1.image pre-processing</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-network-organization"><span class="nav-number">3.</span> <span class="nav-text">2.network organization</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-特征提取网络"><span class="nav-number">3.1.</span> <span class="nav-text">1.特征提取网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-整体架构"><span class="nav-number">3.2.</span> <span class="nav-text">2.整体架构</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-training"><span class="nav-number">4.</span> <span class="nav-text">3.training</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Anchor-Generation-Layer"><span class="nav-number">4.1.</span> <span class="nav-text">Anchor Generation Layer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Region-Proposal-Layer"><span class="nav-number">4.2.</span> <span class="nav-text">Region Proposal Layer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Region-Proposal-Network"><span class="nav-number">4.2.1.</span> <span class="nav-text">Region Proposal Network</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Proposal-layer"><span class="nav-number">4.3.</span> <span class="nav-text">Proposal layer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Anchor-target-layer"><span class="nav-number">4.4.</span> <span class="nav-text">Anchor target layer</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-Calculating-RPN-Loss"><span class="nav-number">4.4.0.1.</span> <span class="nav-text">4.Calculating RPN Loss</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Calculating-Classification-Layer-Loss"><span class="nav-number">4.5.</span> <span class="nav-text">Calculating Classification Layer Loss</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Proposal-Target-Layer"><span class="nav-number">4.6.</span> <span class="nav-text">Proposal Target Layer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Crop-Pooling"><span class="nav-number">4.7.</span> <span class="nav-text">Crop Pooling</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Classification-Layer"><span class="nav-number">4.8.</span> <span class="nav-text">Classification Layer</span></a></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#4-Implementation-Details-Inference"><span class="nav-number">5.</span> <span class="nav-text">4.Implementation Details: Inference</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-Appendix"><span class="nav-number">6.</span> <span class="nav-text">5.Appendix</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ResNet50"><span class="nav-number">6.1.</span> <span class="nav-text">ResNet50</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ROI-Pooling-c"><span class="nav-number">6.2.</span> <span class="nav-text">ROI Pooling.c</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6-关于RPN网络和FastRCNN网络正负样本阈值选取的思考"><span class="nav-number">7.</span> <span class="nav-text">6.关于RPN网络和FastRCNN网络正负样本阈值选取的思考</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-RPN"><span class="nav-number">7.1.</span> <span class="nav-text">1.RPN:</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#二分类"><span class="nav-number">7.1.0.1.</span> <span class="nav-text">二分类</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-per-region-classifier"><span class="nav-number">7.2.</span> <span class="nav-text">2.per-region classifier</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#多分类与回归"><span class="nav-number">7.2.0.1.</span> <span class="nav-text">多分类与回归</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Reference"><span class="nav-number">8.</span> <span class="nav-text">Reference</span></a></li></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

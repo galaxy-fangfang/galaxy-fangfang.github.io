@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="摘要:该文章有两个主要关键见解：1.使用CNN来自底向上产生region proposals来定位和分割目标。2. 当标记的训练样本不足时，有监督的预训练来进行辅助任务，接着fine-tuning，可以产生显著的性能提升。将regions和CNN结合的方法叫做RCNN,在VOC2012的数据集上达到了mAP53.3%的成绩。同时，作者也将该方法与OverFeat在200类目标的ILSVRC2013">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rcnn">
+<meta property="og:url" content="http://yoursite.com/2017/12/22/rcnn/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="摘要:该文章有两个主要关键见解：1.使用CNN来自底向上产生region proposals来定位和分割目标。2. 当标记的训练样本不足时，有监督的预训练来进行辅助任务，接着fine-tuning，可以产生显著的性能提升。将regions和CNN结合的方法叫做RCNN,在VOC2012的数据集上达到了mAP53.3%的成绩。同时，作者也将该方法与OverFeat在200类目标的ILSVRC2013">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/overview.png">
+<meta property="og:image" content="http://yoursite.com/images/warpimage.png">
+<meta property="og:image" content="http://yoursite.com/images/voc2010.png">
+<meta property="og:image" content="http://yoursite.com/images/ILSVRC2013.png">
+<meta property="og:updated_time" content="2019-07-14T07:17:30.052Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="rcnn">
+<meta name="twitter:description" content="摘要:该文章有两个主要关键见解：1.使用CNN来自底向上产生region proposals来定位和分割目标。2. 当标记的训练样本不足时，有监督的预训练来进行辅助任务，接着fine-tuning，可以产生显著的性能提升。将regions和CNN结合的方法叫做RCNN,在VOC2012的数据集上达到了mAP53.3%的成绩。同时，作者也将该方法与OverFeat在200类目标的ILSVRC2013">
+<meta name="twitter:image" content="http://yoursite.com/images/overview.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2017/12/22/rcnn/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>rcnn | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/12/22/rcnn/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">rcnn
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2017-12-22 21:06:42" itemprop="dateCreated datePublished" datetime="2017-12-22T21:06:42+08:00">2017-12-22</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:30" itemprop="dateModified" datetime="2019-07-14T15:17:30+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/" itemprop="url" rel="index"><span itemprop="name">paper</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/object-detection/" itemprop="url" rel="index"><span itemprop="name">object detection</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要:"></a>摘要:</h1><p>该文章有两个主要关键见解：1.使用CNN来自底向上产生region proposals来定位和分割目标。2. 当标记的训练样本不足时，有监督的预训练来进行辅助任务，接着fine-tuning，可以产生显著的性能提升。将regions和CNN结合的方法叫做RCNN,在VOC2012的数据集上达到了mAP53.3%的成绩。同时，作者也将该方法与OverFeat在200类目标的ILSVRC2013的数据集上进行对比。</p>
+<a id="more"></a>
+
+<p><a href="https://arxiv.org/abs/1311.2524" target="_blank" rel="noopener">paper</a><br><a href="https://github.com/rbgirshick/rcnn" target="_blank" rel="noopener">code</a></p>
+<h1 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h1><p>使用CNN进行目标检测有两个挑战：</p>
+<ol>
+<li>利用滑动窗口进行目标检测时，对于5层的卷积层会有非常大的感受野(195*108)。对于精确定位不利。</li>
+<li>训练CNN的样本不足。</li>
+</ol>
+<p>我们采取的解决方法是利用无监督的预训练加上有监督的fine-tuning。在一个大的辅助数据集(ILSVRC)上进行有监督的预训练，然后再在一个小的数据集(PASCAL VOC)上进行特定的fine-tuning。<br><img src="/images/overview.png" alt="overview"><br>test 过程：首先输入一张图片；提取大约2000个(category-independent)自底向上的region proposals；然后使用一个大的CNN网络来计算每个proposal的特征；最后使用特定类(class specific)的线性SVM进行分类。RCNN在PASCAL VOC2010上的mAP达到了53.7%。<br>我们用一个简单的技巧(affine image warping)从每个region proposal来计算出一个固定大小的CNN输入。</p>
+<h1 id="Objection-detection-with-R-CNN"><a href="#Objection-detection-with-R-CNN" class="headerlink" title="Objection detection with R-CNN"></a>Objection detection with R-CNN</h1><p>我们的目标检测系统包含三个模块：首先产生类别独立的region proposal，这些proposal定义了能够输入检测器的候选检测集合。第二个模块是个大的卷及审计网络，从每个region提取出固定长度的特征向量。第三个模块是一组特定类别的线性SVM。</p>
+<h2 id="Module-design"><a href="#Module-design" class="headerlink" title="Module design"></a>Module design</h2><h3 id="Region-proposals"><a href="#Region-proposals" class="headerlink" title="Region proposals"></a>Region proposals</h3><p>很多方法是要产生category-independent的region proposals。虽然RCNN对于特定的region proposal方法是不可知的，因此我们使用selective search 以方便和之前的检测工作进行对比。</p>
+<h3 id="Feature-extraction"><a href="#Feature-extraction" class="headerlink" title="Feature extraction"></a>Feature extraction</h3><p>将一幅减去均值的RGB图像(227*227)作为输入，紧跟着5层卷积层和2层全连接层。通过前向传播计算特征，从每个region proposal提取一个4096维的特征向量。<br>为了计算一个region proposal的特征，我们首先要把这个region队形的图像数据转换成能够和CNN兼容的兴衰(CNN需要固定输入227*227)。我们不管这个候选region的尺度或是纵横比，直接将所有的像素warp到一个bounding box中变成需要的大小。在warp之前需要dilate这个bounding box，这样每个原始的box经过warp到特定size之后，正好是16像素。如图2所示。<br><img src="/images/warpimage.png" alt="warpimage"></p>
+<h2 id="test-time-detection"><a href="#test-time-detection" class="headerlink" title="test-time detection"></a>test-time detection</h2><p>测试阶段，我们在测试图片上使用selective search来提取2000个regionproposal。然后将每个proposal warp成固定大小，送入CNN中前向传播，计算特征。再将提取出的特征使用SVM计算属于每个类的分数。有了图片的所有region的分数，我们就能应用贪婪非极大值抑制，来去除和高分数的region的重叠面积大于阈值的region。</p>
+<h3 id="run-time-analysis"><a href="#run-time-analysis" class="headerlink" title="run-time analysis"></a>run-time analysis</h3><ol>
+<li>所有类别上的所有CNN参数都是共享的</li>
+<li>由CNN计算得到的特征向量是低维的(4096维)</li>
+</ol>
+<p>共享参数的结果是，计算proposal和feature的时间被分摊到每一类上了。唯一的需要每个特定类的计算是：</p>
+<ol>
+<li>特征和SVM权值之间的点乘</li>
+<li>非极大值抑制</li>
+</ol>
+<p>实际上，所有的点乘操作被batch到了一个矩阵和矩阵的乘法。特征矩阵通常是2000*4096维的，而SVM的权值矩阵是4096*N维的(N是类别数)。<br>通过以上分析，即便检测目标有100k类，我们的矩阵成大只需要10秒钟。</p>
+<h2 id="Training"><a href="#Training" class="headerlink" title="Training"></a>Training</h2><h3 id="Supervised-pre-training"><a href="#Supervised-pre-training" class="headerlink" title="Supervised pre-training"></a>Supervised pre-training</h3><p>我们在一个大的辅助数据集上(ILSVRC2012 classification)pre-trained CNN 的参数，仅仅是使用图像级别的标注，没有bounding box的标注。</p>
+<h3 id="Domain-specific-fine-tuning"><a href="#Domain-specific-fine-tuning" class="headerlink" title="Domain-specific fine-tuning"></a>Domain-specific fine-tuning</h3><p>为了适应检测的新任务和(warped proposal window)的新领域，我们继续使用SGD来训练CNN的参数。除了将CNN中用于ImageNet1000分类的分类层改成N+1层外，其他都没有变。<br>我们将与groundtruth的<strong>IOU&gt;0.5</strong>的proposal视为正样本，其余的是负样本。SGD的学习率开始是0.001，既可以fine-tuning也不会破坏初始化。在每个SGD迭代过程中，我们统一采样32个positive window(在所有类别上)和96和background window来构建一个size为128的mini-batch。</p>
+<p><strong>注意</strong>:我们将采样偏向于positive window因为相比较于背景来说它们非常稀少。</p>
+<h3 id="Object-category-classifiers"><a href="#Object-category-classifiers" class="headerlink" title="Object category classifiers"></a>Object category classifiers</h3><p>比如现在要训练一个检测汽车的二分类器。显然一个包围了汽车的region一定是正样本。同样，和汽车毫无关系的region一定是背景。但是部分包含汽车的region该如何定义呢？我们定义了一个IOU的重叠阈值。不同的IOU阈值对于检测的mAP影响很大。这里设为<strong>IOU=0.3</strong>。<br>在appendix b中讨论了为什么训练SVM和fine-tune时候的正负样本定义不一样。<br>同时讨论了使用SVM来训练分类器而不是简单地使用fine-tunedCNN之后的softmax层输出的原因。</p>
+<h2 id="Results-on-PASCAL-VOC-2010-12-and-ILSVRC2013"><a href="#Results-on-PASCAL-VOC-2010-12-and-ILSVRC2013" class="headerlink" title="Results on PASCAL VOC 2010-12 and ILSVRC2013"></a>Results on PASCAL VOC 2010-12 and ILSVRC2013</h2><p><img src="/images/voc2010.png" alt="voc"><br><img src="/images/ILSVRC2013.png" alt="ILSVRC2013"></p>
+<h1 id="Visualization-ablation-and-modes-of-error"><a href="#Visualization-ablation-and-modes-of-error" class="headerlink" title="Visualization, ablation, and modes of error"></a>Visualization, ablation, and modes of error</h1><h2 id="可视化学习到的特征"><a href="#可视化学习到的特征" class="headerlink" title="可视化学习到的特征"></a>可视化学习到的特征</h2><p>我们可视化网络第五层也是最后一层的最大池化层的输出单元。特征图大小是(6*6*256=9216)维的。忽略了边界效应后，每个池化单元有一个195*195的感受野。中心的pool5几乎有全局视野。通过显示的顶层16个激活单元输出来看，##网络学习到的特征表达是形状、纹理、颜色和物质特性的结合。接下来的第6层全连接层就是将这些丰富信息的特征建模##。</p>
+<h2 id="Ablation-study"><a href="#Ablation-study" class="headerlink" title="Ablation study"></a>Ablation study</h2><blockquote>
+<p>An ablation study typically refers to removing some “feature” of the model or algorithm, and seeing how that affects performance.</p>
+</blockquote>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/21/AI-challenger/" rel="next" title="AI_challenger">
+                <i class="fa fa-chevron-left"></i> AI_challenger
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/25/fast-rcnn/" rel="prev" title="fast rcnn">
+                fast rcnn <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#摘要"><span class="nav-number">1.</span> <span class="nav-text">摘要:</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#引言"><span class="nav-number">2.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Objection-detection-with-R-CNN"><span class="nav-number">3.</span> <span class="nav-text">Objection detection with R-CNN</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Module-design"><span class="nav-number">3.1.</span> <span class="nav-text">Module design</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Region-proposals"><span class="nav-number">3.1.1.</span> <span class="nav-text">Region proposals</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Feature-extraction"><span class="nav-number">3.1.2.</span> <span class="nav-text">Feature extraction</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#test-time-detection"><span class="nav-number">3.2.</span> <span class="nav-text">test-time detection</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#run-time-analysis"><span class="nav-number">3.2.1.</span> <span class="nav-text">run-time analysis</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Training"><span class="nav-number">3.3.</span> <span class="nav-text">Training</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Supervised-pre-training"><span class="nav-number">3.3.1.</span> <span class="nav-text">Supervised pre-training</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Domain-specific-fine-tuning"><span class="nav-number">3.3.2.</span> <span class="nav-text">Domain-specific fine-tuning</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Object-category-classifiers"><span class="nav-number">3.3.3.</span> <span class="nav-text">Object category classifiers</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Results-on-PASCAL-VOC-2010-12-and-ILSVRC2013"><span class="nav-number">3.4.</span> <span class="nav-text">Results on PASCAL VOC 2010-12 and ILSVRC2013</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Visualization-ablation-and-modes-of-error"><span class="nav-number">4.</span> <span class="nav-text">Visualization, ablation, and modes of error</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#可视化学习到的特征"><span class="nav-number">4.1.</span> <span class="nav-text">可视化学习到的特征</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Ablation-study"><span class="nav-number">4.2.</span> <span class="nav-text">Ablation study</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="介绍相似度计算的方法，着重于spark编程方面。。。">
+<meta name="keywords" content="Recommendation">
+<meta property="og:type" content="article">
+<meta property="og:title" content="推荐系统中的余弦相似度计算">
+<meta property="og:url" content="http://yoursite.com/2018/06/24/相似度计算/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="介绍相似度计算的方法，着重于spark编程方面。。。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-07-14T07:17:26.247Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="推荐系统中的余弦相似度计算">
+<meta name="twitter:description" content="介绍相似度计算的方法，着重于spark编程方面。。。">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/06/24/相似度计算/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>推荐系统中的余弦相似度计算 | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/24/相似度计算/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">推荐系统中的余弦相似度计算
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-06-24 09:09:04" itemprop="dateCreated datePublished" datetime="2018-06-24T09:09:04+08:00">2018-06-24</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:26" itemprop="dateModified" datetime="2019-07-14T15:17:26+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/word2vector/" itemprop="url" rel="index"><span itemprop="name">word2vector</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/word2vector/code/" itemprop="url" rel="index"><span itemprop="name">code</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>介绍相似度计算的方法，着重于spark编程方面。。。</p>
+<a id="more"></a>
+
+<h2 id="背景介绍："><a href="#背景介绍：" class="headerlink" title="背景介绍："></a>背景介绍：</h2><p>在推荐系统中，基于内容的推荐方法和协同过滤方法都会用到相似度计算。最简单的就是计算行（用户）或列（项）的余弦或其他相似性，并推荐k个用户最喜欢的最近邻项。</p>
+<p>在Word2vector中，文本内容的处理被简化成k维向量空间中的向量运算，其向量之间的相似度可以用来表示文本语义的相似度。</p>
+<p>由此可知，相似度度量是一个很重要并且很基础的内容，因此本文介绍一下，spark中计算相似度的若干种方法。</p>
+<p>我们假设已经得到了向量或者矩阵，本文主要讨论如何使用spark来计算他们之间的相似度。（作为一个<code>编程 slow learner</code>，好不容易把Python用顺手了，又让我学Scala，想哭:sob:).</p>
+<h2 id="数据准备："><a href="#数据准备：" class="headerlink" title="数据准备："></a>数据准备：</h2><p>本文开始使用一个简单的例子，使用GitHub上一个中文词向量项目中预训练好的词向量作为我们的实验数据。<a href="https://github.com/Embedding/Chinese-Word-Vectors" target="_blank" rel="noopener">Chinese Word Vector</a>.这个项目提供了100多个不同形式的（密集和稀疏），上下文特征（单词，ngram，字符等）和语料库训练的中文单词向量（嵌入）。可以轻松获得具有不同属性的预先训练的向量，并将它们用于其他任务。</p>
+<p><strong>格式：</strong></p>
+<p>预训练的向量文件是txt格式，第一行表示元数据信息：第一个数字表示本文件的单词个数，第二个表示向量维数。</p>
+<p>我们以微博语料库训练的、context feature为<code>Word+Ngram</code>的向量包<a href="https://pan.baidu.com/s/11PWBcvruXEDvKf2TiIXntg" target="_blank" rel="noopener">sgns.weibo.bigram-char</a>为例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">191321 300</span><br></pre></td></tr></table></figure>
+
+<p>表示本文件的词数量以及向量维度为300维。</p>
+<p>取某向量示意：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">我们 0.838326 0.401992 0.312874…… 0.886258 [total 300-d]</span><br></pre></td></tr></table></figure>
+
+<p>每行数据以空格<code>&quot; &quot;</code>分隔。</p>
+<p><strong>代码：</strong></p>
+<p>我们读入该词向量包，在spark中自动存成RDD数据格式。</p>
+<p>假设我们取”春”、“夏”，”秋”，”冬”四个词：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//环境</span></span><br><span class="line"><span class="keyword">import</span> org.apache.spark.&#123;<span class="type">SparkConf</span>, <span class="type">SparkContext</span>&#125;</span><br><span class="line"><span class="keyword">val</span> conf = <span class="keyword">new</span> <span class="type">SparkConf</span>().setAppName(<span class="string">"CosineSimilarity"</span>)</span><br><span class="line"><span class="keyword">val</span> sc = <span class="keyword">new</span> <span class="type">SparkContext</span>(conf)</span><br><span class="line"></span><br><span class="line"><span class="comment">//读取数据Load and parse the data file.</span></span><br><span class="line"><span class="keyword">val</span> rows = sc.textFile(<span class="string">"sgns.weibo.bigram-char"</span>).map&#123;line =&gt; &#123;<span class="keyword">val</span> values = line.split(<span class="string">" "</span>);<span class="keyword">val</span> key = values(<span class="number">0</span>);<span class="keyword">val</span> word = values.drop(<span class="number">1</span>).map(_.toDouble);(key,word)&#125;&#125;.filter(x =&gt; x._1.equals(<span class="string">"春"</span>)|| x._1.equals(<span class="string">"夏"</span>) || x._1.equals(<span class="string">"秋"</span>) || x._1.equals(<span class="string">"冬"</span>))</span><br><span class="line"><span class="comment">//rows: org.apache.spark.rdd.RDD[(String, Array[Double])] = MapPartitionsRDD[3] at filter at &lt;console&gt;:25</span></span><br><span class="line">rows.take(<span class="number">1</span>).foreach(println)</span><br><span class="line"><span class="comment">//(春,[D@ce8b59e)</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="My-approach-使用breeze库计算"><a href="#My-approach-使用breeze库计算" class="headerlink" title="My approach:使用breeze库计算"></a>My approach:使用breeze库计算</h2><p>breeze 作为一个scala 线性代数库 ，spark mlib机器学习使用了其中实现 ，最重要的是它相当于python的numpy 使用方法也很类似，这很重要。具体的breeze的使用见：<a href="https://blog.csdn.net/HANLIPENGHANLIPENG/article/details/70139010" target="_blank" rel="noopener">saprk向量矩阵的使用</a></p>
+<h3 id="step1：数据转换"><a href="#step1：数据转换" class="headerlink" title="step1：数据转换"></a>step1：数据转换</h3><p>首先，我们将之前读入的RDD数据要转换为breeze中向量或者矩阵的形式。</p>
+<h4 id="尝试1："><a href="#尝试1：" class="headerlink" title="尝试1："></a>尝试1：</h4><p>将读入的RDD数据直接转换为<code>breeze vector</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> dm = rows.map(x =&gt; <span class="type">DenseVector</span>(x._2))</span><br><span class="line"><span class="comment">//dm: org.apache.spark.rdd.RDD[breeze.linalg.DenseVector[Double]] = MapPartitionsRDD[61] at map at &lt;console&gt;:46</span></span><br><span class="line"><span class="comment">//可见这仍然是一个RDD数据，只是每条数据变成了一个breeze的densevector格式</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//或者</span></span><br><span class="line"><span class="keyword">val</span> dm = rows.map(x =&gt; <span class="type">DenseMatrix</span>(x._2))</span><br><span class="line"><span class="comment">//dm: org.apache.spark.rdd.RDD[breeze.linalg.DenseMatrix[Double]] = MapPartitionsRDD[60] at map at &lt;console&gt;:46</span></span><br><span class="line"><span class="comment">//和上面同理，RDD[DenseMatrix]格式</span></span><br></pre></td></tr></table></figure>
+
+<p>因为是RDD格式，是没有办法进行各种breeze向量或者矩阵的操作的</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dm.t</span><br><span class="line"><span class="comment">// error: could not find implicit value for parameter op: breeze.linalg.support.CanTranspose[org.apache.spark.rdd.RDD[breeze.linalg.DenseMatrix[Double]]</span></span><br></pre></td></tr></table></figure>
+
+<p>即便每条转换成向量，因为还是RDD数据，也不行：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> v2 = <span class="type">DenseVector</span>(denserows.filter(x =&gt; x._1.equals(<span class="string">"夏"</span>)))</span><br><span class="line"><span class="comment">//v2: breeze.linalg.DenseVector[org.apache.spark.rdd.RDD[(String, Array[Double])]] = DenseVector(MapPartitionsRDD[67] at filter at &lt;console&gt;:46)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> v2 = <span class="type">DenseVector</span>(denserows.filter(x =&gt; x._1.equals(<span class="string">"夏"</span>)))</span><br><span class="line"><span class="comment">//v2: breeze.linalg.DenseVector[org.apache.spark.rdd.RDD[(String, Array[Double])]] = DenseVector(MapPartitionsRDD[68] at filter at &lt;console&gt;:46)</span></span><br><span class="line"></span><br><span class="line">v1.dot(v2)</span><br><span class="line"><span class="comment">//&lt;console&gt;:49: error: diverging implicit expansion for type breeze.linalg.operators.OpMulInner.Impl2[breeze.linalg.DenseVector[org.apache.spark.rdd.RDD[(String, Arr                             ay[Double])]],breeze.linalg.DenseVector[org.apache.spark.rdd.RDD[(String, Array[Double])]],That]</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="尝试2："><a href="#尝试2：" class="headerlink" title="尝试2："></a>尝试2：</h4><p>RDD-&gt;Array-&gt;DenseMatrix</p>
+<p>原始读进去的数据<code>rows</code>是<code>rdd.RDD[(String, Array[Double])]</code>格式。</p>
+<ul>
+<li>首先将其转换成<code>Array[Array[Double]]</code>格式，并读取行列数，此时一个二维数组，在铺平成一维数组。</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> <span class="type">Array_rows</span> = rows.map(x =&gt; x._2).collect()</span><br><span class="line"><span class="comment">//Array_rows: Array[Array[Double]] = Array(Array(0.729903, 1.011596, 0.11623, 0.671848, -0.413983, 0.38072, 0.055408, 0.293588,, 0.186168, ...</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> row = <span class="type">Array_rows</span>.length</span><br><span class="line"><span class="comment">//row: Int = 4</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> col = <span class="type">Array_rows</span>(<span class="number">0</span>).length</span><br><span class="line"><span class="comment">//col: Int = 300</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> flatten = <span class="type">Array_rows</span>.flatten</span><br><span class="line"><span class="comment">//flatten: Array[Double] = Array(0.729903, 1.011596, 0.11623, 0.671848, -0.413983, 0.38072, 0.055408, 0.293588, 0.148698, 0.231511, -0.084237, -0.101489, 0.656804, , -0.456365, 0.906...</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>从一维数组创建Breeze矩阵：</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> breeze.linalg._</span><br><span class="line"><span class="comment">//import breeze.linalg._</span></span><br><span class="line"><span class="keyword">val</span> mat = <span class="keyword">new</span> <span class="type">DenseMatrix</span>(col,row,flatten).t</span><br><span class="line"><span class="comment">//mat: breeze.linalg.DenseMatrix[Double] =</span></span><br><span class="line"><span class="comment">//0.729903  1.011596  0.11623   0.671848   -0.413983  0.38072    ... (300 total)</span></span><br><span class="line"><span class="comment">//0.5044    0.560648  0.111501  0.105221   -0.223379  -0.046827  ...</span></span><br><span class="line"><span class="comment">//0.835371  1.232148  0.080021  0.206688   -0.340422  -0.084726  ...</span></span><br><span class="line"><span class="comment">//0.482624  0.497307  0.508875  -0.241568  -0.61349   0.132329   ...</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意：因为平铺数组（按行）与创建二维数组（按列）的方式正好相反，因此在创建二维矩阵时需要交换行数和列数，并在最后把矩阵转置即可。不可以在创建的时候交换行列数哦</strong>！</p>
+<h3 id="step2：建立相似度算法计算公式"><a href="#step2：建立相似度算法计算公式" class="headerlink" title="step2：建立相似度算法计算公式"></a>step2：建立相似度算法计算公式</h3><h4 id="尝试1：-1"><a href="#尝试1：-1" class="headerlink" title="尝试1："></a>尝试1：</h4><p>有了breeze矩阵之后，就可以对其进行索引操作：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//取第一行，即"春"的word vector</span></span><br><span class="line">mat(<span class="number">0</span>,::)</span><br><span class="line"><span class="comment">//res4: breeze.linalg.Transpose[breeze.linalg.DenseVector[Double]] = Transpose(DenseVector(0.729903, 1.011596, 0.11623, 0.671848, -0.413983, 0.38072, 0.055408, 0.293588, 0.148698, 0.231511, -0.084237, -0.101489, 0.656804, 0.081559, -0.40669, 0.019526, -0.078754, -0.536043, -0.367921, 0.852284, 0.306367, -0.322883, -0.758667, 0.096341, -1.008443, 0.047269, 0.078617, 0.528206, 0.586177, 0.331057, -0.585402, -0.626427, -0.337651, 0.222883, 0.251367, 0.363349, 0.374307, -0.230228, -0.032158, 0.47373, 0.467167, 0.52929, -0.435956, -0.008174, -0.358098, 0.658414, 0.378351, -0.710465, -0.415881, -0.805342, -0.475245, -0.658201, -0.387944, 0.215591, -0.092659, 0.389003, -0.872504, 0.43005, 0.423282, 1.053913, -0.144121, 0.09983, 0.530485, 0.817919, 0.10237, 0.211079, 1.78E-4, 0.092287, 0.450624, ...</span></span><br></pre></td></tr></table></figure>
+
+<p>依次可以得到各个vector，并计算余弦相似度。breeze库支持点积（内积），对应元素操作等，因此计算方便，但是，这种对量量向量计算相似度的话，需要计算六次，有点麻烦。我们直接对矩阵进行操作，如下:</p>
+<h4 id="尝试2：-1"><a href="#尝试2：-1" class="headerlink" title="尝试2："></a>尝试2：</h4><ul>
+<li>设$A_i$为breeze矩阵第$i$个行向量，则矩阵表示为：</li>
+</ul>
+<p>$$<br>mat = \begin{bmatrix}<br>        A_1 \<br>        A_2 \<br>        A_3 \<br>        A_4 \<br>        \end{bmatrix}<br>$$</p>
+<ul>
+<li>假设我们计算$A_1,A_2$的余弦相似度：</li>
+</ul>
+<p>$$<br>cos(A_1,A_2) = \frac{A_1\cdot A_2}{|A_1|\cdot |A_2|} \=\frac{A_1\cdot A_2}{\sqrt{\sum_i^{300}a_{1i}^2}\cdot \sqrt{\sum_i^{300}a_{2i}^2}}<br>$$</p>
+<ul>
+<li>所以我们可以通过直接操作矩阵来计算：</li>
+</ul>
+<p>$$<br>mat \cdot mat^T = \begin{bmatrix}<br>        A_1 \<br>        A_2 \<br>        A_3 \<br>        A_4 \<br>        \end{bmatrix}\cdot  \begin{bmatrix}<br>        A_1^T&amp;<br>        A_2 ^T&amp;<br>        A_3 ^T&amp;<br>        A_4 ^T&amp;<br>        \end{bmatrix} \<br>        = \begin{bmatrix}<br>        A_1 \cdot A_1^T &amp;  A_1 \cdot A_2^T &amp;  A_1 \cdot A_3^T &amp;  A_1 \cdot A_4^T \<br>        …… &amp; A_2 \cdot A_2^T &amp;  A_2 \cdot A_3^T &amp; A_2 \cdot A_4^T \<br>        …… &amp;…… &amp;  A_3 \cdot A_3^T &amp;  A_3 \cdot A_4^T \<br>        …… &amp; …… &amp; ……  &amp; A_4 \cdot A_4^T \<br>        \end{bmatrix}<br>$$</p>
+<p><strong>代码：</strong></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mat*mat_t</span><br><span class="line"><span class="comment">//res70: breeze.linalg.DenseMatrix[Double] =</span></span><br><span class="line"><span class="comment">//69.13677014067899   24.334118226385  32.43453861723301   30.920464306442017</span></span><br><span class="line"><span class="comment">//24.334118226385  75.83683037460902   29.086041093175016  28.565852270159983</span></span><br><span class="line"><span class="comment">//32.43453861723301 29.086041093175016  62.27936389297101   39.45101628343302</span></span><br><span class="line"><span class="comment">//30.920464306442017 28.565852270159983  39.45101628343302  70.68849670204202</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>对$mat$的每一行求模：</li>
+</ul>
+<p>$$<br>|mat| = \begin{bmatrix}<br>        |A_1| \<br>        |A_2| \<br>        |A_3| \<br>        |A_4 |\<br>        \end{bmatrix} =  \begin{bmatrix}<br>        \sqrt{\sum_i^{300} a_{1i}^2} \<br>         \sqrt{\sum_i^{300} a_{2i}^2}\<br>        \sqrt{\sum_i^{300} a_{3i}^2} \<br>         \sqrt{\sum_i^{300} a_{4i}^2} \<br>        \end{bmatrix}<br>$$</p>
+<p><strong>代码：</strong></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> <span class="type">A1_2</span> = sum(mat :*mat,<span class="type">Axis</span>._1)</span><br><span class="line"><span class="comment">//对每个元素求平方，再按行求和</span></span><br><span class="line"><span class="comment">//warning: there was one deprecation warning; re-run with -deprecation for details</span></span><br><span class="line"><span class="comment">//A1_2: breeze.linalg.DenseVector[Double] = DenseVector(69.13677014067899, 75.83683037460902, 62.27936389297101, 70.68849670204202)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> <span class="type">A1_abs</span> = sqrt(<span class="type">A1_2</span>)</span><br><span class="line"><span class="comment">//A1_abs: breeze.linalg.DenseVector[Double] = DenseVector(8.314852382374506, 8.708434438784565, 7.891727560741755, 8.40764513416462)</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>最后求的相似度矩阵为，<code>:/</code>表示对应元素相除：</li>
+</ul>
+<p>$$<br>cosmat = mat\cdot mat^T :/ (|mat|\cdot |mat|^T) \<br> =\begin{bmatrix}<br>        A_1 \<br>        A_2 \<br>        A_3 \<br>        A_4 \<br>        \end{bmatrix}\cdot  \begin{bmatrix}<br>        A_1^T&amp;<br>        A_2 ^T&amp;<br>        A_3 ^T&amp;<br>        A_4 ^T<br>        \end{bmatrix} \<br>        :/ \<br>        \begin{bmatrix}<br>        |A_1| \<br>        |A_2| \<br>        |A_3|\<br>        |A_4 |\<br>        \end{bmatrix}\cdot  \begin{bmatrix}<br>        |A_1|&amp;<br>        |A_2| &amp;<br>        |A_3|&amp;<br>        |A_4 |<br>        \end{bmatrix} \<br>        = \begin{bmatrix}<br>        \frac{A_1 \cdot A_1^T}{|A_1||A_1|} &amp; \frac{A_1 \cdot A_2^T}{|A_1||A_2|} &amp;   \frac{A_1 \cdot A_3^T}{|A_1||A_3|} &amp;   \frac{A_1 \cdot A_4^T}{|A_1||A_4|} \<br>        …… &amp;  \frac{A_2 \cdot A_2^T}{|A_2||A_2|} &amp;  \frac{A_2 \cdot A_3^T}{|A_2||A_3|} &amp;  \frac{A_2\cdot A_4^T}{|A_2||A_4|} \<br>        …… &amp;…… &amp;  \frac{A_3 \cdot A_3^T}{|A_3||A_3|}&amp; \frac{A_3 \cdot A_4^T}{|A_3||A_4|}\<br>        …… &amp; …… &amp; ……  &amp;  \frac{A_4 \cdot A_4^T}{|A_4||A_4|}\<br>        \end{bmatrix} \<br>        =\begin{bmatrix}<br>        cos(A_1,A_1) &amp; cos(A_1,A_2) &amp;  cos(A_1,A_3) &amp;  cos(A_1,A_4) \<br>        …… &amp;…… &amp;  …… &amp; …… \<br>        …… &amp;…… &amp;  …… &amp;  …… \<br>        …… &amp; …… &amp; ……  &amp; cos(A_4,A_4)\<br>        \end{bmatrix}<br>$$</p>
+<p><strong>代码：</strong></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> mo = <span class="type">A1_abs</span>*<span class="type">A1_abs</span>.t</span><br><span class="line"><span class="comment">//mo: breeze.linalg.DenseMatrix[Double] =</span></span><br><span class="line"><span class="number">69.13677014067899</span>  <span class="number">72.40934684008003</span>  <span class="number">65.61854970948413</span>   <span class="number">69.9083281739681</span></span><br><span class="line"><span class="number">72.40934684008003</span>  <span class="number">75.83683037460904</span>  <span class="number">68.7245920714688</span>    <span class="number">73.21742643543864</span></span><br><span class="line"><span class="number">65.61854970948413</span>  <span class="number">68.7245920714688</span>   <span class="number">62.279363892971006</span>  <span class="number">66.35084482622324</span></span><br><span class="line"><span class="number">69.9083281739681</span>   <span class="number">73.21742643543864</span>  <span class="number">66.35084482622324</span>   <span class="number">70.688496702042</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//最后结果</span></span><br><span class="line">mat*mat_t :/mo</span><br><span class="line"><span class="comment">//res75: breeze.linalg.DenseMatrix[Double] =</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>最后的相似度矩阵为：</strong></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.0</span>                 <span class="number">0.3360632195747908</span>   <span class="number">0.4942891722056013</span>  <span class="number">0.4423001538457035</span></span><br><span class="line"><span class="number">0.3360632195747908</span>  <span class="number">0.9999999999999998</span>   <span class="number">0.4232261002426548</span>  <span class="number">0.39015100176115397</span></span><br><span class="line"><span class="number">0.4942891722056013</span>  <span class="number">0.4232261002426548</span>   <span class="number">1.0000000000000002</span>  <span class="number">0.5945819738506353</span></span><br><span class="line"><span class="number">0.4423001538457035</span>  <span class="number">0.39015100176115397</span>  <span class="number">0.5945819738506353</span>  <span class="number">1.0000000000000002</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Method1-map-reduce方法"><a href="#Method1-map-reduce方法" class="headerlink" title="Method1:map-reduce方法"></a>Method1:map-reduce方法</h2><p><strong>这是种很笨的方法</strong></p>
+<h3 id="step1-创建数组"><a href="#step1-创建数组" class="headerlink" title="step1.创建数组"></a>step1.创建数组</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> array = rows.map(x =&gt; x._2).collect</span><br><span class="line"><span class="comment">//array: Array[Array[Double]] = Array(Array(0.729903, 1.011596, 0.11623, 0.671848, -0.413983, 0.38072, 0.055408, 0.29358, -0.45...</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="step2-组成行向量"><a href="#step2-组成行向量" class="headerlink" title="step2.组成行向量"></a>step2.组成行向量</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> vector1 = array(<span class="number">0</span>).toVector</span><br><span class="line"><span class="comment">//vector1: Vector[Double] = Vector(0.729903, -0.456365, 0.9...</span></span><br><span class="line"><span class="keyword">val</span> vector2 = array(<span class="number">1</span>).toVector</span><br><span class="line">....</span><br><span class="line"><span class="keyword">val</span> vector4 = array(<span class="number">3</span>).toVector</span><br></pre></td></tr></table></figure>
+
+<h3 id="step3-计算相似度"><a href="#step3-计算相似度" class="headerlink" title="step3.计算相似度"></a>step3.计算相似度</h3><p>以vector1和vector2计算余弦距离为例：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">vector1.zip(vector2)</span><br><span class="line">res30: scala.collection.immutable.<span class="type">Vector</span>[(<span class="type">Double</span>, <span class="type">Double</span>)] = <span class="type">Vector</span>((<span class="number">0.729903</span>,<span class="number">0.5044</span>), (<span class="number">1.011596</span>,<span class="number">0.560648</span>), (<span class="number">0.11623</span>,<span class="number">0.111501</span>), (<span class="number">0.671848</span>,<span class="number">0.105221</span>), (<span class="number">-0.413983</span>,<span class="number">-0.223379</span>), (<span class="number">0.38072</span>,<span class="number">-0.046827</span>), (<span class="number">0.055408</span>,<span class="number">0.606104</span>), (<span class="number">0.293588</span>,<span class="number">0.341248</span>), (<span class="number">0.148698</span>,<span class="number">0.483594</span>), (<span class="number">0.231511</span>,<span class="number">0.514198</span>), (<span class="number">-0.084237</span>,<span class="number">-0.207319</span>), (<span class="number">-0.101489</span>,<span class="number">-0.655622</span>), (<span class="number">0.656804</span>,<span class="number">0.940628</span>), (<span class="number">0.081559</span>,<span class="number">0.88866</span>), (<span class="number">-0.40669</span>,<span class="number">-0.121981</span>), (<span class="number">0.019526</span>,<span class="number">-0.05621</span>), (<span class="number">-0.078754</span>,<span class="number">-0.076134</span>), (<span class="number">-0.536043</span>,<span class="number">0.358388</span>), (<span class="number">-0.367921</span>,<span class="number">-0.052004</span>), (<span class="number">0.852284</span>,<span class="number">0.622279</span>), (<span class="number">0.306367</span>,<span class="number">-0.386357</span>), (<span class="number">-0.322883</span>,<span class="number">0.583146</span>), (<span class="number">-0.758667</span>,<span class="number">0.073162</span>), (<span class="number">0.096341</span>,<span class="number">-0.225592</span>), (<span class="number">-1.008443</span>,<span class="number">0.384841</span>), (<span class="number">0.047269</span>,<span class="number">-0.013371</span>), (<span class="number">0.078617</span>,<span class="number">0.430729</span>), (<span class="number">0.528206</span>,<span class="number">0.547542</span>), (<span class="number">0.586177</span>,<span class="number">0.740262</span>), (<span class="number">0.331057</span>,<span class="number">-0.135318</span>), (<span class="number">-0.585402</span>,<span class="number">0.035509</span>), (<span class="number">-0.626427</span>,<span class="number">-0.284685</span>), (<span class="number">-0.337651</span>,<span class="number">-0.876266</span>), (<span class="number">0.222883</span>,<span class="number">0.0095</span>...</span><br><span class="line"></span><br><span class="line"><span class="comment">//计算分子</span></span><br><span class="line"><span class="keyword">val</span> member = vector1.zip(vector2).map(d =&gt; d._1*d._2).reduce(_ + _).toDouble</span><br><span class="line"><span class="comment">//member: Double = 24.334118226385</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//计算第一项分母</span></span><br><span class="line"><span class="keyword">val</span> temp = math.sqrt(vector1.map(num =&gt; math.pow(num,<span class="number">2</span>)).reduce(_ + _))</span><br><span class="line">temp: <span class="type">Double</span> = <span class="number">8.314852382374506</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//计算第二项分母</span></span><br><span class="line"><span class="keyword">val</span> temp2 = math.sqrt(vector2.map(num =&gt; math.pow(num,<span class="number">2</span>)).reduce(_ + _))</span><br><span class="line">temp2: <span class="type">Double</span> = <span class="number">8.708434438784565</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//相似度</span></span><br><span class="line"><span class="keyword">val</span> res = member/(temp*temp2)</span><br><span class="line">res: <span class="type">Double</span> = <span class="number">0.3360632195747908</span></span><br></pre></td></tr></table></figure>
+
+<p>和之前求出的相似度矩阵的第一行第二列相同，为<code>春和夏</code>的相似度。</p>
+<h2 id="Method2-RowMatrix方法"><a href="#Method2-RowMatrix方法" class="headerlink" title="Method2:RowMatrix方法"></a>Method2:RowMatrix方法</h2><p>spark自带org.apache.spark.mllib.linalg.distributed.<code>IndexedRowMatrix</code> </p>
+<p>这个类有个方法叫 <code>columnSimilarities</code> 就是<a href="https://github.com/apache/spark/blob/master/examples/src/main/scala/org/apache/spark/examples/mllib/CosineSimilarity.scala" target="_blank" rel="noopener">计算矩阵列向量间的两两余弦相似度</a>。</p>
+<p>返回类型是CoordinateMatrix，一个矩阵，该矩阵下标为(x,y)的元素就是原矩阵第x列和第y列的相似度。</p>
+<p><strong>代码如下：</strong></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.spark.mllib.linalg.distributed.&#123;<span class="type">MatrixEntry</span>, <span class="type">RowMatrix</span>&#125;</span><br><span class="line">rows</span><br><span class="line"><span class="comment">//res49: org.apache.spark.rdd.RDD[(String, Array[Double])] = MapPartitionsRDD[3] at filter at &lt;console&gt;:25</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> rows_2 = rows.map(x =&gt; <span class="type">Vectors</span>.dense(x._2))<span class="comment">//rows是</span></span><br><span class="line"><span class="comment">//rows_2: org.apache.spark.rdd.RDD[org.apache.spark.mllib.linalg.Vector] = MapPartitionsRDD[31] at map at &lt;console&gt;:31</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> mat = <span class="keyword">new</span> <span class="type">RowMatrix</span>(rows_2)</span><br><span class="line"><span class="comment">//mat: org.apache.spark.mllib.linalg.distributed.RowMatrix = org.apache.spark.mllib.linalg.distributed.RowMatrix@13e3903e</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Compute similar columns perfectly, with brute force.</span></span><br><span class="line"><span class="keyword">val</span> exact = mat.columnSimilarities()</span><br><span class="line"><span class="comment">//exact: org.apache.spark.mllib.linalg.distributed.CoordinateMatrix = org.apache.spark.mllib.linalg.distributed.CoordinateMatrix@440f4070</span></span><br></pre></td></tr></table></figure>
+
+<p>他计算的是列与列之间的相似度，生成的是一个坐标矩阵，无法直接访问：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//报错</span></span><br><span class="line">exact(<span class="number">0</span>,<span class="number">1</span>)</span><br><span class="line"><span class="comment">//&lt;console&gt;:32: error: org.apache.spark.mllib.linalg.distributed.CoordinateMatrix does not take parameters</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//打印行列数可以</span></span><br><span class="line">exact.numCols()</span><br><span class="line"><span class="comment">//res51: Long = 300</span></span><br><span class="line">exact.numRows()</span><br><span class="line"><span class="comment">//res52: Long = 300</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//想要打印所有元素，只能使用下面方法：</span></span><br><span class="line">exact.entries.foreach(println)</span><br></pre></td></tr></table></figure>
+
+<p>可以看出列相似度矩阵不是我们想要的，出来$300\times300$大小。</p>
+<p>而且我也不知道怎么使用RDD矩阵的转置，而且<a href="http://osask.cn/front/ask/view/297621" target="_blank" rel="noopener">RowMatrix没有专转置方法</a>所有就不搞了。。。。。</p>
+<h2 id="几种Vector创建方式"><a href="#几种Vector创建方式" class="headerlink" title="几种Vector创建方式"></a>几种Vector创建方式</h2><h3 id="1-mllib"><a href="#1-mllib" class="headerlink" title="1.mllib"></a>1.mllib</h3><p>MLLib提供了一序列基本数据类型以支持底层的机器学习算法。主要的数据类型包括：本地向量、标注点（Labeled Point）、本地矩阵、分布式矩阵等。单机模式存储的本地向量与矩阵，以及基于一个或多个<strong>RDD</strong>的分布式矩阵。其中本地向量与本地矩阵作为公共接口提供简单数据模型，底层的线性代数操作由<strong>Breeze</strong>库和<strong>jblas</strong>库提供。<strong>标注点</strong>类型用来表示<strong>监督学习（Supervised Learning）</strong>中的一个训练样本。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.spark.mllib.linalg.&#123;<span class="type">Vector</span>, <span class="type">Vectors</span>&#125;</span><br><span class="line"><span class="keyword">val</span> dv: <span class="type">Vector</span> = <span class="type">Vectors</span>.dense(<span class="number">2.0</span>, <span class="number">0.0</span>, <span class="number">8.0</span>)</span><br><span class="line"><span class="comment">//dv: org.apache.spark.mllib.linalg.Vector = [2.0,0.0,8.0]</span></span><br></pre></td></tr></table></figure>
+
+<p>无法进行zip操作。</p>
+<h3 id="2-toVector方法"><a href="#2-toVector方法" class="headerlink" title="2.toVector方法"></a>2.toVector方法</h3><p>EEE,这是RDD[vector]自带的方法</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="keyword">val</span> rows_2 = rows.map(x =&gt; x._2.toVector)</span><br><span class="line"><span class="comment">//rows_2: org.apache.spark.rdd.RDD[Vector[Double]] = MapPartitionsRDD[39] at map at &lt;console&gt;:31</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-Breeze库的DenseVector方法"><a href="#3-Breeze库的DenseVector方法" class="headerlink" title="3.Breeze库的DenseVector方法"></a>3.Breeze库的DenseVector方法</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> dm = rows.map(x =&gt; <span class="type">DenseVector</span>(x._2))</span><br><span class="line"><span class="comment">//dm: org.apache.spark.rdd.RDD[breeze.linalg.DenseVector[Double]] = MapPartitionsRDD[40] at map at &lt;console&gt;:31</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ol>
+<li><a href="https://www.zhihu.com/question/26055275/answer/146879290" target="_blank" rel="noopener">怎样使用Spark计算一个集合各个元素（向量表示的）的两两之间的余弦相似度</a></li>
+<li><a href="https://github.com/apache/spark/blob/master/examples/src/main/scala/org/apache/spark/examples/mllib/CosineSimilarity.scala" target="_blank" rel="noopener">RowMatrix 列相似度计算</a></li>
+<li><a href="https://github.com/scalanlp/breeze/wiki/Linear-Algebra-Cheat-Sheet" target="_blank" rel="noopener">breeze向量矩阵的使用</a></li>
+<li><a href="https://blog.csdn.net/baidu_35570545/article/details/77822032" target="_blank" rel="noopener">scala如何从文件读取数据并转换成矩阵</a></li>
+<li><a href="https://blog.csdn.net/xfg0218/article/details/55261412" target="_blank" rel="noopener">Spark 相似度算法,map,zip,reduce</a></li>
+<li><a href="https://blog.csdn.net/legotime/article/details/51085385" target="_blank" rel="noopener">分布式矩阵之坐标矩阵使用方法</a></li>
+<li><a href="http://dblab.xmu.edu.cn/blog/spark/" target="_blank" rel="noopener">子雨大数据之spark教程</a></li>
+<li><a href="https://blog.csdn.net/fly_time2012/article/details/78367263" target="_blank" rel="noopener">使用inverted index方法实现大型稀疏向量相似度计算</a></li>
+<li><a href="https://blog.csdn.net/dengxing1234/article/details/79033108" target="_blank" rel="noopener">Spark 协同过滤ALS之Item2Item相似度计算优化</a></li>
+<li><a href="https://www.cnblogs.com/zlslch/p/7477146.html" target="_blank" rel="noopener">Spark Mllib里相似度度量（基于余弦相似度计算不同用户之间相似性）</a></li>
+<li><a href="https://mp.weixin.qq.com/s?__biz=MzU2OTA0NzE2NA==&mid=2247490835&idx=1&sn=db3156ee1dba83c0675b83a067af7fa6&chksm=fc85fc00cbf2751694d7b9cdcc8d50f15630a697ca2f2f310b6afc257944f2f4fb43d5b884b4&mpshare=1&scene=24&srcid=0621OUBf6gulBobu38gKQFyH#rd" target="_blank" rel="noopener">【干货】推荐系统中的机器学习算法与评估实战</a></li>
+<li><a href="https://blog.csdn.net/itfootball/article/details/75635309" target="_blank" rel="noopener">Spark成长之路(6)-Correlation</a></li>
+<li><a href="http://rdc.hundsun.com/portal/article/691.mhtml" target="_blank" rel="noopener">【入门篇】如何在spark分布式矩阵实现协同过滤推荐？</a></li>
+<li><a href="https://spark.apache.org/docs/2.3.0/mllib-data-types.html" target="_blank" rel="noopener">Data Types - RDD-based API</a></li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/Recommendation/" rel="tag"># Recommendation</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/13/小王子/" rel="next" title="小王子">
+                <i class="fa fa-chevron-left"></i> 小王子
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/04/TipsInDNN/" rel="prev" title="Tips in DNN">
+                Tips in DNN <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景介绍："><span class="nav-number">1.</span> <span class="nav-text">背景介绍：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据准备："><span class="nav-number">2.</span> <span class="nav-text">数据准备：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#My-approach-使用breeze库计算"><span class="nav-number">3.</span> <span class="nav-text">My approach:使用breeze库计算</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#step1：数据转换"><span class="nav-number">3.1.</span> <span class="nav-text">step1：数据转换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#尝试1："><span class="nav-number">3.1.1.</span> <span class="nav-text">尝试1：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#尝试2："><span class="nav-number">3.1.2.</span> <span class="nav-text">尝试2：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#step2：建立相似度算法计算公式"><span class="nav-number">3.2.</span> <span class="nav-text">step2：建立相似度算法计算公式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#尝试1：-1"><span class="nav-number">3.2.1.</span> <span class="nav-text">尝试1：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#尝试2：-1"><span class="nav-number">3.2.2.</span> <span class="nav-text">尝试2：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Method1-map-reduce方法"><span class="nav-number">4.</span> <span class="nav-text">Method1:map-reduce方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#step1-创建数组"><span class="nav-number">4.1.</span> <span class="nav-text">step1.创建数组</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#step2-组成行向量"><span class="nav-number">4.2.</span> <span class="nav-text">step2.组成行向量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#step3-计算相似度"><span class="nav-number">4.3.</span> <span class="nav-text">step3.计算相似度</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Method2-RowMatrix方法"><span class="nav-number">5.</span> <span class="nav-text">Method2:RowMatrix方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#几种Vector创建方式"><span class="nav-number">6.</span> <span class="nav-text">几种Vector创建方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-mllib"><span class="nav-number">6.1.</span> <span class="nav-text">1.mllib</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-toVector方法"><span class="nav-number">6.2.</span> <span class="nav-text">2.toVector方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Breeze库的DenseVector方法"><span class="nav-number">6.3.</span> <span class="nav-text">3.Breeze库的DenseVector方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference"><span class="nav-number">7.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

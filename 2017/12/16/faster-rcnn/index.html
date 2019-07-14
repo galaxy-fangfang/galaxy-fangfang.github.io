@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="papercode 摘要:基于region proposal算法的目标检测工作，比如SPPnet和Fast RCNN等已经减少了检测网络的运行时间，但是region proposal计算仍然很耗时。本文引入了RPN可以共享整幅图的卷积特征，使得检测工作的region proposal几乎不耗时。RPN网络时一个全卷积网络，能够同时预测目标边界和分数。RPN是端到端训练的产生高质量的region p">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="faster-rcnn">
+<meta property="og:url" content="http://yoursite.com/2017/12/16/faster-rcnn/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="papercode 摘要:基于region proposal算法的目标检测工作，比如SPPnet和Fast RCNN等已经减少了检测网络的运行时间，但是region proposal计算仍然很耗时。本文引入了RPN可以共享整幅图的卷积特征，使得检测工作的region proposal几乎不耗时。RPN网络时一个全卷积网络，能够同时预测目标边界和分数。RPN是端到端训练的产生高质量的region p">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/faster-rcnn1.png">
+<meta property="og:image" content="http://yoursite.com/images/faster-rcnn2.png">
+<meta property="og:image" content="http://yoursite.com/images/faster-rcnn3.png">
+<meta property="og:image" content="http://yoursite.com/images/faster-rcnn4.png">
+<meta property="og:updated_time" content="2019-07-14T07:17:34.158Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="faster-rcnn">
+<meta name="twitter:description" content="papercode 摘要:基于region proposal算法的目标检测工作，比如SPPnet和Fast RCNN等已经减少了检测网络的运行时间，但是region proposal计算仍然很耗时。本文引入了RPN可以共享整幅图的卷积特征，使得检测工作的region proposal几乎不耗时。RPN网络时一个全卷积网络，能够同时预测目标边界和分数。RPN是端到端训练的产生高质量的region p">
+<meta name="twitter:image" content="http://yoursite.com/images/faster-rcnn1.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2017/12/16/faster-rcnn/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>faster-rcnn | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/12/16/faster-rcnn/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">faster-rcnn
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2017-12-16 17:26:33" itemprop="dateCreated datePublished" datetime="2017-12-16T17:26:33+08:00">2017-12-16</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:34" itemprop="dateModified" datetime="2019-07-14T15:17:34+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/" itemprop="url" rel="index"><span itemprop="name">paper</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/object-detection/" itemprop="url" rel="index"><span itemprop="name">object detection</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><a href="https://arxiv.org/abs/1506.01497" target="_blank" rel="noopener">paper</a><br><a href="https://github.com/longcw/faster_rcnn_pytorch" target="_blank" rel="noopener">code</a></p>
+<h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要:"></a>摘要:</h1><p>基于region proposal算法的目标检测工作，比如SPPnet和Fast RCNN等已经减少了检测网络的运行时间，但是region proposal计算仍然很耗时。本文引入了<strong>RPN</strong>可以共享整幅图的卷积特征，使得检测工作的region proposal几乎不耗时。<br>RPN网络时一个全卷积网络，能够同时预测目标边界和分数。RPN是端到端训练的产生高质量的region proposal，我们通过卷积参数共享，将RPN和Fast RCNN融合进一个网络[attention机制]。</p>
+<a id="more"></a>
+
+<h1 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h1><p>基于region的检测器的卷积特征图，比如Fast RCNN使用的，也可以用来产生region proposal。在这些卷积特征之后，我们构建了RPN网络同时回归region 边界和目标分数。RPN可以预测大范围尺度和纵横比的region proposal。和之前使用图像金字塔或者滤波器金字塔不同，我们引入了anchor。<br>如图c,不需要列举多种尺度和纵横比的图片和滤波器，这是一种回归参考金字塔。<br><img src="/images/faster-rcnn1.png" alt="faster-rcnn1"><br>为了将RPN统一到Fast RCNN中，提出了一种训练策略，交替fine-tune region proposal和object detection。这个策略收敛很快，并且能够产生在两个任务间共享的卷积特征。</p>
+<h2 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h2><h3 id="object-proposal"><a href="#object-proposal" class="headerlink" title="object proposal"></a>object proposal</h3><p>广泛使用的object proposal方法包括：超像素聚类(selective search),和滑动窗(EdgeBox)。总之，object proposal的提取方法都是作为外部模块和检测器相独立的。</p>
+<h3 id="Deep-Networks-for-Object-Detection"><a href="#Deep-Networks-for-Object-Detection" class="headerlink" title="Deep Networks for Object Detection"></a>Deep Networks for Object Detection</h3><p>RCNN主要是作为分类器，没有预测目标边界，除了精修bounding box回归外。他的精确度依赖于region proposal模块的性能。<br>Overfeat方法训练了一个全连接层来预测box的坐标。<br>MultiBox方法</p>
+<h1 id="Faster-RCNN"><a href="#Faster-RCNN" class="headerlink" title="Faster RCNN"></a>Faster RCNN</h1><p>本网络有两个模块组成。第一个模块是深度全卷积网络用来产生region proposal，第二个模块使用region proposal来做检测。<br><img src="/images/faster-rcnn2.png" alt="faster-rcnn2"><br>整个系统是一个统一的网络，通过<strong>attention</strong>机制，RPN模块告诉Fast RCNN模块应该在寻找。</p>
+<h2 id="Region-Proposal-Networks"><a href="#Region-Proposal-Networks" class="headerlink" title="Region Proposal Networks"></a>Region Proposal Networks</h2><p>RPN可以输入任意大小的图片，并输出一组矩形的object proposal，每个都有属于目标的分数。我们用一个全卷积网络建模，因为最终目标是和Fast RCNN目标检测网络共享计算，所以假设两个网络共享一组卷积层。在实验中，使用了ZF网络和VGG16网络，分别有5个共享的卷积层和13个共享的卷积层。<br>为了产生region proposal，用一个小的网络在最后一层卷积图产生的特征图上滑动。每个滑动窗被映射到一个低维特征(ZF 256-d,VGG16 512-d)。这个特征被喂入两个并列的全卷积层中，一个box回归层和一个box分类层。有效的感受野很大，分别是ZF 171像素，VGG16是228像素。这个mini网络如图3所示。因为该网络是按滑动窗方式工作，因此全连接层在所有空间位置被共享。整个框架是由n*n的卷积层加两个1*1的卷积层构成的。<br><strong>Anchors</strong><br>在每个滑动窗处，同时预测多个region proposal。每个位置处可能的proposal数量记为$k$.因此<em>reg</em>层与$4k$个输出，表示$k$个box的坐标。<em>cls</em>层输出$2k$的分数表示每个proposal是目标和不是目标的概率。<br><img src="/images/faster-rcnn3.png" alt="faster-rcnn3"><br>anchor 在滑动窗口的中心，默认使用3种尺度和3种纵横比，即对一个卷积特征图$WH$来说，有$WHk$个anchor。<br><strong>translation-invariant anchors</strong><br>如果图片中的anchor目标平移了，那么proposal也会平移，并且之前的函数仍能预测该proposal，这就是平移不变性。这种特性也减小了模型的大小。MultiBox有$(4+1)\times800$维全连接输出，而我们的方法只有$(4+2)\times9$维的卷积输出。输出层只有$2.8\times10^4$参数($512\times(4+2)\times9$ for VGG16)。即便考虑特征映射层，我们的proposal层的参数也比MultiBox少两个阶数，因为我们希望我们的方法在类似PASCAL VOC这样的小数据集上不会过拟合。<br><strong>Multi-Scale Anchors as Regression References</strong><br>图1中，有两种解决多尺度预测的方法。<br>第一种是基于图像/特征金字塔，比如在DPM和CNN的方法中。图像被resize到不同尺度，每个尺度都计算一遍特征图。这种方法有效但耗时。<br>第二种是在特征图上使用不同尺度(或纵横比)的滑动窗口。比如，DPM中，会使用不同尺寸的滤波器分别训练不同纵横比的模型(如图1b)。<br>基于anchor的方法建立了一种anchor金字塔，依据不同尺度和纵横比的anchor来分类和回归boundingbox。他只依赖于一种尺度的图像或者特征图，滤波器的尺寸也是一种。这种多尺度的anchor是共享卷积特征的关键。</p>
+<h3 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h3><p>训练RPN时，为每个anchor分配一个是目标或不是目标的标签。<strong>正样本</strong>，和groundtruth有最高IOU重叠的anchor；或者和groundtruth的IOU重叠大于0.7的anchor。注意一个groundtruth可以给anchor分配多个正样本的标签。<strong>负样本</strong>：IOU比例小于0.3。那些既不是正样本也不是负样本的anchor对训练目标函数没有贡献。<br>我们根据Fast RCNN中的多任务损失来最小化目标函数。我们的损失函数定义如下：<br>$$L({p_i},{t_i})=\frac{1}{N_{cls}}\sum_iL_{cls}(p_i,p_i^<em>) + \lambda\frac{1}{N_{reg}}\sum_ip_i^*L_{reg}(t_i,t_i^</em>).\qquad (1)$$<br>$i$是一个mini batch找那个一个anchor的索引，$p_i$是预测anchor $i$是否为目标的概率。如果anchor是正样本那么$p_i^*$为1，否则为0。$t_i$是代表了预测的bounding box的四个参数化坐标，$t_i^*$是正样本anchor的ground truth的坐标。<br>分类损失$L_{cls}$是二类对数损失，回归损失$L_{reg}(t_i,t_i^*)=R(t_i-t_i^*)$，其中$R$是(smooth L1)损失。$p_i^*L_{reg}$表示回归损失只对正anchor有效($p_i^*=0$)。分类层和回归层分别输出${p_i}$和${p_i^*}$。<br>上式两项分别有$N_{cls}$和$N_{reg}$进行归一化，并且由$\lambda$平衡权重。现在实现中，$N_{cls}=256$，即mini-batch大小；$N_{reg}\approx2400$即为anchor的数量。默认将$\lambda=10$，这样分类和回归损失可以大约平衡了。实验证明，结果对$\lambda$很不敏感，取值范围很宽。另外，以上的归一化也不需要可以省略。<br>对于bounding box回归，我们采取以下参数化的方法：<br>$$<br>\begin{split}<br>&amp; t_x=(x-x_a)/w_a,t_y=(y-y_a)/h_a,\<br>&amp; t_w=log(w/w_a),t_h=log(h/h_a),\<br>&amp; t_x^<em>=(x^</em>-x_a)/w_a,t_y^<em>=(y^</em>-y_a)/h_a,\<br>&amp; t_w^<em>=log(w^</em>/w_a),t_h^<em>=log(h^</em>/h_a),<br>\end{split}\tag{2}<br>$$<br>其中，$x,y,w,h$表示box的中心坐标和宽高。变量$x,x_a,x^*$分别是预测出框，anchor，和groundtruth box。这个bounding box回归过程可以被认为是从一个anchor回归到临近的ground truthbox的过程。<br>bounding box回归是根据任意大小的RoIs上池化得到的特征进行的，并且回归的权值被所有的region所共享。在我们建模中，回归过程所用的特征都是一样大的(3*3)。<br>为了适应变化的ROI大小，学习了k个bounding box回归器。每个回归器负责一种尺寸和纵横比，并且这k个回归器不共享权值。即便特征是一个固定尺度，我们仍能够预测不同大小的box。</p>
+<h3 id="训练RPN"><a href="#训练RPN" class="headerlink" title="训练RPN"></a>训练RPN</h3><p>RPN训练时可根据SGD和后向传播来端到端训练，每个mini-batch是从一张图中的anchor组成。随机采样256个anchor并且保证正负样本比率为1:1.如果有少于128个正样本，就用负样本填充mini-batch。<br>开始使用一个均值为0、标准差0.01的高斯分布来初始化所有的RPN层。其他的共享卷积层则是由ImageNet分类上的预训练模型初始化的，tune VGG16中conv3_1及以上的所有层。</p>
+<h2 id="Sharing-Features-for-RPN-and-Fast-R-CNN"><a href="#Sharing-Features-for-RPN-and-Fast-R-CNN" class="headerlink" title="Sharing Features for RPN and Fast R-CNN"></a>Sharing Features for RPN and Fast R-CNN</h2><p>我们需要在学习过程中共享RPN和Fast RCNN的参数，而不是分别学习两个网络。有两种方案：</p>
+<ol>
+<li>交替学习：先训练RPN,然后使用proposal来训练Fast RCNN.由Fast RCNN tune的网络再用来初始化RPN网络，依次迭代。本文所有实验采用这种方法。</li>
+<li>近似联合训练：每次SGD迭代中，前向传播产生近似固定大小的，预计算的region proposal，后向传播过程中，共享层的RPNloss和Fast RCNNloss一起传递梯度。这种方法省了1/4的时间。</li>
+</ol>
+<h2 id="实现细节"><a href="#实现细节" class="headerlink" title="实现细节"></a>实现细节</h2><p>无论测试还是训练，图片都是一个尺寸，将图片resize到短边$s=600$像素。多尺度的特征提取器(使用图像金字塔)可能提高精度但是速度就很慢。我们recsale之后的图片，对于ZF还是VGG的最后一层卷积层来说，总的步长都是16像素。如果步长更小，结果可能会更好。<br>对于<strong>anchor</strong>，我们使用了3种尺度。box大小分别是$128^2$,$256^2$,$512^2$像素，3种横纵比：$1:1$,$1:2$,$2:1$。<br><img src="/images/faster-rcnn4.png" alt="faster-rcnn4.png"><br>上表表示使用ZF网络学习到的每种anchor的平均proposal size。<br>超过图片边界的proposal需要小心处理。训练时忽略了所有这种anchor。对于一张1000*600的图片，大约有20000个anchor，忽略掉穿出图像边界的anchor，还剩6000个每幅图。<br>一些RPN的proposal会相互重叠，我们根据cls分数使用NMS来去除冗余的proposal。NMS的阈值为0.7，剔除后每张图还剩2000个proposal了。NMS不会影响精确性，并且能够减少proposal的数目。抑制之后，在使用前N个proposal来检测。</p>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/15/hexo博客安装记录/" rel="next" title="hexo博客安装记录">
+                <i class="fa fa-chevron-left"></i> hexo博客安装记录
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/18/openpose/" rel="prev" title="open pose">
+                open pose <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#摘要"><span class="nav-number">1.</span> <span class="nav-text">摘要:</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#引言"><span class="nav-number">2.</span> <span class="nav-text">引言</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#相关工作"><span class="nav-number">2.1.</span> <span class="nav-text">相关工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#object-proposal"><span class="nav-number">2.1.1.</span> <span class="nav-text">object proposal</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Deep-Networks-for-Object-Detection"><span class="nav-number">2.1.2.</span> <span class="nav-text">Deep Networks for Object Detection</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Faster-RCNN"><span class="nav-number">3.</span> <span class="nav-text">Faster RCNN</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Region-Proposal-Networks"><span class="nav-number">3.1.</span> <span class="nav-text">Region Proposal Networks</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#损失函数"><span class="nav-number">3.1.1.</span> <span class="nav-text">损失函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#训练RPN"><span class="nav-number">3.1.2.</span> <span class="nav-text">训练RPN</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sharing-Features-for-RPN-and-Fast-R-CNN"><span class="nav-number">3.2.</span> <span class="nav-text">Sharing Features for RPN and Fast R-CNN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现细节"><span class="nav-number">3.3.</span> <span class="nav-text">实现细节</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

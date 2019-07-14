@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="LOAD  TEST  TRAIN着重于Darknet框架的CNN部分，参考了杰同学的注释, 感谢！">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Darknet CNN部分代码阅读">
+<meta property="og:url" content="http://yoursite.com/2018/05/20/Darknet代码CNN部分/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="LOAD  TEST  TRAIN着重于Darknet框架的CNN部分，参考了杰同学的注释, 感谢！">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/05/20/Darknet代码CNN部分/%5Cimages%5CYOLO%5Cyolo%E4%BB%A3%E7%A0%81.png">
+<meta property="og:updated_time" content="2019-07-14T07:17:35.381Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Darknet CNN部分代码阅读">
+<meta name="twitter:description" content="LOAD  TEST  TRAIN着重于Darknet框架的CNN部分，参考了杰同学的注释, 感谢！">
+<meta name="twitter:image" content="http://yoursite.com/2018/05/20/Darknet代码CNN部分/%5Cimages%5CYOLO%5Cyolo%E4%BB%A3%E7%A0%81.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/05/20/Darknet代码CNN部分/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Darknet CNN部分代码阅读 | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/20/Darknet代码CNN部分/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Darknet CNN部分代码阅读
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-05-20 14:37:39" itemprop="dateCreated datePublished" datetime="2018-05-20T14:37:39+08:00">2018-05-20</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:35" itemprop="dateModified" datetime="2019-07-14T15:17:35+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/code/" itemprop="url" rel="index"><span itemprop="name">code</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/code/yolov3/" itemprop="url" rel="index"><span itemprop="name">yolov3</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <ol>
+<li><p>LOAD</p>
+</li>
+<li><p>TEST</p>
+</li>
+<li><p>TRAIN<br>着重于Darknet框架的CNN部分，参考了<a href="https://github.com/hgpvision/darknet" target="_blank" rel="noopener">杰同学的注释</a>, 感谢！</p>
+</li>
+</ol>
+<a id="more"></a>
+
+<h1 id="LOAD"><a href="#LOAD" class="headerlink" title="LOAD"></a>LOAD</h1><p>parse.c/parse_net_options函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">parse_net_options</span><span class="params">(<span class="built_in">list</span> *options, network *net)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    net-&gt;batch = option_find_int(options, <span class="string">"batch"</span>,<span class="number">1</span>);<span class="comment">//test:batch=1,subdivision=1</span></span><br><span class="line">    net-&gt;learning_rate = option_find_float(options, <span class="string">"learning_rate"</span>, <span class="number">.001</span>);<span class="comment">//learning rate = 0.001</span></span><br><span class="line">    net-&gt;momentum = option_find_float(options, <span class="string">"momentum"</span>, <span class="number">.9</span>);</span><br><span class="line">    net-&gt;decay = option_find_float(options, <span class="string">"decay"</span>, <span class="number">.0001</span>);<span class="comment">//decay=0.0005</span></span><br><span class="line">    <span class="keyword">int</span> subdivs = option_find_int(options, <span class="string">"subdivisions"</span>,<span class="number">1</span>);<span class="comment">//train:batch=64,subdivisions=16</span></span><br><span class="line">    net-&gt;time_steps = option_find_int_quiet(options, <span class="string">"time_steps"</span>,<span class="number">1</span>);<span class="comment">//time-steps=1</span></span><br><span class="line">    net-&gt;notruth = option_find_int_quiet(options, <span class="string">"notruth"</span>,<span class="number">0</span>);</span><br><span class="line">    net-&gt;batch /= subdivs;<span class="comment">//test：batch=1 train:batch=4</span></span><br><span class="line">    net-&gt;batch *= net-&gt;time_steps;<span class="comment">//test：batch *=time_step=1</span></span><br><span class="line">    net-&gt;subdivisions = subdivs;</span><br><span class="line">    net-&gt;random = option_find_int_quiet(options, <span class="string">"random"</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    net-&gt;adam = option_find_int_quiet(options, <span class="string">"adam"</span>, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+
+<p>载入参数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//net=yolov3.cfg文件</span></span><br><span class="line"><span class="comment">//filename=yolo3.weights</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">load_weights_upto</span><span class="params">(network *net, <span class="keyword">char</span> *filename, <span class="keyword">int</span> start, <span class="keyword">int</span> cutoff)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">     <span class="keyword">for</span>(i = start; i &lt; net-&gt;n &amp;&amp; i &lt; cutoff; ++i)&#123;</span><br><span class="line">        layer l = net-&gt;layers[i];</span><br><span class="line">        <span class="keyword">if</span> (l.dontload) <span class="keyword">continue</span>;</span><br><span class="line">        <span class="keyword">if</span>(l.type == CONVOLUTIONAL || l.type == DECONVOLUTIONAL)&#123;</span><br><span class="line">            </span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(l.type == CONNECTED)&#123;</span><br><span class="line">          </span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(l.type == BATCHNORM)&#123;</span><br><span class="line">           </span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(l.type == CRNN)&#123;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(l.type == RNN)&#123;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (l.type == LSTM) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可见，load weight时候只加载卷积层的参数。</p>
+<h1 id="TEST"><a href="#TEST" class="headerlink" title="TEST"></a>TEST</h1><p><strong>detector.c</strong>/test_detector函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">list</span> *options = read_data_cfg(datacfg);</span><br><span class="line"><span class="comment">//cfgfile=cfg/yolov3.cfg, weightfile = yolov3.weights，</span></span><br><span class="line"><span class="comment">//加载训练的模型文件的超参数</span></span><br><span class="line">   network *net = load_network(cfgfile, weightfile, <span class="number">0</span>);</span><br><span class="line">	<span class="comment">//加载图片，默认当彩色处理</span></span><br><span class="line">       image im = load_image_color(input,<span class="number">0</span>,<span class="number">0</span>);</span><br><span class="line">	<span class="comment">//调整图片尺寸</span></span><br><span class="line">       image sized = letterbox_image(im, net-&gt;w, net-&gt;h);</span><br><span class="line"></span><br><span class="line">       <span class="keyword">float</span> *X = sized.data;</span><br><span class="line">       time=what_time_is_it_now();</span><br><span class="line">	<span class="comment">//预测</span></span><br><span class="line">       network_predict(net, X);</span><br></pre></td></tr></table></figure>
+
+<p><strong>network.c</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//network_predict(net, X);</span></span><br><span class="line"><span class="comment">//cfgfile=cfg/yolov3.cfg, weightfile = yolov3.weights，</span></span><br><span class="line"><span class="comment">//加载训练的模型文件的超参数</span></span><br><span class="line"><span class="comment">//network *net = load_network(cfgfile, weightfile, 0);</span></span><br><span class="line"><span class="comment">// float *X = sized.data;</span></span><br><span class="line"><span class="function"><span class="keyword">float</span> *<span class="title">network_predict</span><span class="params">(network *net, <span class="keyword">float</span> *input)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    network orig = *net;</span><br><span class="line">	<span class="comment">//网络输入为图片：dog.jpg</span></span><br><span class="line">    net-&gt;input = input;</span><br><span class="line">    net-&gt;truth = <span class="number">0</span>;</span><br><span class="line">    net-&gt;train = <span class="number">0</span>;</span><br><span class="line">    net-&gt;delta = <span class="number">0</span>;</span><br><span class="line">    forward_network(net);</span><br><span class="line">    <span class="keyword">float</span> *out = net-&gt;output;</span><br><span class="line">    *net = orig;</span><br><span class="line">    <span class="keyword">return</span> out;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">forward_network</span><span class="params">(network *netp)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    network net = *netp;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; net.n; ++i)&#123;</span><br><span class="line">        net.index = i;</span><br><span class="line">        layer l = net.layers[i];</span><br><span class="line">        <span class="keyword">if</span>(l.delta)&#123;</span><br><span class="line">            fill_cpu(l.outputs * l.batch, <span class="number">0</span>, l.delta, <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        l.forward(l, net);</span><br><span class="line">        net.input = l.output;</span><br><span class="line">        <span class="keyword">if</span>(l.truth) &#123;</span><br><span class="line">            net.truth = l.output;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    calc_network_cost(netp);</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">layer</span>&#123;</span></span><br><span class="line">    LAYER_TYPE type;</span><br><span class="line">    ACTIVATION activation;</span><br><span class="line">    COST_TYPE cost_type;</span><br><span class="line">    <span class="keyword">void</span> (*forward)   (struct layer, struct network);</span><br><span class="line">    <span class="keyword">void</span> (*backward)  (struct layer, struct network);</span><br><span class="line">    <span class="keyword">void</span> (*update)    (struct layer, update_args);</span><br><span class="line">    <span class="keyword">void</span> (*forward_gpu)   (struct layer, struct network);</span><br><span class="line">    <span class="keyword">void</span> (*backward_gpu)  (struct layer, struct network);</span><br><span class="line">    <span class="keyword">void</span> (*update_gpu)    (struct layer, update_args);</span><br><span class="line">    <span class="keyword">int</span> batch_normalize;</span><br><span class="line">    .....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="network-c-load-network函数"><a href="#network-c-load-network函数" class="headerlink" title="network.c/load_network函数"></a>network.c/load_network函数</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">network *<span class="title">load_network</span><span class="params">(<span class="keyword">char</span> *cfg, <span class="keyword">char</span> *weights, <span class="keyword">int</span> clear)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">//解析yolov3.cfg文件，主要包括网络模型结构，网络层数，</span></span><br><span class="line">	<span class="comment">//每层网络参数类型,参数</span></span><br><span class="line">    network *net = parse_network_cfg(cfg);</span><br><span class="line">    <span class="keyword">if</span>(weights &amp;&amp; weights[<span class="number">0</span>] != <span class="number">0</span>)&#123;</span><br><span class="line">		<span class="comment">//加载预训练的权重</span></span><br><span class="line">        load_weights(net, weights);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(clear) (*net-&gt;seen) = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">return</span> net;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="parser-c-parse-network-cfg函数"><a href="#parser-c-parse-network-cfg函数" class="headerlink" title="parser.c/parse_network_cfg函数"></a><strong>parser.c</strong>/parse_network_cfg函数</h2><p>主要类型：    //yolo的配置文件中，只有convolutional,yolo,upsample,route这几种类型</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span>(n)&#123;</span><br><span class="line">       params.index = count;</span><br><span class="line">       <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"%5d "</span>, count);</span><br><span class="line">       s = (section *)n-&gt;val;</span><br><span class="line">       options = s-&gt;options;</span><br><span class="line">       layer l = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">       LAYER_TYPE lt = string_to_layer_type(s-&gt;type);</span><br><span class="line">	<span class="comment">//yolo的配置文件中，只有convolutional,yolo,upsample,route这几种类型</span></span><br><span class="line">	<span class="comment">//convolutional</span></span><br><span class="line">       <span class="keyword">if</span>(lt == CONVOLUTIONAL)&#123;</span><br><span class="line">           l = parse_convolutional(options, params);</span><br><span class="line">       &#125;</span><br><span class="line">	<span class="comment">//yolo</span></span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span>(lt == YOLO)&#123;</span><br><span class="line">           l = parse_yolo(options, params);</span><br><span class="line">       &#125;</span><br><span class="line">	<span class="comment">//route</span></span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span>(lt == ROUTE)&#123;</span><br><span class="line">           l = parse_route(options, params, net);</span><br><span class="line">       &#125;</span><br><span class="line">	<span class="comment">//upsample</span></span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span>(lt == UPSAMPLE)&#123;</span><br><span class="line">           l = parse_upsample(options, params, net);</span><br><span class="line">       &#125;</span><br><span class="line">	<span class="comment">//resnet block</span></span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span>(lt == SHORTCUT)&#123;</span><br><span class="line">           l = parse_shortcut(options, params, net);</span><br><span class="line">       &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">           <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Type not recognized: %s\n"</span>, s-&gt;type);</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure>
+
+<p>分别看这四种层：</p>
+<p><strong>parse.c</strong>/convolutional_layer parse_convolutional函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//[convolutional]</span></span><br><span class="line"><span class="comment">// batch_normalize = 1</span></span><br><span class="line"><span class="comment">// filters = 32</span></span><br><span class="line"><span class="comment">// size = 3</span></span><br><span class="line"><span class="comment">// stride = 1</span></span><br><span class="line"><span class="comment">// pad = 1</span></span><br><span class="line"><span class="comment">// activation = leaky</span></span><br><span class="line"><span class="function">convolutional_layer <span class="title">parse_convolutional</span><span class="params">(<span class="built_in">list</span> *options, size_params params)</span></span></span><br><span class="line"><span class="function"></span>&#123;    </span><br><span class="line">    <span class="keyword">int</span> n = option_find_int(options, <span class="string">"filters"</span>,<span class="number">1</span>);<span class="comment">//滤波器个数</span></span><br><span class="line">    <span class="keyword">int</span> size = option_find_int(options, <span class="string">"size"</span>,<span class="number">1</span>);<span class="comment">//滤波器尺寸</span></span><br><span class="line">    <span class="keyword">int</span> stride = option_find_int(options, <span class="string">"stride"</span>,<span class="number">1</span>);<span class="comment">//步长</span></span><br><span class="line">    <span class="keyword">int</span> pad = option_find_int_quiet(options, <span class="string">"pad"</span>,<span class="number">0</span>);<span class="comment">//0填充</span></span><br><span class="line">    <span class="keyword">int</span> padding = option_find_int_quiet(options, <span class="string">"padding"</span>,<span class="number">0</span>);<span class="comment">//无</span></span><br><span class="line">    <span class="keyword">int</span> groups = option_find_int_quiet(options, <span class="string">"groups"</span>, <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">if</span>(pad) padding = size/<span class="number">2</span>;<span class="comment">//pad=1,则padding=size/2=3/2=1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">char</span> *activation_s = option_find_str(options, <span class="string">"activation"</span>, <span class="string">"logistic"</span>);</span><br><span class="line">    ACTIVATION activation = get_activation(activation_s);<span class="comment">//LEAKY</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> batch,h,w,c;</span><br><span class="line">    h = params.h;</span><br><span class="line">    w = params.w;</span><br><span class="line">    c = params.c;</span><br><span class="line">    batch=params.batch;</span><br><span class="line">    <span class="keyword">if</span>(!(h &amp;&amp; w &amp;&amp; c)) error(<span class="string">"Layer before convolutional layer must output image."</span>);</span><br><span class="line">    <span class="keyword">int</span> batch_normalize = option_find_int_quiet(options, <span class="string">"batch_normalize"</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">int</span> binary = option_find_int_quiet(options, <span class="string">"binary"</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">int</span> xnor = option_find_int_quiet(options, <span class="string">"xnor"</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    convolutional_layer layer = make_convolutional_layer(batch,h,w,c,n,groups,size,stride,padding,activation, batch_normalize, binary, xnor, params.net-&gt;adam);</span><br><span class="line">    layer.flipped = option_find_int_quiet(options, <span class="string">"flipped"</span>, <span class="number">0</span>);</span><br><span class="line">    layer.dot = option_find_float_quiet(options, <span class="string">"dot"</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> layer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>convolutional_layer.c</strong></p>
+<p>/<strong>make_convolutional_layer</strong>(int batch, int h, int w, int c, int n, int groups, int size, int stride, int padding, ACTIVATION activation, int batch_normalize, int binary, int xnor, int adam)函数</p>
+<p><img src="%5Cimages%5CYOLO%5Cyolo%E4%BB%A3%E7%A0%81.png" alt></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">**</span></span><br><span class="line"><span class="comment">**</span></span><br><span class="line"><span class="comment">**  输入：batch    每个batch含有的图片数</span></span><br><span class="line"><span class="comment">**      h               图片高度（行数）</span></span><br><span class="line"><span class="comment">**      w               图片宽度（列数）</span></span><br><span class="line"><span class="comment">c               输入图片通道数</span></span><br><span class="line"><span class="comment">n               卷积核个数</span></span><br><span class="line"><span class="comment">size            卷积核尺寸</span></span><br><span class="line"><span class="comment">stride          跨度</span></span><br><span class="line"><span class="comment">padding         四周补0长度</span></span><br><span class="line"><span class="comment">activation      激活函数类别</span></span><br><span class="line"><span class="comment">batch_normalize 是否进行BN(规范化)</span></span><br><span class="line"><span class="comment">binary          是否对权重进行二值化</span></span><br><span class="line"><span class="comment">xnor            是否对权重以及输入进行二值化</span></span><br><span class="line"><span class="comment">adam            使用</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="comment">//传入的参数：batch,h,w,c,n,groups,size,stride,padding,activation, batch_normalize, binary, xnor, params.net-&gt;adam</span></span><br><span class="line"><span class="function">convolutional_layer <span class="title">make_convolutional_layer</span><span class="params">(<span class="keyword">int</span> batch, <span class="keyword">int</span> h, <span class="keyword">int</span> w, <span class="keyword">int</span> c, <span class="keyword">int</span> n, <span class="keyword">int</span> groups, <span class="keyword">int</span> size, <span class="keyword">int</span> stride, <span class="keyword">int</span> padding, ACTIVATION activation, <span class="keyword">int</span> batch_normalize, <span class="keyword">int</span> binary, <span class="keyword">int</span> xnor, <span class="keyword">int</span> adam)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">	<span class="comment">//convolutional_layer是使用typerdef定义的layer的别名</span></span><br><span class="line">    convolutional_layer l = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    l.type = CONVOLUTIONAL;<span class="comment">//属性，卷积层</span></span><br><span class="line"></span><br><span class="line">    l.groups = groups;<span class="comment">//1</span></span><br><span class="line">    l.h = h;</span><br><span class="line">    l.w = w;</span><br><span class="line">    l.c = c;</span><br><span class="line">    l.n = n;<span class="comment">//卷积核个数</span></span><br><span class="line">    l.binary = binary;<span class="comment">//是否对权重进行二值化</span></span><br><span class="line">    l.xnor = xnor;<span class="comment">//是否对权重及输入进行二值化</span></span><br><span class="line">    l.batch = batch;<span class="comment">//每个batch包含图片数，1</span></span><br><span class="line">    l.stride = stride;</span><br><span class="line">    l.size = size;</span><br><span class="line">    l.pad = padding;</span><br><span class="line">    l.batch_normalize = batch_normalize;</span><br><span class="line">	<span class="comment">//该层总的权重个数=输入滤波器个数*滤波器通道数*滤波器尺寸</span></span><br><span class="line">    l.weights = <span class="built_in">calloc</span>(c/groups*n*size*size, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line">    l.weight_updates = <span class="built_in">calloc</span>(c/groups*n*size*size, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line">	<span class="comment">//Wx+b中的b,有几个卷积核就有多少个偏置。</span></span><br><span class="line">	<span class="comment">//与W的个数一一对应，每个W的元素个数为c*size*size）</span></span><br><span class="line">    l.biases = <span class="built_in">calloc</span>(n, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line">    l.bias_updates = <span class="built_in">calloc</span>(n, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line"></span><br><span class="line">	<span class="comment">//weight的个数和偏置的个数。</span></span><br><span class="line">	<span class="comment">//因为每个卷积核同时作用于输入数据的各个通道，因此卷积核是三维，</span></span><br><span class="line">    l.nweights = c/groups*n*size*size;</span><br><span class="line">    l.nbiases = n;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// float scale = 1./sqrt(size*size*c);</span></span><br><span class="line">	<span class="comment">//随机初始化的神经元的输出分布随着输入的增加会产生方差，</span></span><br><span class="line">	<span class="comment">//所以我们需要将神经元的输出的方差归一化到1，通过归一化权值向量。</span></span><br><span class="line">	<span class="comment">//当rand_normal是标准正态分布随机数函数，scale为sqrt(1/n),当考虑到relu时，scale变为sqrt(2/n)</span></span><br><span class="line">	<span class="comment">//n为输入参数个数，即该卷积核的权重的个数size*size*c</span></span><br><span class="line">    <span class="keyword">float</span> scale = <span class="built_in">sqrt</span>(<span class="number">2.</span>/(size*size*c/l.groups));</span><br><span class="line">    <span class="comment">//printf("convscale %f\n", scale);</span></span><br><span class="line">    <span class="comment">//scale = .02;</span></span><br><span class="line">    <span class="comment">//for(i = 0; i &lt; c*n*size*size; ++i) l.weights[i] = scale*rand_uniform(-1, 1);</span></span><br><span class="line">    </span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; l.nweights; ++i) l.weights[i] = scale*rand_normal();</span><br><span class="line">    <span class="comment">//计算该层的输出宽高</span></span><br><span class="line">	<span class="keyword">int</span> out_w = convolutional_out_width(l);</span><br><span class="line">    <span class="keyword">int</span> out_h = convolutional_out_height(l);</span><br><span class="line">    l.out_h = out_h;</span><br><span class="line">    l.out_w = out_w;</span><br><span class="line">    l.out_c = n;</span><br><span class="line">    l.outputs = l.out_h * l.out_w * l.out_c;<span class="comment">//输出特征图的尺寸416*416*32</span></span><br><span class="line">    l.inputs = l.w * l.h * l.c;</span><br><span class="line"></span><br><span class="line">    l.output = <span class="built_in">calloc</span>(l.batch*l.outputs, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));<span class="comment">//所有输入图片的输出，</span></span><br><span class="line">    l.delta  = <span class="built_in">calloc</span>(l.batch*l.outputs, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line"></span><br><span class="line">    l.forward = forward_convolutional_layer;</span><br><span class="line">    l.backward = backward_convolutional_layer;</span><br><span class="line">    l.update = update_convolutional_layer;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(batch_normalize)&#123;</span><br><span class="line">        l.scales = <span class="built_in">calloc</span>(n, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line">        l.scale_updates = <span class="built_in">calloc</span>(n, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line">        <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; n; ++i)&#123;</span><br><span class="line">            l.scales[i] = <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        l.mean = <span class="built_in">calloc</span>(n, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line">        l.variance = <span class="built_in">calloc</span>(n, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line"></span><br><span class="line">        l.mean_delta = <span class="built_in">calloc</span>(n, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line">        l.variance_delta = <span class="built_in">calloc</span>(n, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line"></span><br><span class="line">        l.rolling_mean = <span class="built_in">calloc</span>(n, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line">        l.rolling_variance = <span class="built_in">calloc</span>(n, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line">        l.x = <span class="built_in">calloc</span>(l.batch*l.outputs, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line">        l.x_norm = <span class="built_in">calloc</span>(l.batch*l.outputs, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    l.workspace_size = get_workspace_size(l);</span><br><span class="line">    l.activation = activation;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"conv  %5d %2d x%2d /%2d  %4d x%4d x%4d   -&gt;  %4d x%4d x%4d  %5.3f BFLOPs\n"</span>, n, size, size, stride, w, h, c, l.out_w, l.out_h, l.out_c, (<span class="number">2.0</span> * l.n * l.size*l.size*l.c/l.groups * l.out_h*l.out_w)/<span class="number">1000000000.</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> l;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>先说前向传播函数：void forward_convolutional_layer(convolutional_layer l, network net)</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">forward_convolutional_layer</span><span class="params">(convolutional_layer l, network net)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i, j;</span><br><span class="line"></span><br><span class="line">    fill_cpu(l.outputs*l.batch, <span class="number">0</span>, l.output, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(l.xnor)&#123;</span><br><span class="line">        binarize_weights(l.weights, l.n, l.c/l.groups*l.size*l.size, l.binary_weights);</span><br><span class="line">        swap_binary(&amp;l);</span><br><span class="line">        binarize_cpu(net.input, l.c*l.h*l.w*l.batch, l.binary_input);</span><br><span class="line">        net.input = l.binary_input;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> m = l.n/l.groups;</span><br><span class="line">    <span class="keyword">int</span> k = l.size*l.size*l.c/l.groups;</span><br><span class="line">    <span class="keyword">int</span> n = l.out_w*l.out_h;</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; l.batch; ++i)&#123;</span><br><span class="line">        <span class="keyword">for</span>(j = <span class="number">0</span>; j &lt; l.groups; ++j)&#123;</span><br><span class="line">            <span class="keyword">float</span> *a = l.weights + j*l.nweights/l.groups;</span><br><span class="line">            <span class="keyword">float</span> *b = net.workspace;</span><br><span class="line">            <span class="keyword">float</span> *c = l.output + (i*l.groups + j)*n*m;</span><br><span class="line"></span><br><span class="line">            im2col_cpu(net.input + (i*l.groups + j)*l.c/l.groups*l.h*l.w,</span><br><span class="line">                l.c/l.groups, l.h, l.w, l.size, l.stride, l.pad, b);</span><br><span class="line">            gemm(<span class="number">0</span>,<span class="number">0</span>,m,n,k,<span class="number">1</span>,a,k,b,n,<span class="number">1</span>,c,n);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(l.batch_normalize)&#123;</span><br><span class="line">        forward_batchnorm_layer(l, net);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        add_bias(l.output, l.biases, l.batch, l.n, l.out_h*l.out_w);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    activate_array(l.output, l.outputs*l.batch, l.activation);</span><br><span class="line">    <span class="comment">//static inline float leaky_activate(float x)&#123;return (x&gt;0) ? x : .1*x;&#125;//leaky relu:x&gt;0,y=x;x&lt;=0,y=0.1x;</span></span><br><span class="line">    <span class="comment">//static inline float linear_activate(float x)&#123;return x;&#125;//y=x</span></span><br><span class="line">    <span class="comment">//static inline float logistic_activate(float x)&#123;return 1./(1. + exp(-x));&#125;//sigmod函数</span></span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(l.binary || l.xnor) swap_binary(&amp;l);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>gemm函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">**  功能：矩阵计算，完成C = ALPHA * A * B + BETA * C矩阵计算，最后的输出为C</span></span><br><span class="line"><span class="comment">**  输入： </span></span><br><span class="line"><span class="comment">**        TA,TB   是否需要对A,B做转置操作，是为1,否为0（要不要转置取决于A,B之间维度是否匹配，比如A:3*2,B:4*2，则需要对B转置，才满足矩阵乘法维度匹配规则）</span></span><br><span class="line"><span class="comment">**        M       A,C的行数（若A需要转置，则此处给出转置后的A即A'的行数，而不是转置前的）</span></span><br><span class="line"><span class="comment">**        N       B,C的列数（若B需要转置，则此处给出转置后的B即B'的列数，而不是转置前的）</span></span><br><span class="line"><span class="comment">**        K       A的列数，B的行数（同样，若A与B中的二者或者其中一个需要转置，则不管怎样，转置后的A，B必须行列能够匹配，符合矩阵乘法规则，K也是转置后的值，不是转置前的）</span></span><br><span class="line"><span class="comment">**        A,B,C   输入矩阵（一维数组格式）</span></span><br><span class="line"><span class="comment">**        ALPHA   系数</span></span><br><span class="line"><span class="comment">**        BETA    系数</span></span><br><span class="line"><span class="comment">**        lda     A的列数（不做转置）或者行数（做转置，且给的是转置后A即A'的行数）</span></span><br><span class="line"><span class="comment">**        ldb     B的列数（不做转置）或者行数（做转置，且给的是转置后B即B'的行数）</span></span><br><span class="line"><span class="comment">**        ldc     C的列数</span></span><br><span class="line"><span class="comment">**  说明：如果TA = 0, TB = 0，那么计算的是C = ALPHA * A * B + BETA * C,此时M是A,C的行数，N是B,C的列数，K是A的列数、B的行数，lda是A的列数，ldb是B的列数；</span></span><br><span class="line"><span class="comment">**       如果TA = 1, TB = 0，那么计算的是C = ALPHA * A' * B + BETA * C,此时M是A’,C的行数，N是B,C的列数，K是A'的列数、B的行数，lda是A'的行数，ldb是B的列数；</span></span><br><span class="line"><span class="comment">**       如果TA = 0, TB = 1，那么计算的是C = ALPHA * A * B' + BETA * C,此时M是A,C的行数，N是B',C的列数，K是A的列数、B'的行数，lda是A的列数，ldb是B'的行数；</span></span><br><span class="line"><span class="comment">**       如果TA = 1, TB = 1，那么计算的是C = ALPHA * A' * B' + BETA * C,此时M是A’,C的行数，N是B',C的列数，K是A'的列数、B'的行数，lda是A'的行数，ldb是B'的行数；</span></span><br><span class="line"><span class="comment">**       总之，参与计算的矩阵必须满足矩阵行列匹配规则。比如A为2*3，B为3*2，C为2*2，那么就是第一种情况；而如果A为3*2，B为3*2，C为2*2,</span></span><br><span class="line"><span class="comment">**       那么就是第二种情况；如果A为2*3，B为2*3，C为2*2,对应第三种情况；如果A为2*3，B为2*3，C为2*2,对应第四种情况。</span></span><br><span class="line"><span class="comment">**  链接：此函数是用C实现矩阵乘法运算，这部分代码应该是模仿的Caffe中的math_functions.cpp的代码</span></span><br><span class="line"><span class="comment">**       参考博客：http://www.voidcn.com/blog/thy_2014/article/p-6149690.html</span></span><br><span class="line"><span class="comment">**  举例说明： 这个函数比较难以理解的地方在于A,B有没有转置这个问题上。首先要清楚，虽然这里A,B,C都是矩阵，但其实都是用一维数组按行保存的，</span></span><br><span class="line"><span class="comment">**           举个例子，假设： A = [1, 2, 3, 2, 2, 1], B = [2, 0, 1, 1, 2, 1], C = [3, 0, 1, 2] （这些输入是打死不变的，</span></span><br><span class="line"><span class="comment">**           都是一维数组格式），且C为2*2的矩阵，即C = [3, 0; 1, 2]，那么要进行C = ALPHA * A * B + BETA * C的计算，</span></span><br><span class="line"><span class="comment">**           必须满足矩阵乘法行列匹配规则，则参与运算的第一个矩阵只能为2*3，第二个只能为3*2，因为A,B的元素个数已经固定为6个。</span></span><br><span class="line"><span class="comment">**           下面分别说明gemm_nn(),gemm_tn(),gemm_nt,gemm_tt()四个函数对该例子的计算。</span></span><br><span class="line"><span class="comment">**           诚如上所述，不管A, B有没有转置，反正最后参与计算的两个矩阵必须前者为2*3,后者为3*2。如果使用gemm_nn()，A,B都没有转置，</span></span><br><span class="line"><span class="comment">**           那么就要求没有转置的A,B分别为2*3,3*2矩阵，则 A = [ 1, 2, 3; 2, 2, 1], B = [2, 0; 1, 1; 2, 1], </span></span><br><span class="line"><span class="comment">**           调用gemm_nn(2, 2, 3, 1, A, 3, B, 2, C, 2)计算得到 C = [13, 5; 9, 5]（其中ALPHA = BETA = 1，下同）；</span></span><br><span class="line"><span class="comment">**           如果要用gemm_tn()函数，即A需要进行转置之后才能计算，也即转置之后的维度为2*3,而转置之前的维度为3*2，B没有转置，</span></span><br><span class="line"><span class="comment">**           本身就是3*2的矩阵，这样，A = [ 1, 2; 3, 2; 2, 1], A' = [1, 3, 2; 2, 2, 1], B = [2, 0; 1, 1; 2, 1]，</span></span><br><span class="line"><span class="comment">**           gemm_tn(2, 2, 3, 1, A, 2, B, 2, C, 2)函数实际计算的是A'*B+C的值，注意此时的A与gemm_nn()中的A有什么不同，</span></span><br><span class="line"><span class="comment">**           输入的一维数组还是[1, 2, 3, 2, 2, 1]，如前所述，A是按行保存的，因为此时的A本身是一个3*2的矩阵，按照按行保存规则，</span></span><br><span class="line"><span class="comment">**           就是A = [ 1, 2; 3, 2; 2, 1]，调用gemm_tn()的时候，M, N, K分别为2, 2, 3,都是最终参与计算的矩阵的行列数，</span></span><br><span class="line"><span class="comment">**           因为此处真正参与计算的是A'与B，所以M为A'的行数，即为2,N为B的列数，即为2,K为A'与B的列数，即为3，而此时lda=2，</span></span><br><span class="line"><span class="comment">**           是因为A进行了转置，因此输入的是A'的行数，而不是列数3,ldb=2，为B的列数，最终计算得到C=[12, 5; 9, 5]。</span></span><br><span class="line"><span class="comment">**           对于gemm_nt()与gemm_tt()，与上分析一样，不再赘述了。此部分注释进行了测试，对应测试文件darknet_test_gemm.c。</span></span><br><span class="line"><span class="comment">**  强调： 这一系列的gemm()函数，都带有叠加效果，也即最终的值是保存在C中，但这种保存并不是擦除式的保存，而是叠加式的保存，也就是说，</span></span><br><span class="line"><span class="comment">**        如果进入gemm()函数之前，如果C的元素已经有值了，那么这些值不会被擦除掉，而是会将其叠加，</span></span><br><span class="line"><span class="comment">**        其实看式子就可以看出来：此函数完成的是C = ALPHA * A * B + BETA * C矩阵运算。</span></span><br><span class="line"><span class="comment">**          </span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="comment">// gemm(0,0,m,n,k,1,a,k,b,n,1,c,n);</span></span><br><span class="line"><span class="comment">// int m = l.n/l.groups;//该层卷积核个数</span></span><br><span class="line"><span class="comment">// int k = l.size*l.size*l.c/l.groups;//该层卷积核参数个数</span></span><br><span class="line"><span class="comment">// int n = l.out_w*l.out_h;//该层每张特征图的尺寸，即元素个数</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">gemm_cpu</span><span class="params">(<span class="keyword">int</span> TA, <span class="keyword">int</span> TB, <span class="keyword">int</span> M, <span class="keyword">int</span> N, <span class="keyword">int</span> K, <span class="keyword">float</span> ALPHA, </span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">float</span> *A, <span class="keyword">int</span> lda, </span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">float</span> *B, <span class="keyword">int</span> ldb,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">float</span> BETA,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">float</span> *C, <span class="keyword">int</span> ldc)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//printf("cpu: %d %d %d %d %d %f %d %d %f %d\n",TA, TB, M, N, K, ALPHA, lda, ldb, BETA, ldc);</span></span><br><span class="line">    <span class="keyword">int</span> i, j;</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; M; ++i)&#123;</span><br><span class="line">        <span class="keyword">for</span>(j = <span class="number">0</span>; j &lt; N; ++j)&#123;</span><br><span class="line">            C[i*ldc + j] *= BETA;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(!TA &amp;&amp; !TB)</span><br><span class="line">        gemm_nn(M, N, K, ALPHA,A,lda, B, ldb,C,ldc);</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(TA &amp;&amp; !TB)</span><br><span class="line">        gemm_tn(M, N, K, ALPHA,A,lda, B, ldb,C,ldc);</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(!TA &amp;&amp; TB)</span><br><span class="line">        gemm_nt(M, N, K, ALPHA,A,lda, B, ldb,C,ldc);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        gemm_tt(M, N, K, ALPHA,A,lda, B, ldb,C,ldc);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>gemm_nn函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// gemm(0,0,m,n,k,1,a,k,b,n,1,c,n);</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//int m = l.n / l.groups;//该层卷积核个数</span></span><br><span class="line"><span class="comment">//int k = l.size*l.size*l.c / l.groups;//每个卷积核参数个数</span></span><br><span class="line"><span class="comment">//int n = l.out_w*l.out_h;//该层每张特征图的尺寸，即元素个数,416*416</span></span><br><span class="line"><span class="comment">//float *a = l.weights + j*l.nweights / l.groups;// </span></span><br><span class="line"><span class="comment">//float *b = net.workspace;</span></span><br><span class="line"><span class="comment">// l.outputs = l.out_h * l.out_w * l.out_c;</span></span><br><span class="line"><span class="comment">//float *c = l.output + (i*l.groups + j)*n*m;</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">gemm_nn</span><span class="params">(<span class="keyword">int</span> M, <span class="keyword">int</span> N, <span class="keyword">int</span> K, <span class="keyword">float</span> ALPHA, <span class="comment">//M:卷积核个数，N:输出特征图尺寸，ALPHA=1</span></span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">float</span> *A, <span class="keyword">int</span> lda, <span class="comment">//A:l.wieghts   lda:k,l.size*l.size*l.c每个卷积核参数个数</span></span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">float</span> *B, <span class="keyword">int</span> ldb,<span class="comment">//B:l.c*l.size*l.size   ldb:n该层每张特征图的尺寸</span></span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">float</span> *C, <span class="keyword">int</span> ldc)</span><span class="comment">//C:l.output=l.output_w*l.output_h  ldc:n输出特征图尺寸大小</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	**  功能：被gemm_cpu()函数调用，实际完成C = ALPHA * A * B + C 矩阵计算，</span></span><br><span class="line"><span class="comment">	**       输出的C也是按行存储（所有行并成一行）</span></span><br><span class="line"><span class="comment">	**  输入： A,B,C   输入矩阵（一维数组格式）</span></span><br><span class="line"><span class="comment">	**        ALPHA   系数</span></span><br><span class="line"><span class="comment">	**        BETA    系数</span></span><br><span class="line"><span class="comment">	**        M       A,C的行数（不做转置）或者A'的行数（做转置），此处A未转置，故为A的行数</span></span><br><span class="line"><span class="comment">	**        N       B,C的列数（不做转置）或者B'的列数（做转置），此处B未转置，故为B的列数</span></span><br><span class="line"><span class="comment">	**        K       A的列数（不做转置）或者A'的列数（做转置），B的行数（不做转置）或者B'的行数（做转置），此处A,B均未转置，故为A的列数、B的行数</span></span><br><span class="line"><span class="comment">	**        lda     A的列数（不做转置）或者A'的行数（做转置），此处A未转置，故为A的列数</span></span><br><span class="line"><span class="comment">	**        ldb     B的列数（不做转置）或者B'的行数（做转置），此处B未转置，故为B的列数</span></span><br><span class="line"><span class="comment">	**        ldc     C的列数</span></span><br><span class="line"><span class="comment">	**  说明1：此函数是用C实现矩阵乘法运算，这部分代码应该是模仿的Caffe中的math_functions.cpp的代码</span></span><br><span class="line"><span class="comment">	**       参考博客：http://www.voidcn.com/blog/thy_2014/article/p-6149690.html</span></span><br><span class="line"><span class="comment">	**       更为详细的注释参见：gemm_cpu()函数的注释</span></span><br><span class="line"><span class="comment">	**  说明2：此函数在gemm_cpu()函数中调用，是其中四种情况之一，A,B都不进行转置</span></span><br><span class="line"><span class="comment">	**       函数名称gemm_nn()中的两个nn分别表示not transpose， not transpose</span></span><br><span class="line"><span class="comment">	*/</span></span><br><span class="line">    <span class="keyword">int</span> i,j,k;</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">pragma</span> omp parallel for</span></span><br><span class="line">	<span class="comment">//M:大循环，卷积核个数</span></span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; M; ++i)&#123;</span><br><span class="line">		<span class="comment">//K:每个卷积核参数</span></span><br><span class="line">        <span class="keyword">for</span>(k = <span class="number">0</span>; k &lt; K; ++k)&#123;</span><br><span class="line">            <span class="keyword">register</span> <span class="keyword">float</span> A_PART = ALPHA*A[i*lda+k];</span><br><span class="line">			<span class="comment">//N:输出特征图尺寸</span></span><br><span class="line">            <span class="keyword">for</span>(j = <span class="number">0</span>; j &lt; N; ++j)&#123;</span><br><span class="line">                C[i*ldc+j] += A_PART*B[k*ldb+j];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>im2col函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//输入： im2col_cpu(data_im:net.input + (i*l.groups + j)*l.c/l.groups*l.h*l.w,</span></span><br><span class="line"><span class="comment">//l.c/l.groups, l.h, l.w, l.size, l.stride, l.pad, b);</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">im2col_cpu</span><span class="params">(<span class="keyword">float</span>* data_im,<span class="comment">//data_im:net.input + (i*l.groups + j)*l.c/l.groups*l.h*l.w,</span></span></span></span><br><span class="line"><span class="function"><span class="params">								<span class="comment">//一个batch中的第i张图片</span></span></span></span><br><span class="line"><span class="function"><span class="params">     <span class="keyword">int</span> channels,  <span class="keyword">int</span> height,  <span class="keyword">int</span> width,<span class="comment">//channels=l.c=3,输入图片的通道，h=w=416,输入图片尺寸</span></span></span></span><br><span class="line"><span class="function"><span class="params">     <span class="keyword">int</span> ksize,  <span class="keyword">int</span> stride, <span class="keyword">int</span> pad, <span class="keyword">float</span>* data_col)</span> <span class="comment">//ksize=3,stride=1,pad=1,data_col=b即为将im转换为数组后的存储内存</span></span></span><br><span class="line"><span class="function"></span>&#123;<span class="comment">//channels=32</span></span><br><span class="line">    <span class="keyword">int</span> c,h,w;</span><br><span class="line">    <span class="keyword">int</span> height_col = (height + <span class="number">2</span>*pad - ksize) / stride + <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">int</span> width_col = (width + <span class="number">2</span>*pad - ksize) / stride + <span class="number">1</span>;</span><br><span class="line">	</span><br><span class="line">    <span class="keyword">int</span> channels_col = channels * ksize * ksize;<span class="comment">//一个卷积核的参数</span></span><br><span class="line">	<span class="comment">// 外循环次数为一个卷积核的尺寸数，循环次数即为最终得到的data_col的总行数</span></span><br><span class="line">    <span class="keyword">for</span> (c = <span class="number">0</span>; c &lt; channels_col; ++c) &#123;</span><br><span class="line">		<span class="comment">//// 列偏移，卷积核是一个二维矩阵，并按行存储在一维数组中，利用求余运算获取对应在卷积核中的列数，比如对于</span></span><br><span class="line">        <span class="comment">// 3*3的卷积核（3通道），当c=0时，显然在第一列，当c=5时，显然在第2列，当c=9时，在第二通道上的卷积核的第一列，</span></span><br><span class="line">        <span class="comment">// 当c=26时，在第三列（第三通道上）</span></span><br><span class="line">        <span class="keyword">int</span> w_offset = c % ksize;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//// 行偏移，卷积核是一个二维的矩阵，且是按行（卷积核所有行并成一行）存储在一维数组中的，</span></span><br><span class="line">        <span class="comment">// 比如对于3*3的卷积核，处理3通道的图像，那么一个卷积核具有27个元素，每9个元素对应一个通道上的卷积核（互为一样），</span></span><br><span class="line">        <span class="comment">// 每当c为3的倍数，就意味着卷积核换了一行，h_offset取值为0,1,2，对应3*3卷积核中的第1, 2, 3行</span></span><br><span class="line">        <span class="keyword">int</span> h_offset = (c / ksize) % ksize;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//// 通道偏移，channels_col是多通道的卷积核并在一起的，比如对于3通道，3*3卷积核，每过9个元素就要换一通道数，</span></span><br><span class="line">        <span class="comment">// 当c=0~8时，c_im=0;c=9~17时，c_im=1;c=18~26时，c_im=2</span></span><br><span class="line">        <span class="keyword">int</span> c_im = c / ksize / ksize;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//// 中循环次数等于该层输出图像行数height_col，</span></span><br><span class="line">        <span class="keyword">for</span> (h = <span class="number">0</span>; h &lt; height_col; ++h) &#123;</span><br><span class="line">			<span class="comment">//// 内循环等于该层输出图像列数width_col，</span></span><br><span class="line">			<span class="comment">//说明data_col中的每一行存储了一张特征图，这张特征图又是按行存储在data_col中的某行中,</span></span><br><span class="line">			<span class="comment">//说明最终得到的data_col总有channels_col行，height_col*width_col列</span></span><br><span class="line">            <span class="keyword">for</span> (w = <span class="number">0</span>; w &lt; width_col; ++w) &#123;</span><br><span class="line"></span><br><span class="line">				<span class="comment">//// 由上面可知，对于3*3的卷积核，h_offset取值为0,1,2,当h_offset=0时，会提取出所有与卷积核第一行元素进行运算的像素，</span></span><br><span class="line">                <span class="comment">// 依次类推；加上h*stride是对卷积核进行行移位操作，比如卷积核从图像(0,0)位置开始做卷积，那么最先开始涉及(0,0)~(3,3)</span></span><br><span class="line">                <span class="comment">// 之间的像素值，若stride=2，那么卷积核进行一次行移位时，下一行的卷积操作是从元素(2,0)（2为图像行号，0为列号）开始</span></span><br><span class="line">                <span class="keyword">int</span> im_row = h_offset + h * stride;</span><br><span class="line"></span><br><span class="line">				<span class="comment">// 对于3*3的卷积核，w_offset取值也为0,1,2，当w_offset取1时，会提取出所有与卷积核中第2列元素进行运算的像素，</span></span><br><span class="line">				<span class="comment">// 实际在做卷积操作时，卷积核对图像逐行扫描做卷积，加上w*stride就是为了做列移位，</span></span><br><span class="line">				<span class="comment">// 比如前一次卷积其实像素元素为(0,0)，若stride=2,那么下次卷积元素起始像素位置为(0,2)（0为行号，2为列号）</span></span><br><span class="line">                <span class="keyword">int</span> im_col = w_offset + w * stride;</span><br><span class="line"></span><br><span class="line">				<span class="comment">// col_index为重排后图像中的像素索引，等于c * height_col * width_col + h * width_col +w（还是按行存储，所有通道再并成一行），</span></span><br><span class="line">                <span class="comment">// 对应第c通道，h行，w列的元素</span></span><br><span class="line">                <span class="keyword">int</span> col_index = (c * height_col + h) * width_col + w;</span><br><span class="line">                data_col[col_index] = im2col_get_pixel(data_im, height, width, channels,</span><br><span class="line">                        im_row, im_col, c_im, pad);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="TRAIN"><a href="#TRAIN" class="headerlink" title="TRAIN"></a>TRAIN</h1><p>detector.c/train_detector函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">float</span> loss = <span class="number">0</span>;</span><br><span class="line">        loss = train_network(net, train);</span><br><span class="line">        <span class="keyword">if</span> (avg_loss &lt; <span class="number">0</span>) avg_loss = loss;<span class="comment">//float ave_loss=-1</span></span><br><span class="line">        avg_loss = avg_loss*<span class="number">.9</span> + loss*<span class="number">.1</span>;</span><br><span class="line"></span><br><span class="line">        i = get_current_batch(net);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%ld: %f, %f avg, %f rate, %lf seconds, %d images\n"</span>, get_current_batch(net), loss, avg_loss, get_current_rate(net), what_time_is_it_now()-time, i*imgs);</span><br><span class="line">        <span class="keyword">if</span>(i%<span class="number">100</span>==<span class="number">0</span>)&#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> GPU</span></span><br><span class="line">            <span class="keyword">if</span>(ngpus != <span class="number">1</span>) sync_nets(nets, ngpus, <span class="number">0</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">            <span class="keyword">char</span> buff[<span class="number">256</span>];</span><br><span class="line">            <span class="built_in">sprintf</span>(buff, <span class="string">"%s/%s.backup"</span>, backup_directory, base);</span><br><span class="line">            save_weights(net, buff);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(i%<span class="number">10000</span>==<span class="number">0</span> || (i &lt; <span class="number">1000</span> &amp;&amp; i%<span class="number">100</span> == <span class="number">0</span>))&#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> GPU</span></span><br><span class="line">            <span class="keyword">if</span>(ngpus != <span class="number">1</span>) sync_nets(nets, ngpus, <span class="number">0</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">            <span class="keyword">char</span> buff[<span class="number">256</span>];</span><br><span class="line">            <span class="built_in">sprintf</span>(buff, <span class="string">"%s/%s_%d.weights"</span>, backup_directory, base, i);</span><br><span class="line">            save_weights(net, buff);</span><br><span class="line">        &#125;</span><br><span class="line">        free_data(train);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> GPU</span></span><br><span class="line">    <span class="keyword">if</span>(ngpus != <span class="number">1</span>) sync_nets(nets, ngpus, <span class="number">0</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="keyword">char</span> buff[<span class="number">256</span>];</span><br><span class="line">    <span class="built_in">sprintf</span>(buff, <span class="string">"%s/%s_final.weights"</span>, backup_directory, base);</span><br><span class="line">    save_weights(net, buff);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>network.c/train_network函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">train_network_datum</span><span class="params">(network *net)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    *net-&gt;seen += net-&gt;batch;</span><br><span class="line">    net-&gt;train = <span class="number">1</span>;</span><br><span class="line">    forward_network(net);</span><br><span class="line">    backward_network(net);</span><br><span class="line">    <span class="keyword">float</span> error = *net-&gt;cost;</span><br><span class="line">    <span class="keyword">if</span>(((*net-&gt;seen)/net-&gt;batch)%net-&gt;subdivisions == <span class="number">0</span>) update_network(net);</span><br><span class="line">    <span class="keyword">return</span> error;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>backward_network函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">backward_network</span><span class="params">(network *netp)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> GPU</span></span><br><span class="line">    <span class="keyword">if</span>(netp-&gt;gpu_index &gt;= <span class="number">0</span>)&#123;</span><br><span class="line">        backward_network_gpu(netp);   </span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    network net = *netp;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    network orig = net;</span><br><span class="line">    <span class="keyword">for</span>(i = net.n<span class="number">-1</span>; i &gt;= <span class="number">0</span>; --i)&#123;</span><br><span class="line">        layer l = net.layers[i];</span><br><span class="line">        <span class="keyword">if</span>(l.stopbackward) <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">if</span>(i == <span class="number">0</span>)&#123;</span><br><span class="line">            net = orig;</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            layer prev = net.layers[i<span class="number">-1</span>];</span><br><span class="line">            net.input = prev.output;</span><br><span class="line">            net.delta = prev.delta;</span><br><span class="line">        &#125;</span><br><span class="line">        net.index = i;</span><br><span class="line">        l.backward(l, net);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>convolutional_layer.c/backward_convolutional_layer函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">backward_convolutional_layer</span><span class="params">(convolutional_layer l, network net)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i, j;</span><br><span class="line">    <span class="keyword">int</span> m = l.n/l.groups;</span><br><span class="line">    <span class="keyword">int</span> n = l.size*l.size*l.c/l.groups;</span><br><span class="line">    <span class="keyword">int</span> k = l.out_w*l.out_h;</span><br><span class="line"></span><br><span class="line">    gradient_array(l.output, l.outputs*l.batch, l.activation, l.delta);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(l.batch_normalize)&#123;</span><br><span class="line">        backward_batchnorm_layer(l, net);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        backward_bias(l.bias_updates, l.delta, l.batch, l.n, k);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; l.batch; ++i)&#123;</span><br><span class="line">        <span class="keyword">for</span>(j = <span class="number">0</span>; j &lt; l.groups; ++j)&#123;</span><br><span class="line">            <span class="keyword">float</span> *a = l.delta + (i*l.groups + j)*m*k;</span><br><span class="line">            <span class="keyword">float</span> *b = net.workspace;</span><br><span class="line">            <span class="keyword">float</span> *c = l.weight_updates + j*l.nweights/l.groups;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">float</span> *im = net.input+(i*l.groups + j)*l.c/l.groups*l.h*l.w;</span><br><span class="line"></span><br><span class="line">            im2col_cpu(im, l.c/l.groups, l.h, l.w, </span><br><span class="line">                    l.size, l.stride, l.pad, b);</span><br><span class="line">            gemm(<span class="number">0</span>,<span class="number">1</span>,m,n,k,<span class="number">1</span>,a,k,b,k,<span class="number">1</span>,c,n);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(net.delta)&#123;</span><br><span class="line">                a = l.weights + j*l.nweights/l.groups;</span><br><span class="line">                b = l.delta + (i*l.groups + j)*m*k;</span><br><span class="line">                c = net.workspace;</span><br><span class="line"></span><br><span class="line">                gemm(<span class="number">1</span>,<span class="number">0</span>,n,k,m,<span class="number">1</span>,a,n,b,k,<span class="number">0</span>,c,k);</span><br><span class="line"></span><br><span class="line">                col2im_cpu(net.workspace, l.c/l.groups, l.h, l.w, l.size, l.stride, </span><br><span class="line">                    l.pad, net.delta + (i*l.groups + j)*l.c/l.groups*l.h*l.w);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>float error = *net-&gt;cost;在哪里计算这个cost的呢，就是在前传的时候，</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">calc_network_cost</span><span class="params">(network *netp)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    network net = *netp;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">float</span> sum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; net.n; ++i)&#123;</span><br><span class="line">        <span class="keyword">if</span>(net.layers[i].cost)&#123;</span><br><span class="line">            sum += net.layers[i].cost[<span class="number">0</span>];</span><br><span class="line">            ++count;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    *net.cost = sum/count;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="yolo层"><a href="#yolo层" class="headerlink" title="yolo层"></a>yolo层</h1><p>parse.c/parse_yolo</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">layer <span class="title">parse_yolo</span><span class="params">(<span class="built_in">list</span> *options, size_params params)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> classes = option_find_int(options, <span class="string">"classes"</span>, <span class="number">20</span>);</span><br><span class="line">    <span class="keyword">int</span> total = option_find_int(options, <span class="string">"num"</span>, <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">int</span> num = total;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">char</span> *a = option_find_str(options, <span class="string">"mask"</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">int</span> *mask = parse_yolo_mask(a, &amp;num);</span><br><span class="line">    layer l = make_yolo_layer(params.batch, params.w, params.h, num, total, mask, classes);</span><br><span class="line">    assert(l.outputs == params.inputs);</span><br><span class="line"></span><br><span class="line">    l.max_boxes = option_find_int_quiet(options, <span class="string">"max"</span>,<span class="number">90</span>);</span><br><span class="line">    l.jitter = option_find_float(options, <span class="string">"jitter"</span>, <span class="number">.2</span>);</span><br><span class="line"></span><br><span class="line">    l.ignore_thresh = option_find_float(options, <span class="string">"ignore_thresh"</span>, <span class="number">.5</span>);</span><br><span class="line">    l.truth_thresh = option_find_float(options, <span class="string">"truth_thresh"</span>, <span class="number">1</span>);</span><br><span class="line">    l.random = option_find_int_quiet(options, <span class="string">"random"</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">char</span> *map_file = option_find_str(options, <span class="string">"map"</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (map_file) l.<span class="built_in">map</span> = read_map(map_file);</span><br><span class="line"></span><br><span class="line">    a = option_find_str(options, <span class="string">"anchors"</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span>(a)&#123;</span><br><span class="line">        <span class="keyword">int</span> len = <span class="built_in">strlen</span>(a);</span><br><span class="line">        <span class="keyword">int</span> n = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">int</span> i;</span><br><span class="line">        <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; len; ++i)&#123;</span><br><span class="line">            <span class="keyword">if</span> (a[i] == <span class="string">','</span>) ++n;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; n; ++i)&#123;</span><br><span class="line">            <span class="keyword">float</span> bias = atof(a);</span><br><span class="line">            l.biases[i] = bias;</span><br><span class="line">            a = <span class="built_in">strchr</span>(a, <span class="string">','</span>)+<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> l;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/09/yolo3_pytorch_网络解析/" rel="next" title="yolov3_PyTorch">
+                <i class="fa fa-chevron-left"></i> yolov3_PyTorch
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/23/书单/" rel="prev" title="2017-2018书目摘录">
+                2017-2018书目摘录 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#LOAD"><span class="nav-number">1.</span> <span class="nav-text">LOAD</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TEST"><span class="nav-number">2.</span> <span class="nav-text">TEST</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#network-c-load-network函数"><span class="nav-number">2.1.</span> <span class="nav-text">network.c/load_network函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#parser-c-parse-network-cfg函数"><span class="nav-number">2.2.</span> <span class="nav-text">parser.c/parse_network_cfg函数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TRAIN"><span class="nav-number">3.</span> <span class="nav-text">TRAIN</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#yolo层"><span class="nav-number">4.</span> <span class="nav-text">yolo层</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

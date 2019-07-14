@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="摘要：YOLO把目标检测设计成一个回归问题：空间上分离的bounding box和有联系的类别概率。使用一个神经网络直接在整张图上预测bounding box和类别概率。 因为整个检测的流水线是单独的网络，所以可以端到端地优化。 YOLO可以实时处理图像，达到45帧每秒。一个更小的网络，Fast YOLO可以每秒处理155帧，并且mAP达到其他实时检测器的两倍。 和其他先进的检测系统相比，YOLO">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="YOLOv1">
+<meta property="og:url" content="http://yoursite.com/2018/04/27/YOLOv1/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="摘要：YOLO把目标检测设计成一个回归问题：空间上分离的bounding box和有联系的类别概率。使用一个神经网络直接在整张图上预测bounding box和类别概率。 因为整个检测的流水线是单独的网络，所以可以端到端地优化。 YOLO可以实时处理图像，达到45帧每秒。一个更小的网络，Fast YOLO可以每秒处理155帧，并且mAP达到其他实时检测器的两倍。 和其他先进的检测系统相比，YOLO">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/04/27/YOLOv1/%5Cimages%5CYOLO%5C1.png">
+<meta property="og:image" content="http://yoursite.com/2018/04/27/YOLOv1/%5Cimages%5CYOLO%5C2.png">
+<meta property="og:image" content="http://yoursite.com/2018/04/27/YOLOv1/%5Cimages%5CYOLO%5C3.png">
+<meta property="og:image" content="http://yoursite.com/2018/04/27/YOLOv1/%5Cimages%5CYOLO%5C4.png">
+<meta property="og:image" content="http://yoursite.com/2018/04/27/YOLOv1/%5Cimages%5CYOLO%5C6.png">
+<meta property="og:image" content="http://yoursite.com/2018/04/27/YOLOv1/%5Cimages%5CYOLO%5C5.png">
+<meta property="og:image" content="http://yoursite.com/2018/04/27/YOLOv1/%5Cimages%5CYOLO%5Cv2-40c8cbed60aba0fe2faa38e240b8563b_hd.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/04/27/YOLOv1/%5Cimages%5CYOLO%5C7.png">
+<meta property="og:image" content="http://yoursite.com/2018/04/27/YOLOv1/%5Cimages%5CYOLO%5C8.png">
+<meta property="og:image" content="http://yoursite.com/2018/04/27/YOLOv1/%5Cimages%5CYOLO%5C9.png">
+<meta property="og:image" content="http://yoursite.com/2018/04/27/YOLOv1/%5Cimages%5CYOLO%5C10.png">
+<meta property="og:image" content="http://yoursite.com/2018/04/27/YOLOv1/%5Cimages%5CYOLO%5C11.png">
+<meta property="og:updated_time" content="2019-07-14T07:17:28.318Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="YOLOv1">
+<meta name="twitter:description" content="摘要：YOLO把目标检测设计成一个回归问题：空间上分离的bounding box和有联系的类别概率。使用一个神经网络直接在整张图上预测bounding box和类别概率。 因为整个检测的流水线是单独的网络，所以可以端到端地优化。 YOLO可以实时处理图像，达到45帧每秒。一个更小的网络，Fast YOLO可以每秒处理155帧，并且mAP达到其他实时检测器的两倍。 和其他先进的检测系统相比，YOLO">
+<meta name="twitter:image" content="http://yoursite.com/2018/04/27/YOLOv1/%5Cimages%5CYOLO%5C1.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/04/27/YOLOv1/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>YOLOv1 | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/27/YOLOv1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">YOLOv1
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-04-27 09:56:02" itemprop="dateCreated datePublished" datetime="2018-04-27T09:56:02+08:00">2018-04-27</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:28" itemprop="dateModified" datetime="2019-07-14T15:17:28+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/" itemprop="url" rel="index"><span itemprop="name">paper</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/object-detection/" itemprop="url" rel="index"><span itemprop="name">object detection</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="摘要："><a href="#摘要：" class="headerlink" title="摘要："></a>摘要：</h1><p><strong>YOLO把目标检测设计成一个回归问题</strong>：空间上分离的bounding box和有联系的类别概率。使用一个神经网络直接在整张图上预测bounding box和类别概率。</p>
+<p><strong>因为整个检测的流水线是单独的网络，所以可以端到端地优化</strong>。</p>
+<p><strong>YOLO可以实时处理图像</strong>，达到45帧每秒。一个更小的网络，Fast YOLO可以每秒处理155帧，并且mAP达到其他实时检测器的两倍。</p>
+<p><strong>和其他先进的检测系统相比，YOLO的定位错误更多，但是预测的负样本更少。</strong> </p>
+<p><strong>YOLO可以学到目标更加泛化的特征表达。</strong>当在别的领域，比如艺术品中应用检测时，他的性能超过了DPM和RCNN.</p>
+<a id="more"></a>
+
+<p><a href="https://arxiv.org/abs/1506.02640" target="_blank" rel="noopener">paper</a><br><a href="https://pjreddie.com/darknet/yolo/" target="_blank" rel="noopener">code</a></p>
+<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>快速、准确的目标检测算法在许多领域，比如无人驾驶中应用广泛。</p>
+<p><strong>DPM:</strong> 现在的检测系统重新定义分类器，让他们完成检测的任务。DPM使用滑动窗在整张图上扫，同时使用一个分类器在每个空间位置确定是否存在物体，计算量大。</p>
+<p><img src="%5Cimages%5CYOLO%5C1.png" alt></p>
+<p><strong>RCNN:</strong> SS产生region proposal，然后使用分类器对每个proposal进行分类。分类之后，后处理精修bounding box的边界，去除重复检测。并依据场景中的其他目标来给boxes重新打分。每个部分都得分开训练，耗时，很难优化。</p>
+<p><img src="%5Cimages%5CYOLO%5C2.png" alt></p>
+<p><strong>YOLO:</strong> 直接从图像的像素预测边界框和类别概率。如下图：使用一个单独的卷积网络可以同时预测多个bounding boxes和类别概率。</p>
+<p><img src="%5Cimages%5CYOLO%5C3.png" alt></p>
+<p>它在整图上进行训练并且直接优化，具有以下三个好处：</p>
+<ol>
+<li>非常快。把检测问题建模成一个回归问题就无需复杂的pipeline。每秒45帧（更快的版本每秒150帧），在实时应用中没有延时，而且mAP也是别的实时检测系统的两倍。</li>
+<li>YOLO在预测时可以推理整张图片。也就是说，它能够在训练和预测阶段看到整幅图的信息，即包含类别及其外观的语义信息。这是个滑动窗方法不一样的地方。<strong>Fast RCNN会把背景误判为目因为他不能看到大的场景信息。</strong>YOLO的background error比Fast RCNN少了一半。</li>
+<li>YOLO能够学习到目标更加泛化的特征。当他被应用到新的场景或者输入不寻常的图像时，性能不会垮的很厉害。</li>
+</ol>
+<p>总的来说，YOLO的性能比世界领先的目标检测系统的性能还差很多，虽然定位迅速，但是对小目标的定位仍然很困难。</p>
+<h1 id="Unnified-Detection"><a href="#Unnified-Detection" class="headerlink" title="Unnified Detection"></a>Unnified Detection</h1><p><img src="%5Cimages%5CYOLO%5C4.png" alt></p>
+<p>​    首先，把输入图片分为$S\times S$个格子，如果目标的中心落入到一个网格内，则这个网格负责检测该目标。每个网格预测出$B$个bounding boxes和分数，<strong>分数反映了这个box包含一个模型的置信度和这个模型预测的准确性。</strong>定义置信度为：</p>
+<p>$$<br>Pr(Object)*IOU_{pred}^{truth}<br>$$<br>​    $Pr(Object)$,当边界框包含目标时，为1，不包含目标时，为0.如果那个网格不包含这个目标，则置信度为0，如果包含，则置信度为预测的box和ground truth之间的IOU。</p>
+<p>​    每个bounding box包含5个预测：$x,y,h,w$和confidence。$(x,y)$是box的中心相对于网格的坐标。<strong>注意，$(x,y)$是相对于每个单元格左上角坐标点的偏移值，单位是相对于单元格的大小。而边界框的宽高也是相对于整张图片的宽高的比例，这四个值的大小应该都在0-1之间。</strong></p>
+<p>每个网格也预测了$C$个条件类别概率，$Pr(Class_i|Object)$ .一个网格不论有多少个$B$boxes,都只预测一组条件类别概率。</p>
+<p><strong>测试阶段：</strong><br>$$<br>Pr(Class_i|Object)<em>Pr(Object)</em>IOU_{pred}^{truth}=Pr(Class_i)<em>IOU_{pred}^{truth}<br>$$<br>*</em>计算每个box的特定类别的分数：该类别出现在这个box内的概率，以及这个box和目标的匹配程度。** </p>
+<p>YOLO中，VOC数据集上使用$S=7,B=2,C=20$,最后的预测是一个$7\times 7\times 30$的张量。</p>
+<p><img src="%5Cimages%5CYOLO%5C6.png" alt></p>
+<h2 id="Network-Design"><a href="#Network-Design" class="headerlink" title="Network Design"></a>Network Design</h2><p>网络架构受GoogleNet启发，有24个卷积层，接着2个全连接层。对于卷积层，主要使用$1\times 1$的卷积来做channel reduction，然后紧跟着$3\times 3$卷积。如图3：<img src="%5Cimages%5CYOLO%5C5.png" alt></p>
+<h2 id="Training"><a href="#Training" class="headerlink" title="Training"></a>Training</h2><p>首先，在ImageNet数据集上预训练前20层卷积层，使用的是Darknet框架。</p>
+<p>然后，加了随机初始化的4层卷积层和2个全连接层。检测任务需要精细粒度的视觉信息，<strong>因此在检测的时候把网络的输入分辨率从</strong>$224\times 224$到$448\times 448$.前向过程如下：</p>
+<p><img src="%5Cimages%5CYOLO%5Cv2-40c8cbed60aba0fe2faa38e240b8563b_hd.jpg" alt></p>
+<p>最后一层预测类别概率和bound ing box的坐标。我们把bounding box的宽和高变为占原图的宽高的比例，因此缩放到0到1范围。我们把bounding box的$x$和$y$坐标参数化成特定网格位置的偏移，这样也被限制到了0到1之间。</p>
+<p>在最后一层使用一个线性激活函数，其他层都使用leaky rectified线性激活函数：</p>
+<p>$$<br>\phi(x)=\begin {cases}x,if \quad x&gt;0 \ 0.1x,\quad otherwise\end{cases} \qquad(2)<br>$$</p>
+<p><strong>损失函数：</strong></p>
+<p>​    因为将目标检测看成是回归问题，因此采用的是均方误差函数，但是对于不同部分采用不同的权重。首先区分定位误差和分类误差。对于分类误差，即边界框坐标预测误差，对于前者，采用较大的权重值，$\lambda_{coord}=5$.然后区分不包含目标的边界框与含有目标的边界框的置信度。不含有目标，采用较小的权重$\lambda_{noobj}=0.5$,其他权值均设为1.对于边界框预测，同等对待大小不同的边界框，但是实际上小框的坐标误差会比大框的误差更敏感，因此为了保证这一点，将网络的边界框的宽高改为对平方根的预测，即$(x,y,\sqrt{w},\sqrt{h})$的预测。</p>
+<p>​    另外，由于每个单元格预测多个边界框，但是类别只有一个，因此在训练时，如果单元格内确实存在目标，那么<strong>只选择与ground truth的IOU最大的那个边界框负责预测该目标，而其他边界框认为不存在目标</strong>。</p>
+<p>​    这样设置的一个好处是，<strong>一个网格对应的bounding box会更专业，即可以适应不同的大小，纵横比，的目标，从而提升模型性能。</strong></p>
+<p>​    缺点是：如果网格内存在多个目标，那么YOLO只能选取一个来训练。</p>
+<p><img src="%5Cimages%5CYOLO%5C7.png" alt></p>
+<p>​    其中，第一项是边界框的中心坐标误差，$I_{ij}^{obj}$指的是第$i$个单元格存在目标，且该网格中的第$j$个边界框负责预测该目标。第二项是边界框的宽高误差项。第三项是包含目标的边界框的置信度误差项。第四项是不包含边界框的置信度误差项。最后一项是包含目标的单元格的分类误差项，$I_i^{obj}$指的是第$i$个单元格存在目标。</p>
+<p>​    <strong>注意：损失函数只惩罚那些grid cell包含目标的分类错误，和预测器负责该groundtruth的时候才惩罚（和ground truth有最高IOU的那个框）的Bbox的坐标误差。</strong></p>
+<p>​    训练细节见原文。</p>
+<p>​    为了防止过拟合，还使用了dropout和数据增强做处理。</p>
+<h2 id="Inference"><a href="#Inference" class="headerlink" title="Inference"></a>Inference</h2><p>​    在VOC数据集上，每个图片预测出98个框。使用非极大值抑制进行边界框的剔除。</p>
+<h2 id="YOLOvsRCNN"><a href="#YOLOvsRCNN" class="headerlink" title="YOLOvsRCNN"></a>YOLOvsRCNN</h2><p>相似：使用卷积网络为每个网格预测可能的bounding box和这些box的分数，</p>
+<p>不同：</p>
+<ul>
+<li>YOLO使用了空间约束，能够缓和给同一个目标预测出多个检测的现象。</li>
+<li>并且YOLO的proposal更少，只有98个每张图，而RCNN有2000个。</li>
+<li>YOLO将独立的部分结合在一起，可以联合优化</li>
+</ul>
+<h1 id="Experiment"><a href="#Experiment" class="headerlink" title="Experiment"></a>Experiment</h1><p><img src="%5Cimages%5CYOLO%5C8.png" alt></p>
+<p><img src="%5Cimages%5CYOLO%5C9.png" alt></p>
+<p>YOLO的负样本错误率更小，当在Fast RCNN中使用YOLO来去除背景预测后，Fast RCNN性能有提升。</p>
+<p><img src="%5Cimages%5CYOLO%5C10.png" alt></p>
+<p>检测结果：<img src="%5Cimages%5CYOLO%5C11.png" alt></p>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/22/rfcn/" rel="next" title="rfcn">
+                <i class="fa fa-chevron-left"></i> rfcn
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/01/YOLOv2/" rel="prev" title="YOLOv2">
+                YOLOv2 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#摘要："><span class="nav-number">1.</span> <span class="nav-text">摘要：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">2.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Unnified-Detection"><span class="nav-number">3.</span> <span class="nav-text">Unnified Detection</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Network-Design"><span class="nav-number">3.1.</span> <span class="nav-text">Network Design</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Training"><span class="nav-number">3.2.</span> <span class="nav-text">Training</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Inference"><span class="nav-number">3.3.</span> <span class="nav-text">Inference</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#YOLOvsRCNN"><span class="nav-number">3.4.</span> <span class="nav-text">YOLOvsRCNN</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Experiment"><span class="nav-number">4.</span> <span class="nav-text">Experiment</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="主要是关于比赛的总结，获奖队伍的方法总结，以及自己看的姿态估计论文">
+<meta name="keywords" content="PoseEsimation">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI_challenger">
+<meta property="og:url" content="http://yoursite.com/2017/12/21/AI-challenger/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="主要是关于比赛的总结，获奖队伍的方法总结，以及自己看的姿态估计论文">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-07-14T07:17:36.446Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="AI_challenger">
+<meta name="twitter:description" content="主要是关于比赛的总结，获奖队伍的方法总结，以及自己看的姿态估计论文">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2017/12/21/AI-challenger/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>AI_challenger | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/12/21/AI-challenger/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">AI_challenger
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2017-12-21 10:30:52" itemprop="dateCreated datePublished" datetime="2017-12-21T10:30:52+08:00">2017-12-21</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:36" itemprop="dateModified" datetime="2019-07-14T15:17:36+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">notes</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/notes/pose-estimation/" itemprop="url" rel="index"><span itemprop="name">pose estimation</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>主要是关于比赛的总结，获奖队伍的方法总结，以及自己看的姿态估计论文</p>
+<a id="more"></a>
+
+<p>相关数据集及论文：</p>
+<p>mpii:<a href="http://pose.mpi-inf.mpg.de/" target="_blank" rel="noopener">deep(er)cut</a> 包括数据集，论文，poster,代码</p>
+<p><a href="https://arxiv.org/pdf/1612.01465.pdf" target="_blank" rel="noopener">ArtTrack: Articulated Multi-person Tracking in the Wild</a></p>
+<p><a href="https://github.com/eldar/pose-tensorflow" target="_blank" rel="noopener">code</a></p>
+<p><a href="https://arxiv.org/pdf/1602.00134.pdf" target="_blank" rel="noopener">Convolutional Pose Machines</a></p>
+<p><a href="https://github.com/shihenw/convolutional-pose-machines-release" target="_blank" rel="noopener">code</a></p>
+<p><a href="https://arxiv.org/abs/1611.08050" target="_blank" rel="noopener">Realtime Multi-Person 2D Pose Estimation using Part Affinity Fields</a></p>
+<p><a href="https://github.com/ZheC/Realtime_Multi-Person_Pose_Estimation#training" target="_blank" rel="noopener">code</a></p>
+<p><a href="https://arxiv.org/abs/1603.06937" target="_blank" rel="noopener">Stacked Hourglass Networks for Human Pose Estimation </a></p>
+<p><a href="http://www-personal.umich.edu/~alnewell/pose/" target="_blank" rel="noopener">project site</a></p>
+<h1 id="写在前面："><a href="#写在前面：" class="headerlink" title="写在前面："></a>写在前面：</h1><p>比赛数据：数据量特别大，训练数据21万张</p>
+<p>数据集场景更贴合实际场景，经统计，将近50%的标注有重叠。实际生活中，运动员交叠，拍照时靠拢……</p>
+<h1 id="1-基于open-pose的改进方法"><a href="#1-基于open-pose的改进方法" class="headerlink" title="1.基于open pose的改进方法"></a>1.基于open pose的改进方法</h1><h2 id="l-top-down-方法"><a href="#l-top-down-方法" class="headerlink" title="l.top down 方法"></a>l.top down 方法</h2><ol>
+<li>输入图像进行人体的检测</li>
+<li>单人的人体姿态估计</li>
+</ol>
+<p><strong>缺点：</strong></p>
+<ol>
+<li><strong>算法速度与图片上人的数目成正比</strong>：检测了几个人，就得进行多少次的单人姿态估计过程，很耗时，很难扩展到实时应用中去。</li>
+<li><strong>对框特别敏感，偏移一点点，结果就会改变</strong>。因为这种方法是以人为中心的图像块作为输入，所有训练出来的模型对人在框中的位置特别敏感。</li>
+<li><strong>当两个人离得很近时</strong>，即使使用GT的bounding box,网络也很难做出判断</li>
+</ol>
+<h2 id="2-openpose"><a href="#2-openpose" class="headerlink" title="2.openpose"></a>2.openpose</h2><p><strong>思想：</strong></p>
+<p>多个阶段级联的双分支网络，估计节点之间的heatmap,还估计节点之间的连接关系，也就是亲和力场。</p>
+<p>在输入图像上不加区分的一次性估计出所有候选关键点，再对输出的节点之间的亲和力场，对节点进行关联。</p>
+<p><strong>问题：</strong> </p>
+<ol>
+<li>文中约束：<strong>一个候选节点最多只能关联到一个人的姿态估计中去</strong>。如果某一个节点关联错误，那他后续相关的节点都会关联出错。如果一个节点被关联到另一个人中去，那两个人的姿态估计都会出错。</li>
+<li>孤立点问题:因为他的父节点没有被检测到。可能因为截断，或者是遮挡，导致父节点没有被预测到。</li>
+</ol>
+<h2 id="2-改进："><a href="#2-改进：" class="headerlink" title="2.改进："></a>2.改进：</h2><h3 id="2-1-human-detection"><a href="#2-1-human-detection" class="headerlink" title="2.1.human detection"></a>2.1.human detection</h3><p><strong>好处：</strong></p>
+<ol>
+<li>在每个人的bounding box中独立的进行姿态解析，就避免了错误在两个不同人之间传播的问题。</li>
+<li>有了这个框就可以进行判断，将孤立的节点关联到相应人的姿态估计中去。</li>
+</ol>
+<p><strong>区别：</strong> </p>
+<p>不像top-down这个方法的ounding box,一定需要人位于图像的中心。我们只需要完整的包住人即可。实验中使用YOLO完成。</p>
+<h3 id="2-2-网络结构"><a href="#2-2-网络结构" class="headerlink" title="2.2.网络结构"></a>2.2.网络结构</h3><ol>
+<li>将特征提取的VGG19网络替换成<strong>残差网络</strong>。好处：</li>
+<li>引入<strong>deconvolution</strong> 层来提高输出分辨率，在每个stage的$1\times1$的卷积之前加入了一个deconvolution 层（s=2），实现对输出的2倍上采样。再在每个分支输出后加上pooling层（s=2），实现2倍的下采样，再和原始的特征进行拼接，送入下一个stage。</li>
+</ol>
+<p>测试：</p>
+<ol>
+<li>heatmap ：所有人的候选点集合，和包含节点之间连接关系的亲和力场的估计</li>
+<li>每个人的框内姿态解析：确定当前框内的候选点集合</li>
+<li>姿态NMS：贪心算法，对人体骨架的每一段连接，利用亲和力场，计算置信度</li>
+<li>POST处理</li>
+</ol>
+<h3 id="2-3：重复检测"><a href="#2-3：重复检测" class="headerlink" title="2.3：重复检测"></a>2.3：重复检测</h3><p>0.7阈值过滤框，再进行0.4阈值的OKS的非极大值抑制。</p>
+<p>会对同一个人的骨架进行重复解析，因为同一个人不止检测到一次。</p>
+<p>循环的对每一个框进行判断，挑出置信度最高的骨架，删除其他框内的相似的骨架。</p>
+<p>NMS：对骨架进行。解决框预测重复导致的节点预测重复的问题。</p>
+<p>计算两套骨架的相似度。0.7阈值抑制框，0.5阈值抑制OKS的骨架。</p>
+<p>通过数据集上可视化进行，阈值比0.4小的话质量就很低了。</p>
+<h3 id="2-4孤立点："><a href="#2-4孤立点：" class="headerlink" title="2.4孤立点："></a>2.4孤立点：</h3><p>孤立点：对于一个骨架中没预测出来的节点，在相应通道的heatmap中寻找置信度最高并且没有被关联到其他人的骨架中的点，作为该点。</p>
+<p>比如脚踝没检测到，找到Heatmap中最高的点，发现已经被关联了，就找<strong>次高</strong>的confidence的点作为这个人的脚踝。</p>
+<p>很有效的解决孤立点的问题。</p>
+<h2 id="3-问题"><a href="#3-问题" class="headerlink" title="3.问题"></a>3.问题</h2><h3 id="3-1-gain"><a href="#3-1-gain" class="headerlink" title="3.1 gain"></a>3.1 gain</h3><ol>
+<li>速度较top-down更快，只用前向一次</li>
+<li>引入human detection，当两个人挨的很近时，一方面防止错误在两个人之间传播，另一方面也能解决父节点检测不到而导致的孤立点问题</li>
+<li>对抖动非常鲁棒</li>
+</ol>
+<p>每个改进，小数点后两位进步。</p>
+<h3 id="3-2稀有姿态"><a href="#3-2稀有姿态" class="headerlink" title="3.2稀有姿态"></a>3.2稀有姿态</h3><p>数据增强</p>
+<h3 id="3-3合成pose考虑？"><a href="#3-3合成pose考虑？" class="headerlink" title="3.3合成pose考虑？"></a>3.3合成pose考虑？</h3><h3 id="3-4建议"><a href="#3-4建议" class="headerlink" title="3.4建议"></a>3.4建议</h3><p>数据集的评分要求：OKS.</p>
+<p>需要准确的判断这个图里有多少个人。当复杂场景，上百人，网络不能很好的作用。特别是bottom up的方式，会造成OKS的下降。</p>
+<p>4.和COCO的区别</p>
+<p>标注：占图片面积较大的人作为标注</p>
+<p>评分：单纯的OKS，而不是算的mAP</p>
+<h1 id="2-UNet网络"><a href="#2-UNet网络" class="headerlink" title="2.UNet网络"></a>2.UNet网络</h1><ol>
+<li>改进的NMS方法，对重叠度进行抑制，找到重复的人。2.84%</li>
+<li>随着输入size的增加，map也会增加。</li>
+<li>多尺度的feature map融合。</li>
+<li>对L2或者L1的定位loss的优化，直接进行OKS的损失函数的优化。weighted OKS的计算方法。对每个OKS的相似度之前。</li>
+<li><strong>对难样本的挖掘</strong></li>
+<li>低score的region抑制</li>
+<li><strong>进行数据集扩展，COCO2017keypoints.0.84%</strong></li>
+</ol>
+<p>数据集的问题：对于背景中的人都当作了false positive。但是我们训练的模型能够检测到，导致OKS下降。</p>
+<h1 id="2-基于mask-rcnn"><a href="#2-基于mask-rcnn" class="headerlink" title="2.基于mask rcnn"></a>2.基于mask rcnn</h1><p>思路：人体框 –&gt; 骨骼关键点<br>阈值：0.4<br>常见方法：高斯监督，<br>our method：</p>
+<h1 id="3-自顶向下的方法"><a href="#3-自顶向下的方法" class="headerlink" title="3.自顶向下的方法"></a>3.自顶向下的方法</h1><h2 id="3-1思想："><a href="#3-1思想：" class="headerlink" title="3.1思想："></a><strong>3.1思想：</strong></h2><p>faster RCNN进行人体框，基础网络ResNet.阈值设为0.4删除多余的框。再进行骨骼关键点的检测。</p>
+<h2 id="3-2改进"><a href="#3-2改进" class="headerlink" title="3.2改进"></a>3.2改进</h2><h3 id="3-2-1监督方法和目标函数"><a href="#3-2-1监督方法和目标函数" class="headerlink" title="3.2.1监督方法和目标函数"></a>3.2.1监督方法和目标函数</h3><p>使用半径不同的监督使得模型能够学习到预测的半径，3种，然后模型进行融合</p>
+<p>测试的时候没有进行多模型测试。</p>
+<p>使用高斯监督，估计概率。2个点的提升</p>
+<h3 id="3-2-2不同区域的特征融合"><a href="#3-2-2不同区域的特征融合" class="headerlink" title="3.2.2不同区域的特征融合"></a>3.2.2不同区域的特征融合</h3><h3 id="3-2-3OKS的NMS"><a href="#3-2-3OKS的NMS" class="headerlink" title="3.2.3OKS的NMS:"></a>3.2.3OKS的NMS:</h3><p>解决框预测重复导致的节点预测重复的问题。</p>
+<p>计算两套骨架的相似度。0.7阈值抑制框，0.5阈值抑制OKS的骨架</p>
+<p>3.2.4输入影响</p>
+<p>输入小，模型精简的情况下，效果不错，近乎实时。</p>
+<p>3.2.5拓展</p>
+<p>汽车的关键点</p>
+<p>狗狗的关键点</p>
+<p>智能驾驶：行为分析。</p>
+<h1 id="4-自顶向下"><a href="#4-自顶向下" class="headerlink" title="4.自顶向下"></a>4.自顶向下</h1><p>1.人体检测器：faster RCNN进行检测尽可能多的矩形框，在进行分类回归融合的关键点检测。</p>
+<p>2.目标函数的设计方法：</p>
+<p>分类：每个像素点进行分类，是否在某个关键点的邻域范围内。</p>
+<p>回归：计算偏差。对每个邻近点进行投票。计算邻近点和关键点的位置回归。</p>
+<p>delited convolution：</p>
+<p>3.人体检测器对最后是有个正向作用。</p>
+<p>4.一个框内有两个人</p>
+<h1 id="5-reference"><a href="#5-reference" class="headerlink" title="5.reference"></a>5.reference</h1><p><a href="https://www.yizhibo.com/member/personel/user_info?memberid=280839892&jumpbrowser=1" target="_blank" rel="noopener">reference</a></p>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/PoseEsimation/" rel="tag"># PoseEsimation</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/19/hexo-mathjax的公式插入技巧/" rel="next" title="hexo+mathjax的公式插入技巧">
+                <i class="fa fa-chevron-left"></i> hexo+mathjax的公式插入技巧
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/22/rcnn/" rel="prev" title="rcnn">
+                rcnn <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#写在前面："><span class="nav-number">1.</span> <span class="nav-text">写在前面：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-基于open-pose的改进方法"><span class="nav-number">2.</span> <span class="nav-text">1.基于open pose的改进方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#l-top-down-方法"><span class="nav-number">2.1.</span> <span class="nav-text">l.top down 方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-openpose"><span class="nav-number">2.2.</span> <span class="nav-text">2.openpose</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-改进："><span class="nav-number">2.3.</span> <span class="nav-text">2.改进：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-human-detection"><span class="nav-number">2.3.1.</span> <span class="nav-text">2.1.human detection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-网络结构"><span class="nav-number">2.3.2.</span> <span class="nav-text">2.2.网络结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3：重复检测"><span class="nav-number">2.3.3.</span> <span class="nav-text">2.3：重复检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4孤立点："><span class="nav-number">2.3.4.</span> <span class="nav-text">2.4孤立点：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-问题"><span class="nav-number">2.4.</span> <span class="nav-text">3.问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-gain"><span class="nav-number">2.4.1.</span> <span class="nav-text">3.1 gain</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2稀有姿态"><span class="nav-number">2.4.2.</span> <span class="nav-text">3.2稀有姿态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3合成pose考虑？"><span class="nav-number">2.4.3.</span> <span class="nav-text">3.3合成pose考虑？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4建议"><span class="nav-number">2.4.4.</span> <span class="nav-text">3.4建议</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-UNet网络"><span class="nav-number">3.</span> <span class="nav-text">2.UNet网络</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-基于mask-rcnn"><span class="nav-number">4.</span> <span class="nav-text">2.基于mask rcnn</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-自顶向下的方法"><span class="nav-number">5.</span> <span class="nav-text">3.自顶向下的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1思想："><span class="nav-number">5.1.</span> <span class="nav-text">3.1思想：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2改进"><span class="nav-number">5.2.</span> <span class="nav-text">3.2改进</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-1监督方法和目标函数"><span class="nav-number">5.2.1.</span> <span class="nav-text">3.2.1监督方法和目标函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-2不同区域的特征融合"><span class="nav-number">5.2.2.</span> <span class="nav-text">3.2.2不同区域的特征融合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-3OKS的NMS"><span class="nav-number">5.2.3.</span> <span class="nav-text">3.2.3OKS的NMS:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-自顶向下"><span class="nav-number">6.</span> <span class="nav-text">4.自顶向下</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-reference"><span class="nav-number">7.</span> <span class="nav-text">5.reference</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

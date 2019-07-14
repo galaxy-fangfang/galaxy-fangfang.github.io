@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="papercode Mask RCNN能够检测目标，同时产生一张高质量的分割掩模。它是在Faster RCNN基础上添加了一个与bbox识别平行的分支，来预测目标的掩模。运行速度5fs，并且可以泛化到其他的任务上：实例分割，目标检测，姿态估计。">
+<meta name="keywords" content="PoseEstimation">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mask_RCNN">
+<meta property="og:url" content="http://yoursite.com/2018/03/28/Mask-RCNN/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="papercode Mask RCNN能够检测目标，同时产生一张高质量的分割掩模。它是在Faster RCNN基础上添加了一个与bbox识别平行的分支，来预测目标的掩模。运行速度5fs，并且可以泛化到其他的任务上：实例分割，目标检测，姿态估计。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/maskrcnn/architecture.png">
+<meta property="og:image" content="http://yoursite.com/images/maskrcnn/newwork.png">
+<meta property="og:image" content="http://yoursite.com/2018/03/28/Mask-RCNN/%5Cimages%5Cmaskrcnn%5Cresult1.png">
+<meta property="og:image" content="http://yoursite.com/2018/03/28/Mask-RCNN/%5Cimages%5Cmaskrcnn%5Cresult2.png">
+<meta property="og:image" content="http://yoursite.com/2018/03/28/Mask-RCNN/%5Cimages%5Cmaskrcnn%5Cresult3.png">
+<meta property="og:image" content="http://yoursite.com/2018/03/28/Mask-RCNN/%5Cimages%5Cmaskrcnn%5Cresult4.png">
+<meta property="og:image" content="http://yoursite.com/2018/03/28/Mask-RCNN/%5Cimages%5Cmaskrcnn%5Cresult5.png">
+<meta property="og:image" content="http://yoursite.com/2018/03/28/Mask-RCNN/%5Cimages%5Cmaskrcnn%5Cresult6.png">
+<meta property="og:image" content="http://yoursite.com/2018/03/28/Mask-RCNN/%5Cimages%5Cmaskrcnn%5Cresult7.png">
+<meta property="og:updated_time" content="2019-07-14T07:17:31.575Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Mask_RCNN">
+<meta name="twitter:description" content="papercode Mask RCNN能够检测目标，同时产生一张高质量的分割掩模。它是在Faster RCNN基础上添加了一个与bbox识别平行的分支，来预测目标的掩模。运行速度5fs，并且可以泛化到其他的任务上：实例分割，目标检测，姿态估计。">
+<meta name="twitter:image" content="http://yoursite.com/images/maskrcnn/architecture.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/03/28/Mask-RCNN/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Mask_RCNN | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/28/Mask-RCNN/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Mask_RCNN
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-03-28 21:05:35" itemprop="dateCreated datePublished" datetime="2018-03-28T21:05:35+08:00">2018-03-28</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:31" itemprop="dateModified" datetime="2019-07-14T15:17:31+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/" itemprop="url" rel="index"><span itemprop="name">paper</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/pose-estimation/" itemprop="url" rel="index"><span itemprop="name">pose estimation</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><a href="https://arxiv.org/abs/1703.06870" target="_blank" rel="noopener">paper</a><br><a href="https://github.com/TuSimple/mx-maskrcnn" target="_blank" rel="noopener">code</a></p>
+<p>Mask RCNN能够检测目标，同时产生一张高质量的分割掩模。它是在Faster RCNN基础上添加了一个与bbox识别平行的分支，来预测目标的掩模。运行速度5fs，并且可以泛化到其他的任务上：实例分割，目标检测，姿态估计。</p>
+<a id="more"></a>
+
+<h1 id="论文框架"><a href="#论文框架" class="headerlink" title="论文框架"></a>论文框架</h1><p><img src="/images/maskrcnn/architecture.png" alt></p>
+<p><strong>Mask 分支</strong>：对每一个感兴趣区域（ROI)预测分割掩模，利用了一个小的全卷积网络<strong>FCN</strong> .</p>
+<p><strong>Faster RCNN分支</strong>：原始Faster RCNN结构，对候选窗口进行分类和bounding box回归。</p>
+<p>回顾：包括两个阶段，第一阶段为RPN阶段，提议了候选目标框。第二阶段是Fast RCNN阶段，通过ROIPool给每个候选框提取特征，并且执行分类和回归。两个阶段的特征是共享的，这样在前向推断时可以更快。</p>
+<h1 id="Mask-RCNN"><a href="#Mask-RCNN" class="headerlink" title="Mask RCNN"></a>Mask RCNN</h1><p>以往的语义分割方法都是基于掩模的预测来进行分类。Mask RCNN则是在分类、回归的同时，并行得为每个ROI输出一个二值掩模。</p>
+<p><strong>损失函数</strong>：</p>
+<p>$$\textbf{L} = \textbf{L}<em>{cls}+\textbf{L}</em>{box}+\textbf{L}_{mask}\qquad (1)$$</p>
+<p>mask分支在每个ROI有一个$Km^2$输出。表示$K$张（类别数）$m\times m$表示分辨率的掩模图。为每个像素定义一个sigmod函数，这样$\textbf{L}_{mask}$就是平均二值交叉熵损失。定义groundtruth 时，对于类别$K$,只定义$K-th$掩模。</p>
+<p>这种定义分割损失的方式使得在类别之间不会有竞争，解耦合了掩模和类别预测。语义分割方法FCN，使用单像素的<strong><em>softmax</em>多项式交叉熵</strong>损失，这样类别之间的mask会存在竞争，而我们所定义的单像素的<strong>sigmod二值交叉熵</strong>损失就不会。</p>
+<h2 id="Mask-Representation"><a href="#Mask-Representation" class="headerlink" title="Mask Representation"></a>Mask Representation</h2><p>不像类别标签和box偏移最后会通过全连接层变成一个短的输出向量，掩模因为包含了输入目标的空间分布信息，需要通过卷积来点对点的提取空间结构。我们使用FCN来为每个感兴趣区域预测一个$m\times m$的掩模。这样就能保留空间信息。</p>
+<p><strong>全连接VS全卷积</strong>：以前的方法都是通过<em>fc</em>层来实现掩模预测，我们使用的全卷积表达需要更少的参数，并且精度更高。</p>
+<h2 id="ROIAlign"><a href="#ROIAlign" class="headerlink" title="ROIAlign"></a>ROIAlign</h2><p><strong>ROIPool</strong>:将浮点数分辨率的ROI量化成离散粒度的特征图，然后将量化后的ROI分成几个空间小块（spacial bins)，然后每个小bin通过max pooling进行挑选。通过计算[x/16]在连续坐标x上进行量化，其中16是特征图的步长，[ . ]表示四舍五入。这些量化引入了ROI与提取到的特征的不对准问题。由于分类问题对平移问题比较鲁棒，所以影响比较小。但是这在预测像素级精度的掩模时会产生一个非常的大的负面影响。</p>
+<p><strong>举例</strong>：输入$800\times 800$的图片，一个bounding box为$665\times665$的小狗，经过VGG16特征图变为$50\times50$,但是bounding box变为$41.5625\times41.5625$，ROIpooling将他量化为<strong>41</strong>，接下来将框内的特征池化成$7\times7$的大小，显然每个矩形边长为<strong>5.86</strong>，再次被量化成边长为<strong>5</strong>，经过两次量化，出现很明显的偏差，<strong>0.1像素对应1.6像素的偏差</strong>，影响很大。</p>
+<p><strong>将提取的特征与输入对齐</strong>：避免使用离散化操作，直接使用$x/16$而不是$[x/16]$.使用双线性插值在每个ROI采样的四个位置计算输入特征的精确位置。具体操作：</p>
+<ul>
+<li>遍历每个候选框，保持浮点数边界不做量化</li>
+<li>将候选框划分为$k\times k$个单元，每个单元边界不量化</li>
+<li>每个单元内计算四个坐标的位置，双线性插值，最后进行最大池化操作</li>
+</ul>
+<h2 id="网络架构"><a href="#网络架构" class="headerlink" title="网络架构"></a>网络架构</h2><p><img src="/images/maskrcnn/newwork.png" alt></p>
+<p>ResNet50</p>
+<p>FPN:使用自上而下，横向连接的范式构建了一个内联的特征金字塔。</p>
+<h1 id="实现细节"><a href="#实现细节" class="headerlink" title="实现细节"></a>实现细节</h1><h2 id="Training"><a href="#Training" class="headerlink" title="Training"></a>Training</h2><p>Fast RCNN中，ROI与ground truth的IOU大于0.5，则认为是正的，否则为负。$\textbf{L}_{mask}$只在正的ROI定义。细节：</p>
+<ol>
+<li>resize尺寸：短边800</li>
+<li>每个GPU的mini-batch有两张图，每张图采样N个ROI,(ResNet C4为64，FPN为512），正负比例1:3。</li>
+<li>8GPU（mini-batch为16）,160k次迭代，学习率0.02，在120k次是变成0.002，weight decay为0.0001，动量0.9。</li>
+<li>RPN的anchor尺寸扩展到5个尺寸：$32^2,64^2,128^2,256^2,512^2$，3个长宽比：$1:2,2:1,1:1$.</li>
+</ol>
+<h2 id="Inference"><a href="#Inference" class="headerlink" title="Inference"></a>Inference</h2><p>proposal 数量：C4为300，FPN为1000.我们在这些proposal上进行box预测，在进行非极大值抑制。在得分最高的100个box上进行mask的预测，和training过程不同，但是可以加速并提高精度。Mask分支为每个ROI预测$K$个mask，我们只使用预测出的类别$k$，即$k-th$张。$m\times m$的mask输出最后被resize成ROI的大小，并且使用阈值0.5进行二值化。</p>
+<h1 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h1><h2 id="实例分割"><a href="#实例分割" class="headerlink" title="实例分割"></a>实例分割</h2><p><img src="%5Cimages%5Cmaskrcnn%5Cresult1.png" alt></p>
+<p><img src="%5Cimages%5Cmaskrcnn%5Cresult2.png" alt></p>
+<p><strong>FCIS:</strong> 通过全卷积预测位置敏感的输出。</p>
+<p>优点：可以同时解决目标类别，位置，和掩模问题。</p>
+<p>缺点：重叠的实例会产生虚假的边</p>
+<h2 id="Multinomial-vs-Independent-Masks"><a href="#Multinomial-vs-Independent-Masks" class="headerlink" title="Multinomial vs. Independent Masks:"></a>Multinomial vs. Independent Masks:</h2><p><img src="%5Cimages%5Cmaskrcnn%5Cresult3.png" alt></p>
+<p>FCN将分割和分类预测的任务耦合在了一起，最后AP低了5.5</p>
+<p><strong>表明：一旦实例通过box分支之后，将他看作一类，不用考虑他的类别，这对于预测二值化的mask来说足够了。也更容易训练。</strong></p>
+<h2 id="ROIAlign-1"><a href="#ROIAlign-1" class="headerlink" title="ROIAlign"></a>ROIAlign</h2><p><img src="%5Cimages%5Cmaskrcnn%5Cresult4.png" alt></p>
+<p><img src="%5Cimages%5Cmaskrcnn%5Cresult5.png" alt></p>
+<h2 id="bounding-box-result"><a href="#bounding-box-result" class="headerlink" title="bounding box result"></a>bounding box result</h2><p><img src="%5Cimages%5Cmaskrcnn%5Cresult6.png" alt></p>
+<h2 id="Human-Pose-Estimation"><a href="#Human-Pose-Estimation" class="headerlink" title="Human Pose Estimation"></a>Human Pose Estimation</h2><p><img src="%5Cimages%5Cmaskrcnn%5Cresult7.png" alt></p>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/PoseEstimation/" rel="tag"># PoseEstimation</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/31/ssd/" rel="next" title="ssd">
+                <i class="fa fa-chevron-left"></i> ssd
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/03/cascade-RCNN/" rel="prev" title="cascade_RCNN">
+                cascade_RCNN <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#论文框架"><span class="nav-number">1.</span> <span class="nav-text">论文框架</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Mask-RCNN"><span class="nav-number">2.</span> <span class="nav-text">Mask RCNN</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Mask-Representation"><span class="nav-number">2.1.</span> <span class="nav-text">Mask Representation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ROIAlign"><span class="nav-number">2.2.</span> <span class="nav-text">ROIAlign</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#网络架构"><span class="nav-number">2.3.</span> <span class="nav-text">网络架构</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实现细节"><span class="nav-number">3.</span> <span class="nav-text">实现细节</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Training"><span class="nav-number">3.1.</span> <span class="nav-text">Training</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Inference"><span class="nav-number">3.2.</span> <span class="nav-text">Inference</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实验"><span class="nav-number">4.</span> <span class="nav-text">实验</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#实例分割"><span class="nav-number">4.1.</span> <span class="nav-text">实例分割</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Multinomial-vs-Independent-Masks"><span class="nav-number">4.2.</span> <span class="nav-text">Multinomial vs. Independent Masks:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ROIAlign-1"><span class="nav-number">4.3.</span> <span class="nav-text">ROIAlign</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#bounding-box-result"><span class="nav-number">4.4.</span> <span class="nav-text">bounding box result</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Human-Pose-Estimation"><span class="nav-number">4.5.</span> <span class="nav-text">Human Pose Estimation</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

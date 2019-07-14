@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="仅仅是大神的搬运工，翻译官==">
+<meta name="keywords" content="ObjectDetection,DL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Tips in DNN">
+<meta property="og:url" content="http://yoursite.com/2018/07/04/TipsInDNN/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="仅仅是大神的搬运工，翻译官==">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/07/04/TipsInDNN/%5Cimages%5CCNN%5C1.png">
+<meta property="og:image" content="http://yoursite.com/2018/07/04/TipsInDNN/%5Cimages%5CCNN%5C2.png">
+<meta property="og:image" content="http://yoursite.com/2018/07/04/TipsInDNN/%5Cimages%5CCNN%5C3.png">
+<meta property="og:image" content="http://yoursite.com/2018/07/04/TipsInDNN/%5Cimages%5CCNN%5C4.png">
+<meta property="og:image" content="http://yoursite.com/2018/07/04/TipsInDNN/%5Cimages%5CCNN%5C5.png">
+<meta property="og:image" content="http://yoursite.com/2018/07/04/TipsInDNN/%5Cimages%5CCNN%5C6.png">
+<meta property="og:image" content="http://yoursite.com/2018/07/04/TipsInDNN/%5Cimages%5CCNN%5C7.png">
+<meta property="og:updated_time" content="2019-07-14T07:17:28.869Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Tips in DNN">
+<meta name="twitter:description" content="仅仅是大神的搬运工，翻译官==">
+<meta name="twitter:image" content="http://yoursite.com/2018/07/04/TipsInDNN/%5Cimages%5CCNN%5C1.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/07/04/TipsInDNN/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Tips in DNN | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/04/TipsInDNN/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Tips in DNN
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-07-04 21:56:15" itemprop="dateCreated datePublished" datetime="2018-07-04T21:56:15+08:00">2018-07-04</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:28" itemprop="dateModified" datetime="2019-07-14T15:17:28+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">notes</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/notes/DL/" itemprop="url" rel="index"><span itemprop="name">DL</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>仅仅是大神的搬运工，翻译官==</p>
+<a id="more"></a>
+
+<p>CNN:允许那些由多层卷积层构成的计算复杂的模型通过多层抽象来学习数据的特征表达。这些方法极大地提升了视觉目标识别、目标检测、文本检测的效果。</p>
+<p>另外，许多CNN的教程上市，但是关于从头开始CNN实践的总结还很少，本文介绍一些搭建和训练自己的深度网络的技巧和建议。</p>
+<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>本文侧重介绍图像相关的CNN的任务，主要关于8个方面：</p>
+<ol>
+<li>数据增强</li>
+<li>图像预处理</li>
+<li>网络初始化</li>
+<li>训练的技巧</li>
+<li>激活函数的选择</li>
+<li>各种正则化</li>
+<li>在图中发现的见解</li>
+<li>集成多个深度网络的方法</li>
+</ol>
+<h1 id="Sec1-data-argumentation"><a href="#Sec1-data-argumentation" class="headerlink" title="Sec1:data argumentation"></a>Sec1:data argumentation</h1><p>原始图像数据集的训练样本有限，必须做数据增广。</p>
+<h2 id="方式1："><a href="#方式1：" class="headerlink" title="方式1："></a>方式1：</h2><p><img src="%5Cimages%5CCNN%5C1.png" alt></p>
+<ul>
+<li>水平翻转，随机裁剪，色彩抖动，或者几种方式的组合。</li>
+<li>旋转，随机裁剪，提高饱和度或者提高所有像素的值（HSV色彩空间的S,V分量）到0.25-4（一个batch里面的所有图片都这样）。把这些值乘以0.7-1.4之间的一个因子，并且加上一个-0.1到0.1之间的值。也可以给一个batch中所有像素的H分量加上-0.1到0.1的值。</li>
+</ul>
+<h2 id="方式2：fancy-PCA"><a href="#方式2：fancy-PCA" class="headerlink" title="方式2：fancy PCA"></a>方式2：fancy PCA</h2><p> 训练Alenet时候提出的。改变了训练图像RGB通道的强度。</p>
+<ul>
+<li>在训练数据的所有【R,G,B】三通道的像素点上计算PCA值</li>
+<li>在每次前向传播时，依据主成分计算一些颜色偏移。</li>
+<li>将这些偏移加到每个训练数据上面：在RGB像素上加上以下的值：$i.e I_{xy}=[I_{xy}^R,I_{xy}^G,I_{xy}^B]^T:[p_1,p_2,p_3][\alpha_1\lambda_1,\alpha_2\lambda_2,\alpha_3\lambda_3]^T$ ,其中$p_i,\lambda_i$分别是RGB像素值的$3\times 3$的协方差矩阵的第i个特征向量和特征值。$\alpha_i$是从一个均值为0，标准差为0.1的高斯分布中取得一个随机值。注意：每次使用一张图片训练时只会取一个$\alpha_i$,直到这个图片再一次被取到。就是说，当模型训练时用到相同的训练图像时，它会随机产生另一个$\alpha_i$.fancy PCA可以捕获自然图像一个重要的特征，就是，<strong>目标的特性不会随着强度的改变或者色彩的亮度而改变。</strong></li>
+</ul>
+<h1 id="Sec2-preprocessing"><a href="#Sec2-preprocessing" class="headerlink" title="Sec2:preprocessing"></a>Sec2:preprocessing</h1><p>得到了大量训练样本之后，可以做一些预处理。</p>
+<h2 id="方式1：-1"><a href="#方式1：-1" class="headerlink" title="方式1："></a>方式1：</h2><p><img src="%5Cimages%5CCNN%5C2.png" alt></p>
+<p>第一个预处理步骤是<strong>去中心化</strong>，并且<strong>标准化</strong>数据：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>X -= np.mean(X, axis = <span class="number">0</span>) <span class="comment"># zero-center</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>X /= np.std(X, axis = <span class="number">0</span>) <span class="comment"># normalize</span></span><br></pre></td></tr></table></figure>
+
+<p>X是输入数据。该方法只有在我们认为：不同的输入特征有不同的尺度范围时，才有意义。<strong>如果图像的像素相对尺度已经近似相等时（比如都是在0-255之间），就没有必要执行这个预处理步骤了。</strong></p>
+<h2 id="方式2：PCA-whitening"><a href="#方式2：PCA-whitening" class="headerlink" title="方式2：PCA whitening"></a>方式2：PCA whitening</h2><p><img src="%5Cimages%5CCNN%5C3.png" alt></p>
+<p>首先：数据被中心化，然后计算数据的协方差矩阵，来看数据的相关性结构：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>X -= np.mean(X, axis = <span class="number">0</span>) <span class="comment"># zero-center</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>cov = np.dot(X.T, X) / X.shape[<span class="number">0</span>] <span class="comment"># compute the covariance matrix</span></span><br></pre></td></tr></table></figure>
+
+<p>然后通过将原始(但是以0为中心处理的)数据投影到特征基上来去相关化。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>U,S,V = np.linalg.svd(cov) <span class="comment"># compute the SVD factorization of the data covariance matrix</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>Xrot = np.dot(X, U) <span class="comment"># decorrelate the data</span></span><br></pre></td></tr></table></figure>
+
+<p>最后一步就是白化：把特征基上的数据在每个维度除以特征值来归一化尺度：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>Xwhite = Xrot / np.sqrt(S + <span class="number">1e-5</span>) <span class="comment"># divide by the eigenvalues (which are square roots of the singular values)</span></span><br></pre></td></tr></table></figure>
+
+<p>注意：此处加了1e-5,或者其他的小的常量防止他除以0.</p>
+<p><img src="%5Cimages%5CCNN%5C4.png" alt></p>
+<p><strong>缺点：会放大噪声</strong>，因为它将将数据的所有维度都进行了拉伸，拉到相同的大小，包括那些方差很小几乎都是噪声的维度。实际操作中，可以使用更强的平滑器来缓解这个现象，或者用个比1e-5更大的数。</p>
+<p>注意：<strong>实际CNN中不会用这种变换，但是zero-centered还是很重要的，每个像素标准化的操作也很常见。</strong></p>
+<h1 id="Sec3-Initializations"><a href="#Sec3-Initializations" class="headerlink" title="Sec3:Initializations"></a>Sec3:Initializations</h1><p>训练网络之前，必须对参数初始化。</p>
+<h2 id="All-Zero-Initialization"><a href="#All-Zero-Initialization" class="headerlink" title="All Zero Initialization"></a>All Zero Initialization</h2><p>理想情形，如果数据进行了合适的归一化，那么我们理所当然认为几乎一半的权重是正的，另一半是负的。因此全零初始化参数，来满足这个期望分布。但是如果所有神经元都是相同的输出，那么计算出的梯度也是一样的，参数更新也一样，就无法更新模型。</p>
+<h2 id="Initialization-with-Small-Random-Numbers"><a href="#Initialization-with-Small-Random-Numbers" class="headerlink" title="Initialization with Small Random Numbers"></a>Initialization with Small Random Numbers</h2><h3 id="高斯分布："><a href="#高斯分布：" class="headerlink" title="高斯分布："></a>高斯分布：</h3><p>为了打破对称（symmetry breaking），我们将参数初始化为0附近的值。<br>$$<br>weights 服从0.001\times N(0,1)<br>$$<br>其中，N(0,1)是均值为0，单位标准差的高斯分布。</p>
+<h3 id="均匀分布："><a href="#均匀分布：" class="headerlink" title="均匀分布："></a>均匀分布：</h3><p>对性能没什么影响。</p>
+<h2 id="Calibrating-the-Variances"><a href="#Calibrating-the-Variances" class="headerlink" title="Calibrating the Variances"></a>Calibrating the Variances</h2><p>随机初始化的神经元的输出分布随着输入的增加会产生方差，所以我们需要将神经元的输出的方差归一化到1，通过归一化权值向量。</p>
+<p><img src="%5Cimages%5CCNN%5C5.png" alt></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>w = np.random.randn(n) / sqrt(n) <span class="comment"># calibrating the variances with 1/sqrt(n)</span></span><br></pre></td></tr></table></figure>
+
+<p>其中randn(n)是前面提到的高斯函数，n是输入个数。这保证了网络中所有的神经元输出都有近似相同的输出分布，经验上并且提高了收敛的速度。</p>
+<h2 id="Current-Recommendation"><a href="#Current-Recommendation" class="headerlink" title="Current Recommendation"></a>Current Recommendation</h2><p><img src="%5Cimages%5CCNN%5C6.png" alt></p>
+<p>如前述，校准方差时没有考虑ReLU。如果考虑ReLU时，计算公式应该是$2.0/n$：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt;w=np.random.randn(n)*sqrt(<span class="number">2.0</span>/n)<span class="comment">#current recommendation</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="Sec4-During-Training"><a href="#Sec4-During-Training" class="headerlink" title="Sec4:During Training"></a>Sec4:During Training</h1><h2 id="filters-and-pooling-size"><a href="#filters-and-pooling-size" class="headerlink" title="filters and pooling size:"></a>filters and pooling size:</h2><p><strong>输入图片：</strong>size建议是2的幂次方，比如32（cifar),64,224(比如一般的ImageNet),384或者512.</p>
+<p><strong>滤波器：</strong> 使用小滤波器（比如$3\times 3)$和小步长（比如1）和0填充，不仅可以减少参数，还能提高准确率。同时$3\times3$的滤波器加上步长1可以保留图像或者特征图的空间尺寸。[w1,h1,d1]-&gt;[w1,h1,d2]</p>
+<p>对于池化层，一般使用的池化尺寸是$2\times2$.</p>
+<h2 id="Learning-Rate"><a href="#Learning-Rate" class="headerlink" title="Learning Rate:"></a>Learning Rate:</h2><p><strong>一般推荐mini-batch的随机梯度下降法。因此如果我们改变了mini-batch的大小，我们就不能随意改变学习率。</strong> 一般刚开始训练是0.1，如果在验证集上没有进展了，就把LR除以2或者5，一直这样下去。</p>
+<h2 id="Fine-tune-on-pre-trained-model"><a href="#Fine-tune-on-pre-trained-model" class="headerlink" title="Fine tune on pre-trained model:"></a>Fine tune on pre-trained model:</h2><p>预训练的模型有很棒的泛化能力，可以直接使用这些预训练模型。如果想进一步提升分类能力，一个有效的方法在自己的数据集上精修预训练模型。</p>
+<p>有两个很重要的影响效果的因素：一是新数据集的大小，二是和原始数据集的相似度。不同的fine tune策略可以在不同的情况下使用：</p>
+<ol>
+<li>比如新数据集和预训练模型的数据集很相似，如果新数据集很少，我们可以直接使用预训练模型顶层提取的特征来训练一个线性分类器。</li>
+<li>如果数据很多，就要使用一个小的LR来fine tune预训练模型的顶层几层。</li>
+<li>如果数据集和预训练模型的数据集差别很大，但是数目足够，就需要fine tune预训练模型的好多层。</li>
+<li>如果数据集差别大，而且数目很少，那么就不能单纯的在网络顶层训练一个分类器 了。更好的办法是在网络更早几层的激活或者特征处训练SVM分类器。</li>
+</ol>
+<p><img src="%5Cimages%5CCNN%5C7.png" alt></p>
+<p>#Reference<br><a href="http://lamda.nju.edu.cn/weixs/project/CNNTricks/CNNTricks.html" target="_blank" rel="noopener">CNNTricks</a></p>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+            <a href="/tags/DL/" rel="tag"># DL</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/24/相似度计算/" rel="next" title="推荐系统中的余弦相似度计算">
+                <i class="fa fa-chevron-left"></i> 推荐系统中的余弦相似度计算
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/03/为什么说bagging减少偏差而boosting减少方差/" rel="prev" title="bagging和boosting的偏差与方差">
+                bagging和boosting的偏差与方差 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Sec1-data-argumentation"><span class="nav-number">2.</span> <span class="nav-text">Sec1:data argumentation</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#方式1："><span class="nav-number">2.1.</span> <span class="nav-text">方式1：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#方式2：fancy-PCA"><span class="nav-number">2.2.</span> <span class="nav-text">方式2：fancy PCA</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Sec2-preprocessing"><span class="nav-number">3.</span> <span class="nav-text">Sec2:preprocessing</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#方式1：-1"><span class="nav-number">3.1.</span> <span class="nav-text">方式1：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#方式2：PCA-whitening"><span class="nav-number">3.2.</span> <span class="nav-text">方式2：PCA whitening</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Sec3-Initializations"><span class="nav-number">4.</span> <span class="nav-text">Sec3:Initializations</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#All-Zero-Initialization"><span class="nav-number">4.1.</span> <span class="nav-text">All Zero Initialization</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Initialization-with-Small-Random-Numbers"><span class="nav-number">4.2.</span> <span class="nav-text">Initialization with Small Random Numbers</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#高斯分布："><span class="nav-number">4.2.1.</span> <span class="nav-text">高斯分布：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#均匀分布："><span class="nav-number">4.2.2.</span> <span class="nav-text">均匀分布：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Calibrating-the-Variances"><span class="nav-number">4.3.</span> <span class="nav-text">Calibrating the Variances</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Current-Recommendation"><span class="nav-number">4.4.</span> <span class="nav-text">Current Recommendation</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Sec4-During-Training"><span class="nav-number">5.</span> <span class="nav-text">Sec4:During Training</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#filters-and-pooling-size"><span class="nav-number">5.1.</span> <span class="nav-text">filters and pooling size:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Learning-Rate"><span class="nav-number">5.2.</span> <span class="nav-text">Learning Rate:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fine-tune-on-pre-trained-model"><span class="nav-number">5.3.</span> <span class="nav-text">Fine tune on pre-trained model:</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

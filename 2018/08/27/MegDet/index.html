@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="作者：konglanfang 主要是IOUnet介绍和几种roi pooling方式的讲解。">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MegDet&amp;&amp;IOU-Net">
+<meta property="og:url" content="http://yoursite.com/2018/08/27/MegDet/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="作者：konglanfang 主要是IOUnet介绍和几种roi pooling方式的讲解。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/megnet/iou-net1.png">
+<meta property="og:image" content="http://yoursite.com/images/megnet/iou-net3.png">
+<meta property="og:image" content="http://yoursite.com/images/megnet/iou-net4.png">
+<meta property="og:image" content="http://yoursite.com/images/megnet/roi.png">
+<meta property="og:image" content="http://yoursite.com/images/megnet/roi-pooling.jpg">
+<meta property="og:image" content="http://yoursite.com/images/megnet/roi-pooling1.png">
+<meta property="og:image" content="http://yoursite.com/images/megnet/roi-pooling2.jpg">
+<meta property="og:image" content="http://yoursite.com/images/megnet/roi-pooling3.jpg">
+<meta property="og:image" content="http://yoursite.com/images/megnet/iou-net5.png">
+<meta property="og:image" content="http://yoursite.com/images/megnet/iou-net6.png">
+<meta property="og:image" content="http://yoursite.com/images/megnet/iou-net7.png">
+<meta property="og:image" content="http://yoursite.com/images/megnet/iou-net8.png">
+<meta property="og:updated_time" content="2019-07-14T07:17:31.035Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MegDet&amp;&amp;IOU-Net">
+<meta name="twitter:description" content="作者：konglanfang 主要是IOUnet介绍和几种roi pooling方式的讲解。">
+<meta name="twitter:image" content="http://yoursite.com/images/megnet/iou-net1.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/08/27/MegDet/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>MegDet&&IOU-Net | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/27/MegDet/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">MegDet&&IOU-Net
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-08-27 19:21:21" itemprop="dateCreated datePublished" datetime="2018-08-27T19:21:21+08:00">2018-08-27</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:31" itemprop="dateModified" datetime="2019-07-14T15:17:31+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/" itemprop="url" rel="index"><span itemprop="name">paper</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/object-detection/" itemprop="url" rel="index"><span itemprop="name">object detection</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>作者：konglanfang</p>
+<p>主要是IOUnet介绍和几种roi pooling方式的讲解。</p>
+<a id="more"></a>
+
+<h1 id="一、MegNet"><a href="#一、MegNet" class="headerlink" title="一、MegNet"></a>一、MegNet</h1><h2 id="Batchsize的问题"><a href="#Batchsize的问题" class="headerlink" title="Batchsize的问题"></a>Batchsize的问题</h2><h3 id="小batchsize问题"><a href="#小batchsize问题" class="headerlink" title="小batchsize问题"></a>小batchsize问题</h3><p>图像识别中，batchsize设置的很大 ，128，甚至上千的水平，使得人们可以在半小时或者一小时能完成ImageNet的训练。</p>
+<p>而在COCO Detection问题中，batchsize普遍使用的很小，一般为2,8，最多也就16，这个结果和classification根本比不了。<strong>为什么物体检测的batchsize这么小？</strong></p>
+<p>因为对于<strong>图像识别任务</strong>：算法只需要判断一张图片中的主体，主要物体所占的像素比例通常较大，因此一张$224\times 224$的图片足矣。而目<strong>标检测任务中，往往需要检测一些小的物体，这些小物体在最后的特征图中所占像素的比例特别小，常常不足1%</strong>，而现在的神经网络一般会逐渐缩小特征图的尺寸，为了保证小物体在最后的特征图中占有一定比例，算法需要输入较大的图片，通常$800\times600$以上。</p>
+<p>当输入图像的尺寸增长，其所占显存也增加，因此不能训练大batch-size的目标检测模型。而小的batch-size有下面几个几个问题：</p>
+<ol>
+<li><strong>梯度不稳定</strong>：因为batchsize小，每次迭代的生成的梯度变化会非常大，导致SGD算法在一个区域内来回震荡，不宜收敛到局部最优值。</li>
+<li><strong>BN层统计不准确</strong>：batch-size较小难以满足BN层的统计需求。人们在训练的过程中，固定住BN层的参数，意味着BN层还保留着ImageNet数据集中的设置，但其余参数却是COCO数据集的拟合结果。这种模型内部参数的不匹配会影响最后的检测效果。</li>
+<li><strong>正负样本比例失调</strong>：mini-batch中图片变化可能非常大，有些正样本很少，导致其比例很少。当调大batchsize时，正样本比例会比之前要高一些。</li>
+<li><strong>训练时间长</strong></li>
+</ol>
+<h2 id="MegDet改进"><a href="#MegDet改进" class="headerlink" title="MegDet改进"></a>MegDet改进</h2><ol>
+<li>brain++，大量底层支持，FPN</li>
+<li><strong>多卡BN</strong>，解决BN统计不准确的问题：单卡自主统计BN的参数，再将参数发送到单张卡上进行合并，最后再把BN的结果同步到其他卡上，以进行下一步的训练。</li>
+<li><strong>Sublinear Memory技术</strong></li>
+<li>大batchsize下的调参技巧：16-batch的FPN的学习率为0.02，而MegDet的batchsize是256，则设定三个阶段：<strong>前两个阶段将学习率除以10，最后一个阶段学习率减半。</strong></li>
+</ol>
+<h1 id="二、IOU-Net"><a href="#二、IOU-Net" class="headerlink" title="二、IOU-Net"></a>二、IOU-Net</h1><h2 id="1-定位置信度"><a href="#1-定位置信度" class="headerlink" title="1.定位置信度"></a>1.定位置信度</h2><p>现代CNN的目标检测器依赖于<strong>bbox回归和非极大值抑制</strong>来定位物体。具体到二阶段的检测器来说，主要包含三步：</p>
+<ol>
+<li>区分前景和背景的proposal，并且分配类别标签。</li>
+<li>通过最大化检测结果和ground truth之间的IOU来回归出一组系数，从而定位物体。</li>
+<li>使用非极大值抑制来去除冗余的检测框。</li>
+</ol>
+<p>但是<strong>我们只有反映分类置信度的类别分数，却没有定位置信度</strong>。</p>
+<h3 id="缺点："><a href="#缺点：" class="headerlink" title="缺点："></a>缺点：</h3><ol>
+<li>执行非极大值抑制的过程并不能保证定位准确率，因为NMS的过程都是使用分类分数作为排序标准。比如：分类分数高的但是它和对应的groundtruth之间的IOU较小，导致IOU较高但是分类分数较低的box被抑制掉。</li>
+<li>因为没有定位置信度的概念，我们在进行边界框回归的过程是一个非单调的过程，即box的定位准确度逐步退化。</li>
+</ol>
+<p>见下图：</p>
+<p><img src="/images/megnet/iou-net1.png" alt></p>
+<p>针对这两个问题，作者提出了IOU-net来在检测过程中预测IOU的分数:</p>
+<ol>
+<li>使用IOU-guided NMS</li>
+<li>optimization-based的边界框修正过程</li>
+</ol>
+<h2 id="2-IOU-Net"><a href="#2-IOU-Net" class="headerlink" title="2.IOU-Net"></a>2.IOU-Net</h2><p><img src="/images/megnet/iou-net3.png" alt></p>
+<p>本文采用通用目标检测器FPN做实验，在其基础上又加了一路IOU分支。<strong>IOU预测器的输入是FPN输出的特征，然后估计每个边界框与ground truth的定位准确度，即IOU</strong>.</p>
+<h3 id="训练过程："><a href="#训练过程：" class="headerlink" title="训练过程："></a>训练过程：</h3><p>训练IOU-NET分支时，候选边界框不是从RPN中取出的proposal，而是由GTbox产生的。具体过程大概是：</p>
+<ol>
+<li>GTbox的产生：使用训练集中的GTbox，加上随机生成的参数，变成一堆候选边界框。</li>
+<li>然后将IOU小于0.5的候选边界框删除。</li>
+<li>我们均匀的从候选集合中采样训练数据。</li>
+<li>候选框的特征是<strong>从Precise ROI Pooling</strong>层提取的。这些特征送入一个两层的前向网络来预测IOU分数。为了更好的性能，使用<strong>class-aware</strong>的IOUpredictor. </li>
+</ol>
+<p>该IOU预测器可以兼容绝大部分基于ROI的目标检测器。</p>
+<h2 id="3-IOU-guided-NMS"><a href="#3-IOU-guided-NMS" class="headerlink" title="3.IOU-guided NMS"></a>3.IOU-guided NMS</h2><p>见本人的另一篇笔记：<a href="https://galaxy-fangfang.github.io/2018/08/24/nms%E4%B8%93%E9%A2%98/#more" target="_blank" rel="noopener">NMS专题</a></p>
+<h2 id="4-Non-monotonic-bounding-box-regression"><a href="#4-Non-monotonic-bounding-box-regression" class="headerlink" title="4.Non-monotonic bounding box regression"></a>4.Non-monotonic bounding box regression</h2><h3 id="回归问题建模"><a href="#回归问题建模" class="headerlink" title="回归问题建模"></a>回归问题建模</h3><p>一般的边界框回归问题可以写成下式：<br>$$<br>c^*=argmin_c crit(\textbf{transform}(box_{det},c),box_{gt})<br>$$<br>$c$是变换的参数，$crit$是两个边界框之间的距离标准：</p>
+<ul>
+<li>在Fast R-CNN中，$crit$是$smoothL1$损失；</li>
+<li>在<a href="https://arxiv.org/abs/1608.01471" target="_blank" rel="noopener">Unit Box</a>中，$crit$是$-\textbf{ln(IoU)}$.</li>
+</ul>
+<h3 id="regression-based方法"><a href="#regression-based方法" class="headerlink" title="regression-based方法"></a>regression-based方法</h3><p>使用前向网络直接估计$c^{*}$的最优解。 但是回归过程定位准确性会退化，非单调。</p>
+<h3 id="optimization-based方法"><a href="#optimization-based方法" class="headerlink" title="optimization-based方法"></a>optimization-based方法</h3><p>IOU-Net直接预测$\textbf{IoU}(box_{det},box_{gt})$.因为<strong>precise roi pooling</strong>的缘故，可以直接计算IOU的边界框定点的梯度，然后利用<strong>梯度提升算法</strong>优化式子1找到其最优解。</p>
+<p>算法如下：</p>
+<p><img src="/images/megnet/iou-net4.png" alt></p>
+<p>下面具体介绍下precise roi pooling是怎么操作的：</p>
+<h2 id="5-改进的ROI-Pooling"><a href="#5-改进的ROI-Pooling" class="headerlink" title="5.改进的ROI Pooling"></a>5.改进的ROI Pooling</h2><p>一张图概括ROI pooling,ROI align,和积分的ROI Pooling：roi pooling也就是<strong>扣取特征图的过程。</strong>最原始的RoI Pooling比较暴力，直接将roi边界拉到外层最靠近的整数边界；MaskRCNN中提出的ROI Align则是使用双线性插值，取周围四个格点计算采样点的像素值；而我们提出来的<strong>PrROI Pooling则是使用积分的过程来代替插值过程，这样可以更好的扣去特征图，且使得坐标点处可微。</strong></p>
+<p><strong>注意：</strong></p>
+<p>下面三种都是使用<strong>平均池化</strong>方法。</p>
+<p><img src="/images/megnet/roi.png" alt></p>
+<h3 id="RoI-Pooling"><a href="#RoI-Pooling" class="headerlink" title="RoI Pooling"></a>RoI Pooling</h3><h4 id="两次量化"><a href="#两次量化" class="headerlink" title="两次量化"></a><strong>两次量化</strong></h4><ul>
+<li>original box:[1.6,1.6,11,9.2]-&gt;feature map roi:[0.8,0.8,5.5,4.6]-&gt;<strong>round roi box:[1,1,6,5]四舍五入</strong></li>
+<li>round roi box[1,1,6,5]-&gt;grid:<strong>[左上角坐标下取整，右上角坐标上取整]</strong></li>
+</ul>
+<p><img src="/images/megnet/roi-pooling.jpg" alt></p>
+<h4 id="代码"><a href="#代码" class="headerlink" title="代码"></a><strong>代码</strong></h4><p><img src="/images/megnet/roi-pooling1.png" alt></p>
+<h4 id="反传"><a href="#反传" class="headerlink" title="反传"></a><strong>反传</strong></h4><p>$$<br>\frac{\partial L}{\partial x_i}=\sum_r\sum_j[i=i*(r,j)]\frac{\partial L}{\partial y_{rj}}<br>$$</p>
+<p>$x_i$代表池化前的特征图像素值，$y_{i,j}$代表池化后的第$r$个候选区域的第$j$个点，$i*(r,j)$代表点$y_{rj}$像素值的来源，即最大池化时选出来的最大像素值所在的点的坐标。即ROI Pooling只会将梯度回传至池化前特征图上贡献像素值的那个点，即$i=i*(r,j)$</p>
+<h3 id="RoI-Align"><a href="#RoI-Align" class="headerlink" title="RoI Align"></a>RoI Align</h3><h4 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h4><p>相比roi pooling,roi align取消了两次量化过程，使用双线性插值得到坐标点。</p>
+<p>假设每个bin采样点是4个，则每个bin的值计算如图6-2所示，即<strong>平均池化</strong>。而每个采样点的值由双线性插值得到：<br>$$<br>f(x,y)=\sum_{i,j}IC(x,y,i,j)\times w_{i,j}<br>$$<br>其中，<br>$$<br>IC(x,y,i,j)=max(0,1-|x-i|)\times max(0,1-|y-j|)<br>$$<br>是每个点的插值系数。</p>
+<p>这个插值系数怎么推的？</p>
+<p>这部分可以具体去看：<a href="https://en.wikipedia.org/wiki/Bilinear_interpolation" target="_blank" rel="noopener">wiki双线性插值</a></p>
+<p><img src="/images/megnet/roi-pooling2.jpg" alt></p>
+<p><img src="/images/megnet/roi-pooling3.jpg" alt></p>
+<p>上式中，$w1,w2,w3,w4$就是论文中的$IC(x,y,i,j)$， 四个格点的插值系数。</p>
+<h4 id="代码-1"><a href="#代码-1" class="headerlink" title="代码"></a><strong>代码</strong></h4><p>详见：<a href="https://github.com/AceCoooool/RoIAlign-RoIPool-pytorch" target="_blank" rel="noopener">RoIAlign-RoIPool-pytorch</a></p>
+<p>解析：<a href="http://renguanghui.com/2018/02/01/RoIAlign%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/" target="_blank" rel="noopener">ROI Align源码解析</a></p>
+<h4 id="反传-1"><a href="#反传-1" class="headerlink" title="反传"></a>反传</h4><p>$$<br>\frac{\partial L}{\partial x_i}=\sum_r\sum_j[d(i,i*(r,j))&lt;1](1-\Delta h)(i-\Delta w)\frac{\partial L}{\partial y_{rj}}<br>$$</p>
+<p>其中，$d(.)$表示两点之间的距离，$\Delta h,\Delta w$表示$x_i$和$x_i*(r,j)$纵横坐标的差值，相乘得到双线性插值的系数，乘在原始梯度上。累加符号表示：池化前特征图上点$x_i$所贡献的所有的池化后的特征图上的点$y_{rj}$的梯度，都要累加起来，回传到点$x_i$.</p>
+<p>由反传公式可知，<strong>ROI Align在坐标点处的梯度不是连续可微的</strong>。</p>
+<h3 id="Precise-RoI-Pooling"><a href="#Precise-RoI-Pooling" class="headerlink" title="Precise RoI Pooling"></a>Precise RoI Pooling</h3><h4 id="过程-1"><a href="#过程-1" class="headerlink" title="过程"></a>过程</h4><p>我们将ROI的一个小bin表示为$(x_1,y_1)(x_2,y_2)$,表示左上和右下的连续坐标点。采样<strong>平均池化</strong>和二阶积分来计算其特征图:<br>$$<br>\textbf{PrPool}(bin,\textbf{F})=\frac{\int_{y_1}^{y_2}\int_{x_1}^{x_2} {f(x,y)} ,{\rm d}x{\rm d}y}{(x_2-x_1)\times(y_2-y_1)}<br>$$<br>与RoI Align(N是预先定义的，而不是关于bin大小自适应的)相反，提出的PrRoI池直接计算基于连续特征图的二阶积分。</p>
+<h4 id="反传-2"><a href="#反传-2" class="headerlink" title="反传"></a>反传</h4><p>所以$\textbf{PrPool}(bin,\textbf{F})$<strong>是在各坐标点连续可微</strong>，举例：<br>$$<br>\frac{\partial \textbf{PrPool}(bin,\textbf{F})}{\partial x_1}=\frac{\textbf{PrPool}(bin,\textbf{F})}{x_2-x_1}-\frac{\int_{y_1}^{y_2}f(x_1,y)dy}{(x_2-x_1)\times(y_2-y_1)}<br>$$</p>
+<h4 id="代码-2"><a href="#代码-2" class="headerlink" title="代码"></a>代码</h4><p><a href="https://github.com/vacancy/PreciseRoIPooling" target="_blank" rel="noopener">Precise ROI Pooling</a></p>
+<h2 id="5-联合训练"><a href="#5-联合训练" class="headerlink" title="5.联合训练"></a>5.联合训练</h2><p>采用FPN作为框架，CNN特征提取部分成为<em>backbone<em>，采用ResNet-FPN  ，应用到每个roi上的模块称为</em>head.</em></p>
+<p>训练时，IOU Predictor和RCNN的分类与回归分支并行工作，输入的特征都是从backbone里面来的。</p>
+<h3 id="训练参数"><a href="#训练参数" class="headerlink" title="训练参数"></a>训练参数</h3><ul>
+<li>使用预训练模型ResNet初始化权重，新加的层的权重以高斯分布(均值0，标准差0.01/0.001).</li>
+<li><strong>IOU predictor采用smooth L1损失训练</strong>，训练数据是每个batch的图片上产生的。IOU的label归一化到【-1，1】之间。</li>
+<li>输入图片：resize到长边最多1200，短边800.</li>
+<li>分类和回归分支训练的时候，每张图片需要512个ROI（from RPN）</li>
+<li>batchsize=16,160k次迭代，学习率0.01，120k迭代后降为1/10.最开始训练的10k次迭代使用学习率0.004.weight decay为0.0001，动量0.9</li>
+</ul>
+<h3 id="前向过程"><a href="#前向过程" class="headerlink" title="前向过程"></a>前向过程</h3><ol>
+<li><p>首先对初始坐标应用边界框回归。</p>
+</li>
+<li><p>为了加快推理速度，首先在所有检测到的边界框上应用 IoU-guided NMS</p>
+</li>
+<li><p>对<strong>分类置信度top 100</strong>的box进行基于优化的边界框修正。</p>
+<p>修正参数为:步长$\lambda=0.5$，eraly-stop阈值$\Omega_1=0.001$,定位退化容忍度$\Omega_2=-0.01$,迭代次数$T=5$</p>
+</li>
+</ol>
+<h2 id="6-结果"><a href="#6-结果" class="headerlink" title="6.结果"></a>6.结果</h2><h3 id="NMS对比"><a href="#NMS对比" class="headerlink" title="NMS对比"></a>NMS对比</h3><p><img src="/images/megnet/iou-net5.png" alt></p>
+<ol>
+<li><strong>Soft-NMS 能保留更多边界框（其中没有真正的「抑制」）</strong></li>
+<li>IoU 引导式 NMS 还能<strong>通过改善检测到的边界框的定位来提升结果。因此，在高 IoU 指标（比如 $AP_{90}$）上，IoU 引导式 NMS 显著优于基准方法。</strong></li>
+</ol>
+<p><img src="/images/megnet/iou-net6.png" alt></p>
+<ol>
+<li>提供了 No-NMS（不抑制边界框）作为召回率曲线的上限</li>
+<li><strong>IoU-NMS 有更高的召回率，并且在高 IoU 阈值（比如 0.8）下能有效收窄与上限的差距。</strong></li>
+</ol>
+<h3 id="Refinement-对比"><a href="#Refinement-对比" class="headerlink" title="Refinement 对比"></a>Refinement 对比</h3><p><img src="/images/megnet/iou-net7.png" alt></p>
+<ol>
+<li>基于优化的边界框修正与大多数基于 CNN 的目标检测器 [16,3,10] 都兼容.</li>
+<li>即使是对有三级边界框回归运算的 Cascade R-CNN，这种改进方法能进一步将  $AP_{90}$提升 2.8%，将整体 $AP$ 提升 0.8%。</li>
+</ol>
+<h3 id="最终结果和速度对比"><a href="#最终结果和速度对比" class="headerlink" title="最终结果和速度对比"></a>最终结果和速度对比</h3><p><img src="/images/megnet/iou-net8.png" alt></p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://arxiv.org/pdf/1711.07240v4.pdf" target="_blank" rel="noopener">论文:MegDet: A Large Mini-Batch Object Detector</a></p>
+<p><a href="https://arxiv.org/abs/1807.11590" target="_blank" rel="noopener">Acquisition of Localization Confidence for Accurate Object Detection </a></p>
+<p><a href="https://cloud.tencent.com/developer/article/1179953" target="_blank" rel="noopener">iou-net笔记</a></p>
+<p><a href="https://blog.csdn.net/np4rHI455vg29y2/article/details/78954803" target="_blank" rel="noopener">视频笔记</a></p>
+<p><a href="https://pan.baidu.com/s/1boWth2R" target="_blank" rel="noopener">slide</a></p>
+<p><a href="http://blog.leanote.com/post/afanti/Position-Sensitive" target="_blank" rel="noopener">ps-roi</a></p>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/27/卷积在GPU上的优化/" rel="next" title="卷积在GPU上的优化">
+                <i class="fa fa-chevron-left"></i> 卷积在GPU上的优化
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/09/04/batchnorm-总结/" rel="prev" title="batchnorm-总结">
+                batchnorm-总结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、MegNet"><span class="nav-number">1.</span> <span class="nav-text">一、MegNet</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Batchsize的问题"><span class="nav-number">1.1.</span> <span class="nav-text">Batchsize的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#小batchsize问题"><span class="nav-number">1.1.1.</span> <span class="nav-text">小batchsize问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MegDet改进"><span class="nav-number">1.2.</span> <span class="nav-text">MegDet改进</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、IOU-Net"><span class="nav-number">2.</span> <span class="nav-text">二、IOU-Net</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-定位置信度"><span class="nav-number">2.1.</span> <span class="nav-text">1.定位置信度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#缺点："><span class="nav-number">2.1.1.</span> <span class="nav-text">缺点：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-IOU-Net"><span class="nav-number">2.2.</span> <span class="nav-text">2.IOU-Net</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#训练过程："><span class="nav-number">2.2.1.</span> <span class="nav-text">训练过程：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-IOU-guided-NMS"><span class="nav-number">2.3.</span> <span class="nav-text">3.IOU-guided NMS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Non-monotonic-bounding-box-regression"><span class="nav-number">2.4.</span> <span class="nav-text">4.Non-monotonic bounding box regression</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#回归问题建模"><span class="nav-number">2.4.1.</span> <span class="nav-text">回归问题建模</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#regression-based方法"><span class="nav-number">2.4.2.</span> <span class="nav-text">regression-based方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#optimization-based方法"><span class="nav-number">2.4.3.</span> <span class="nav-text">optimization-based方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-改进的ROI-Pooling"><span class="nav-number">2.5.</span> <span class="nav-text">5.改进的ROI Pooling</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RoI-Pooling"><span class="nav-number">2.5.1.</span> <span class="nav-text">RoI Pooling</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#两次量化"><span class="nav-number">2.5.1.1.</span> <span class="nav-text">两次量化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码"><span class="nav-number">2.5.1.2.</span> <span class="nav-text">代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#反传"><span class="nav-number">2.5.1.3.</span> <span class="nav-text">反传</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RoI-Align"><span class="nav-number">2.5.2.</span> <span class="nav-text">RoI Align</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#过程"><span class="nav-number">2.5.2.1.</span> <span class="nav-text">过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码-1"><span class="nav-number">2.5.2.2.</span> <span class="nav-text">代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#反传-1"><span class="nav-number">2.5.2.3.</span> <span class="nav-text">反传</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Precise-RoI-Pooling"><span class="nav-number">2.5.3.</span> <span class="nav-text">Precise RoI Pooling</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#过程-1"><span class="nav-number">2.5.3.1.</span> <span class="nav-text">过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#反传-2"><span class="nav-number">2.5.3.2.</span> <span class="nav-text">反传</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码-2"><span class="nav-number">2.5.3.3.</span> <span class="nav-text">代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-联合训练"><span class="nav-number">2.6.</span> <span class="nav-text">5.联合训练</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#训练参数"><span class="nav-number">2.6.1.</span> <span class="nav-text">训练参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#前向过程"><span class="nav-number">2.6.2.</span> <span class="nav-text">前向过程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-结果"><span class="nav-number">2.7.</span> <span class="nav-text">6.结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#NMS对比"><span class="nav-number">2.7.1.</span> <span class="nav-text">NMS对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Refinement-对比"><span class="nav-number">2.7.2.</span> <span class="nav-text">Refinement 对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#最终结果和速度对比"><span class="nav-number">2.7.3.</span> <span class="nav-text">最终结果和速度对比</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Reference"><span class="nav-number">3.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="摘要:​    我们提出了基于区域的、全卷积网络来进行精确、有效的目标检测。之前的Fast/Faster RCNN网络，在每个region上都应用了计算复杂度高的子网络，而RFCN则是使用在整张图上计算共享的全卷积网络。 ​    文章提出了一种位置敏感的特征图来解决图像分类的平移不变性需求和目标检测的平移可变性之间的矛盾。本文采用了全卷积的图像分类器（比如ResNet101）作为主网络。">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rfcn">
+<meta property="og:url" content="http://yoursite.com/2018/04/22/rfcn/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="摘要:​    我们提出了基于区域的、全卷积网络来进行精确、有效的目标检测。之前的Fast/Faster RCNN网络，在每个region上都应用了计算复杂度高的子网络，而RFCN则是使用在整张图上计算共享的全卷积网络。 ​    文章提出了一种位置敏感的特征图来解决图像分类的平移不变性需求和目标检测的平移可变性之间的矛盾。本文采用了全卷积的图像分类器（比如ResNet101）作为主网络。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/04/22/rfcn/%5Cimages%5CRFCN%5CRFCN2.png">
+<meta property="og:image" content="http://yoursite.com/2018/04/22/rfcn/%5Cimages%5CRFCN%5CRFCN1.png">
+<meta property="og:image" content="http://yoursite.com/2018/04/22/rfcn/%5Cimages%5CRFCN%5Ctable.png">
+<meta property="og:image" content="http://yoursite.com/2018/04/22/rfcn/%5Cimages%5CRFCN%5CRFCN3.png">
+<meta property="og:image" content="http://yoursite.com/2018/04/22/rfcn/%5Cimages%5CRFCN%5Ctable1.png">
+<meta property="og:image" content="http://yoursite.com/2018/04/22/rfcn/%5Cimages%5CRFCN%5Ctable2.png">
+<meta property="og:updated_time" content="2019-07-14T07:17:29.443Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="rfcn">
+<meta name="twitter:description" content="摘要:​    我们提出了基于区域的、全卷积网络来进行精确、有效的目标检测。之前的Fast/Faster RCNN网络，在每个region上都应用了计算复杂度高的子网络，而RFCN则是使用在整张图上计算共享的全卷积网络。 ​    文章提出了一种位置敏感的特征图来解决图像分类的平移不变性需求和目标检测的平移可变性之间的矛盾。本文采用了全卷积的图像分类器（比如ResNet101）作为主网络。">
+<meta name="twitter:image" content="http://yoursite.com/2018/04/22/rfcn/%5Cimages%5CRFCN%5CRFCN2.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/04/22/rfcn/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>rfcn | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/22/rfcn/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">rfcn
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-04-22 11:06:59" itemprop="dateCreated datePublished" datetime="2018-04-22T11:06:59+08:00">2018-04-22</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:29" itemprop="dateModified" datetime="2019-07-14T15:17:29+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/" itemprop="url" rel="index"><span itemprop="name">paper</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/object-detection/" itemprop="url" rel="index"><span itemprop="name">object detection</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要:"></a>摘要:</h1><p>​    我们提出了<strong>基于区域的、全卷积网络</strong>来进行精确、有效的目标检测。之前的Fast/Faster RCNN网络，在<strong>每个region上都应用了计算复杂度高的子网络</strong>，而RFCN则是使用<strong>在整张图上计算共享的全卷积网络</strong>。</p>
+<p>​    文章提出了一种<strong>位置敏感的特征图</strong>来解决图像分类的平移不变性需求和目标检测的平移可变性之间的矛盾。本文采用了全卷积的图像分类器（比如ResNet101）作为主网络。</p>
+<a id="more"></a>
+
+<p><a href="https://arxiv.org/abs/1605.06409" target="_blank" rel="noopener">paper</a><br><a href="https://github.com/msracver/Deformable-ConvNets" target="_blank" rel="noopener">deformable convnet+rfcn</a></p>
+<h1 id="1-引言"><a href="#1-引言" class="headerlink" title="1.引言"></a>1.引言</h1><p>​    之前的目标检测网络可以<strong>由ROI Pooling层</strong>分为前后两个子网络：<strong>一个共享的，全卷积的，独立于ROI的子网络</strong>；<strong>和一个不共享计算的、对每个ROI进行</strong>的子网络。</p>
+<p>​    这主要因为先进的分类框架，比如AlexNet，或者VGGNet都是由两个子网络构成的–<strong>一个卷积网络，再加上一个空间池化层，再加上几层全连接层</strong>。因此，在图像分类网络中的空间池化层就很自然的变成了目标检测网络中的ROI Pooling层。</p>
+<p>​    但是最近先进的图像分类网络比如ResNet和GoogleNet都是设计成全是卷积层。<strong>类比这些，很自然的想到全部使用卷积层来构建共享的、卷积网络。但是，这样子的全卷积网络用于目标检测任务精度会远远低于分类准确率。为了修正该问题，Faster RCNN作者在使用ResNet作为backbone时，在两个卷积层块中间加了一个ROI Pooling层，来创造了一个更深的，ROI-Wise的子网络来提高精度</strong>，同时也因为每个ROI之间的计算不共享，速度受到了影响。</p>
+<p>​    之前提到了，目标检测的平移可变性和图像分类的平移不变性之间是个矛盾。<strong>一方面，对于图像级别的分类任务来说，平移不变性体现在一张图片内的目标如果移动了应该是分辨不出来的</strong>。因此在ImageNet分类竞赛里，具有深度全卷积的框架更加受偏爱并且有领先的结果。<strong>另一方面，目标检测任务某种程度上需要平移可变的定位信息表达。比如在一个候选框中物体平移，应该能够产生这个候选框与目标之间重叠信息的响应。</strong></p>
+<p>​    RFCN网络包含了共享的、全卷积网络（和FCN中一样）。为了在FCN网络中包含进平移可变的信息，<strong>我们用FCN的输出构建了一个位置敏感的分数图。每张分数图都编码了位置信息</strong>，比如相对目标左上方的空间信息。<strong>在FCN顶层，再加上一个位置敏感的ROI Pooling层，来从这些分数图中获取信息，后面没有需要权值的卷积或全连接层，这样就能端到端的学习</strong>。</p>
+<h1 id="2-方法"><a href="#2-方法" class="headerlink" title="2.方法"></a>2.方法</h1><h2 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h2><p>​    RCNN系列方法都采用两阶段的目标检测方法：<strong>region proposal和region classification。</strong>    尽管像SSD和YOLO这样不用region proposal的方法的确存在，但是基于region的方法仍然是具有领先的准确率。我们用RPN网络来提取候选区域，然后在RPN和RFCN之间共享特征。</p>
+<p>图1表示框架：</p>
+<p><img src="%5Cimages%5CRFCN%5CRFCN2.png" alt></p>
+<p><strong>position-sensitive score map</strong>：    </p>
+<p>​    给定ROI,RFCN可以将ROI分为目标类别或者背景。在RFCN中，所有需要学习的权重都是卷积层并且是整张图共享的。最后一层卷积层在每个类别产生一叠$k^2$个<strong>position-sensitive score map</strong>，因此共有$k^2(C+1)$通道的输出。$k^2$的score maps对于了$k\times k$的描述相对位置的空间网格，比如当$k=3$时，表示一类目标的左上、左中、上方、右上……右下的位置。</p>
+<p><strong>position-sensitive ROI Pooling layer:</strong></p>
+<p>​    RFCN以一个位置敏感的ROI 池化层。该层整合了最后一层卷积层的输出并且为每个ROI产生分数。<strong>和SPP 和Fast RCNN中不一样（ROI pooling是对所有通道做的），我们的位置敏感的ROI层实行selective pooling,并且每个$k\times k$的bin汇总了$k\times k$张分数图中的一张分数图的响应。</strong> 详细介绍如下：</p>
+<p><img src="%5Cimages%5CRFCN%5CRFCN1.png" alt></p>
+<h2 id="Bcakbone-architecture"><a href="#Bcakbone-architecture" class="headerlink" title="Bcakbone architecture"></a>Bcakbone architecture</h2><p>本文的RFCN实现实基于ResNet101的，其他的比如VGG也行。</p>
+<p><strong>ResNet101:</strong></p>
+<p>​     有100层卷积层，加一个全局的平均池化，再加一个1000类的全连接层。<strong>我们将平均池化层和全连接层去除，只是用卷积层来计算特征图。使用预训练模型来初始化网络。最后一个卷积Block是2048维的，为了降维，我们在最后加上一个随机初始化的1024-d的$1\times1$的卷积层。最后接上生成$k^2(C+1)$个通道的position-sensitive score map的卷积层。</strong></p>
+<p>和其他方法的对比：</p>
+<p><img src="%5Cimages%5CRFCN%5Ctable.png" alt></p>
+<h2 id="Position-sensitive-score-maps-amp-Position-sensitive-ROI-Pooling"><a href="#Position-sensitive-score-maps-amp-Position-sensitive-ROI-Pooling" class="headerlink" title="Position-sensitive score maps &amp; Position-sensitive ROI Pooling."></a>Position-sensitive score maps &amp; Position-sensitive ROI Pooling.</h2><p>​    通过一个网格将每个ROI矩形分割成$k\times k$个bin。一个尺寸为$w\times h$的矩形，一个bin的尺寸为$\approx \frac{w}{k} \times \frac{h}{k}$.本文方法使用最后一层卷积层来构造$k^2$个scoremap。在第$(i,h)-th$个bin$(0\le i,j\le k-1)$中，我们定义第$(i,j)$张分数图上的池化操作如下：<br>$$<br>r_c(i,j|\Theta)=\sum_{(x,y)\in bin(i,j)}z_{i,j,c}(x+x_0,y+y_0)|\Theta)/n \qquad(1)<br>$$<br>其中，$r_c(i,j)$表示第$(i,j)$个bin，第$c$类的池化后的响应。</p>
+<p>$z_{i,j,c}$是$k^2(C+1)$张特征图中的一张，即对应的通道，$x_0,y_0$表示一个ROI左上角的位置，即起始点。$n$表示这个bin中的像素个数。$\Theta$表示网络中所有学习的参数。第$(i,j)$个bin的范围是<br>$$<br>[i\frac{w}{k}\le x\le [(i+1)\frac{w}{k}]] \ [j\frac{h}{k}\le y &lt;[(j+1)\frac{h}{k}]]<br>$$<br>式1表示的就是图1的操作，一种颜色代表一对$(i,j)$,实行的是平均池化，最大池化也行。</p>
+<h3 id="分类："><a href="#分类：" class="headerlink" title="分类："></a>分类：</h3><p>​    这$k^2$张分数图进行投票，本文直接平均投票，为每个ROI产生一个$C+1$维的向量：$r_c(\Theta)=\sum_{i,j}r_c(i,j|\Theta)$.然后计算类别之间的softmax响应：<br>$$<br>s_c(\Theta)=e^{r_c(\Theta)}/\sum_{c’=0}^Ce^{r_{c’(\Theta)}}<br>$$<br>他们用来评估训练和测试时的交叉熵损失。</p>
+<h3 id="回归："><a href="#回归：" class="headerlink" title="回归："></a>回归：</h3><p>除了上面$k^2(C+1)$维的卷积层外，我们又加了一个并行的$4k^2-d$的卷积层来进行boungding box 回归。位置敏感的ROI Pooling操作在这$4k^2$的图上进行，并为每个ROI产生一个$4k^2-d$维的向量。再通过一个平均池化进行投票变成一个4维的向量。这个4维的向量包含了一个bounding box的信息$t=(t_x,t_y,t_w,t_h)$.注意。我们进行bounding box回归时，为了简单忽略了类别。</p>
+<h2 id="训练："><a href="#训练：" class="headerlink" title="训练："></a>训练：</h2><p>定义交叉熵损失和边界框回归损失和为损失函数。函数定义如下：<br>$$<br>L(s, t_{x,y,w,h})=L_{cls}(s_{c^<em>})+\lambda[c^</em>&gt;0]L_{reg}(t,t^<em>)\=-log\left(\frac{e^{r_{c^</em>}(\Theta)}}{\sum^{C}<em>{c’=0}e^{r</em>{c’}(\Theta)}}\right)+\lambda[c^<em>&gt;0]L_{reg}(t,t^</em>)<br>$$<br>$\lambda=1$。正样本定义：IOU&gt;0.5的样本。</p>
+<p>在线hard例子挖掘：假设每个图像前向产生$N$个区域，计算所有proposal的损失，对每个损失排序，选择损失最高的$B$个ROIs.</p>
+<p>训练细节见原文。</p>
+<h2 id="前向："><a href="#前向：" class="headerlink" title="前向："></a>前向：</h2><p>图像最短边600像素，每张图300个ROI。冲量0.9，权值衰减0.0005.……</p>
+<h2 id="可视化"><a href="#可视化" class="headerlink" title="可视化"></a>可视化</h2><p>​    图3，4中，我们可视化了RFCN学习的位置敏感分数图。这些特别的分数图在一个目标的特定的相对位置上会强烈的响应。</p>
+<p>​    <strong>如果一个候选框和一个目标的ground truth精确地重叠，那么该ROI的$k^2$个bin中大部分都会被强烈激活，他们投票的分数也会特别高。反之，投票分数会很低。</strong></p>
+<p>​    如图：</p>
+<p><img src="%5Cimages%5CRFCN%5CRFCN3.png" alt></p>
+<h1 id="3-Related-work"><a href="#3-Related-work" class="headerlink" title="3.Related work"></a>3.Related work</h1><h1 id="4-Experiments"><a href="#4-Experiments" class="headerlink" title="4.Experiments"></a>4.Experiments</h1><p><img src="%5Cimages%5CRFCN%5Ctable1.png" alt></p>
+<p><img src="%5Cimages%5CRFCN%5Ctable2.png" alt></p>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/03/cascade-RCNN/" rel="next" title="cascade_RCNN">
+                <i class="fa fa-chevron-left"></i> cascade_RCNN
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/27/YOLOv1/" rel="prev" title="YOLOv1">
+                YOLOv1 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#摘要"><span class="nav-number">1.</span> <span class="nav-text">摘要:</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-引言"><span class="nav-number">2.</span> <span class="nav-text">1.引言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-方法"><span class="nav-number">3.</span> <span class="nav-text">2.方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#overview"><span class="nav-number">3.1.</span> <span class="nav-text">overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Bcakbone-architecture"><span class="nav-number">3.2.</span> <span class="nav-text">Bcakbone architecture</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Position-sensitive-score-maps-amp-Position-sensitive-ROI-Pooling"><span class="nav-number">3.3.</span> <span class="nav-text">Position-sensitive score maps &amp; Position-sensitive ROI Pooling.</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#分类："><span class="nav-number">3.3.1.</span> <span class="nav-text">分类：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#回归："><span class="nav-number">3.3.2.</span> <span class="nav-text">回归：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#训练："><span class="nav-number">3.4.</span> <span class="nav-text">训练：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#前向："><span class="nav-number">3.5.</span> <span class="nav-text">前向：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#可视化"><span class="nav-number">3.6.</span> <span class="nav-text">可视化</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-Related-work"><span class="nav-number">4.</span> <span class="nav-text">3.Related work</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-Experiments"><span class="nav-number">5.</span> <span class="nav-text">4.Experiments</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

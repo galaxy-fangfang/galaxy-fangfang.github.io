@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="faster rcnn训练流程的代码详解，请参照faster_pytorch框架食用。">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="faster_pytorch训练流程代码详解">
+<meta property="og:url" content="http://yoursite.com/2018/05/25/fasterRCNN训练流程代码详解/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="faster rcnn训练流程的代码详解，请参照faster_pytorch框架食用。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-07-14T07:17:33.801Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="faster_pytorch训练流程代码详解">
+<meta name="twitter:description" content="faster rcnn训练流程的代码详解，请参照faster_pytorch框架食用。">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/05/25/fasterRCNN训练流程代码详解/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>faster_pytorch训练流程代码详解 | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/25/fasterRCNN训练流程代码详解/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">faster_pytorch训练流程代码详解
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-05-25 14:37:39" itemprop="dateCreated datePublished" datetime="2018-05-25T14:37:39+08:00">2018-05-25</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:33" itemprop="dateModified" datetime="2019-07-14T15:17:33+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/code/" itemprop="url" rel="index"><span itemprop="name">code</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/code/faster-rcnn/" itemprop="url" rel="index"><span itemprop="name">faster_rcnn</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>faster rcnn训练流程的代码详解，请参照<a href="https://galaxy-fangfang.github.io/2018/05/09/faster-pytorch%E6%A1%86%E6%9E%B6/" target="_blank" rel="noopener">faster_pytorch框架</a>食用。</p>
+<a id="more"></a>
+<h1 id="Faster-RCNN训练流程"><a href="#Faster-RCNN训练流程" class="headerlink" title="Faster RCNN训练流程"></a>Faster RCNN训练流程</h1><h2 id="1-加载数据和配置文件和网络"><a href="#1-加载数据和配置文件和网络" class="headerlink" title="1.加载数据和配置文件和网络"></a>1.加载数据和配置文件和网络</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#load data,cfg,net</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="2-设置优化器"><a href="#2-设置优化器" class="headerlink" title="2.设置优化器"></a>2.设置优化器</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">optimizer = torch.optim.Adam(params[<span class="number">-8</span>:], lr=lr)</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-训练初始化"><a href="#3-训练初始化" class="headerlink" title="3.训练初始化"></a>3.训练初始化</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">train_loss = <span class="number">0</span></span><br><span class="line">tp, tf, fg, bg = <span class="number">0.</span>, <span class="number">0.</span>, <span class="number">0</span>, <span class="number">0</span></span><br><span class="line">step_cnt = <span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> step <span class="keyword">in</span> range(start_step, end_step+<span class="number">1</span>):<span class="comment">#0,100000</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment"># get one batch</span></span><br><span class="line">    blobs = data_layer.forward()</span><br><span class="line">    im_data = blobs[<span class="string">'data'</span>]</span><br><span class="line">    im_info = blobs[<span class="string">'im_info'</span>]</span><br><span class="line">    gt_boxes = blobs[<span class="string">'gt_boxes'</span>]</span><br><span class="line">    gt_ishard = blobs[<span class="string">'gt_ishard'</span>]</span><br><span class="line">    dontcare_areas = blobs[<span class="string">'dontcare_areas'</span>]</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-训练"><a href="#4-训练" class="headerlink" title="4.训练"></a>4.训练</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">net(im_data, im_info, gt_boxes, gt_ishard, dontcare_areas)</span><br><span class="line"><span class="comment">#im_data:size=(1, 598, 1000, 3)</span></span><br><span class="line"><span class="comment">#im_info:[598.        ,  1000.        ,     1.28369701]</span></span><br><span class="line"><span class="comment">#gt_box:size=[2,5]</span></span><br><span class="line"><span class="comment">#gt_ishard:[0,0]</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="fastrcnn-cfg"><a href="#fastrcnn-cfg" class="headerlink" title="fastrcnn/cfg:"></a>fastrcnn/cfg:</h3><p>RPN:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Max number of foreground examples</span></span><br><span class="line">__C.TRAIN.RPN_FG_FRACTION = <span class="number">0.5</span></span><br><span class="line"><span class="comment"># Total number of examples</span></span><br><span class="line">__C.TRAIN.RPN_BATCHSIZE = <span class="number">256</span></span><br><span class="line"><span class="comment"># Use RPN to detect objects</span></span><br><span class="line">__C.TRAIN.HAS_RPN = <span class="literal">True</span></span><br><span class="line"><span class="comment"># IOU &gt;= thresh: positive example</span></span><br><span class="line">__C.TRAIN.RPN_POSITIVE_OVERLAP = <span class="number">0.7</span></span><br><span class="line"><span class="comment"># IOU &lt; thresh: negative example</span></span><br><span class="line">__C.TRAIN.RPN_NEGATIVE_OVERLAP = <span class="number">0.3</span></span><br></pre></td></tr></table></figure>
+
+<p>Fast RCNN:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Minibatch size (number of regions of interest [ROIs])</span></span><br><span class="line">__C.TRAIN.BATCH_SIZE = <span class="number">128</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Fraction of minibatch that is labeled foreground (i.e. class &gt; 0)</span></span><br><span class="line">__C.TRAIN.FG_FRACTION = <span class="number">0.25</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Overlap threshold for a ROI to be considered foreground (if &gt;= FG_THRESH)</span></span><br><span class="line">__C.TRAIN.FG_THRESH = <span class="number">0.5</span></span><br><span class="line">__C.TRAIN.BG_THRESH_HI = <span class="number">0.5</span></span><br><span class="line">__C.TRAIN.BG_THRESH_LO = <span class="number">0.1</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>具体分为下面几步：</strong></p>
+<h3 id="RPN"><a href="#RPN" class="headerlink" title="RPN"></a>RPN</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#计算特征</span></span><br><span class="line">features = self.features(im_data)<span class="comment">#feature:[1, 512, 12, 62])</span></span><br><span class="line"><span class="comment">#rpn sliding window</span></span><br><span class="line">rpn_conv1 = self.conv1(features)<span class="comment">#[1, 512, 12, 62]</span></span><br><span class="line"><span class="comment">#计算rpn分数和rpn box</span></span><br><span class="line">rpn_cls_score = self.score_conv(rpn_conv1)<span class="comment">#[1, 18, 12, 62])</span></span><br><span class="line">rpn_cls_score_reshape = self.reshape_layer(rpn_cls_score, <span class="number">2</span>)<span class="comment">#([1, 2, 108, 62])</span></span><br><span class="line"><span class="comment">#rpn_cls_score_reshape.size() :([1, 2, 108, 62])</span></span><br><span class="line">rpn_cls_prob = F.softmax(rpn_cls_score_reshape)<span class="comment">#([1, 2, 108, 62])</span></span><br><span class="line">rpn_cls_prob_reshape = self.reshape_layer(rpn_cls_prob, len(self.anchor_scales)*<span class="number">3</span>*<span class="number">2</span>)<span class="comment">#([1, 18, 12, 62])</span></span><br><span class="line"><span class="comment"># rpn boxes</span></span><br><span class="line">rpn_bbox_pred = self.bbox_conv(rpn_conv1)<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="proposal-layer"><a href="#proposal-layer" class="headerlink" title="proposal layer"></a>proposal layer</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">rois = self.proposal_layer</span><br><span class="line"><span class="comment">#1.产生anchor</span></span><br><span class="line"> _anchors = generate_anchors()</span><br><span class="line">    </span><br><span class="line">    <span class="comment">##将anchor移到每个点，产生w/16*h/16*9个anchor</span></span><br><span class="line">anchors = _anchors.reshape((<span class="number">1</span>, A, <span class="number">4</span>)) + \shifts.reshape((<span class="number">1</span>, K, <span class="number">4</span>)).transpose((<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>))</span><br><span class="line"><span class="comment">#2.Generate proposals from bbox deltas and shifted anchors</span></span><br><span class="line">proposals = bbox_transform_inv(anchors, bbox_deltas)</span><br><span class="line"><span class="comment">#3. clip predicted boxes to image</span></span><br><span class="line"> proposals = clip_boxes()</span><br><span class="line"><span class="comment">#4.remove predicted boxes with either height or width &lt; threshold</span></span><br><span class="line">keep = _filter_boxes(proposals, min_size * im_info[<span class="number">2</span>])()</span><br><span class="line"><span class="comment">#4. sort all (proposal, score) pairs by score from highest to lowest</span></span><br><span class="line">order = scores.ravel().argsort()[::<span class="number">-1</span>]</span><br><span class="line"><span class="comment">#5. take top pre_nms_topN (e.g. 6000)</span></span><br><span class="line">order = order[:pre_nms_topN]<span class="comment">#6409boxes-&gt;6000boxes</span></span><br><span class="line">proposals = proposals[order, :]<span class="comment">#24000</span></span><br><span class="line">scores = scores[order]</span><br><span class="line"><span class="comment">#6. apply nms (e.g. threshold = 0.7)</span></span><br><span class="line">keep = nms(np.hstack((proposals, scores)), nms_thresh)<span class="comment">#1344</span></span><br><span class="line"><span class="comment"># 7. take after_nms_topN (e.g. 300)</span></span><br><span class="line">keep = keep[:post_nms_topN]<span class="comment">#300 highest</span></span><br><span class="line">proposals = proposals[keep, :]<span class="comment">#1200</span></span><br><span class="line">scores = scores[keep]</span><br><span class="line"><span class="comment"># 8. return the top proposals (-&gt; RoIs top)</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="anchor-target-layer"><a href="#anchor-target-layer" class="headerlink" title="anchor target layer"></a>anchor target layer</h3><p>产生anchors；</p>
+<p>把anchor分配到ground truth上：</p>
+<ol>
+<li>产生所有的基准anchor，即$w/16\times h/16\times9$.（62x37x9=20646）</li>
+<li>将超出图像边界的anchor删除.(7858)</li>
+<li>计算每个anchor对应的最大overlap的gt_boxes的下标，记录每个anchor对应的最大的overlap值=anchors数目</li>
+<li>计算每个gt_boxes对应的最大overlap的anchor的下标，记录每个gt_boxes对应的最大的overlap值，有可能比gt_boxes数目多，因为可能有相同的overlap</li>
+</ol>
+<p><strong>给每个anchor打标签，是前景还是背景，还是不考虑的。</strong></p>
+<ol>
+<li><p>bg:每个 anchor对应最大的overlap值小于阈值0.3；</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">labels[max_overlaps &lt; cfg.TRAIN.RPN_NEGATIVE_OVERLAP] = <span class="number">0</span></span><br></pre></td></tr></table></figure>
+
+<p>​</p>
+</li>
+<li><p>fg:对应每个GT,有最大overlap的anchor；或者每个anchor与gt的最大overlap超过阈值0.7的anchor:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">labels[gt_argmax_overlaps] = <span class="number">1</span></span><br><span class="line">    <span class="comment"># fg label: above threshold IOU</span></span><br><span class="line">labels[max_overlaps &gt;= cfg.TRAIN.RPN_POSITIVE_OVERLAP] = <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p>​</p>
+</li>
+</ol>
+<p>严格控制正负样本1：1（128，128）</p>
+<p>边界框的回归目标</p>
+<ol>
+<li><p>计算每一个anchor与重合度最高的那个ground truth的偏移值，即$t_x^*,t_y^*,t_w^*,t_h^{*}$,用于RPN层回归参数的学习。计算方法<strong>bbox_transform</strong>函数中：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">targets_dx = (gt_ctr_x - ex_ctr_x) / ex_widths</span><br><span class="line">targets_dy = (gt_ctr_y - ex_ctr_y) / ex_heights</span><br><span class="line">targets_dw = np.log(gt_widths / ex_widths)</span><br><span class="line">targets_dh = np.log(gt_heights / ex_heights)</span><br></pre></td></tr></table></figure>
+
+<p>​</p>
+</li>
+<li><p>将裁剪过的anchors还原成未裁剪的anchos。返回RPN的region的label和回归目标系数。</p>
+</li>
+</ol>
+<h3 id="RPN损失"><a href="#RPN损失" class="headerlink" title="RPN损失"></a>RPN损失</h3><p>类别交叉熵损失和回归损失L1smooth损失。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">build_loss</span><span class="params">(self, rpn_cls_score_reshape, rpn_bbox_pred, rpn_data)</span>:</span></span><br><span class="line">        <span class="comment"># classification loss</span></span><br><span class="line">        rpn_cls_score = rpn_cls_score_reshape.permute(<span class="number">0</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>).contiguous().view(<span class="number">-1</span>, <span class="number">2</span>)</span><br><span class="line">        rpn_label = rpn_data[<span class="number">0</span>].view(<span class="number">-1</span>)</span><br><span class="line"></span><br><span class="line">        rpn_keep = Variable(rpn_label.data.ne(<span class="number">-1</span>).nonzero().squeeze()).cuda()</span><br><span class="line">        rpn_cls_score = torch.index_select(rpn_cls_score, <span class="number">0</span>, rpn_keep)</span><br><span class="line">        rpn_label = torch.index_select(rpn_label, <span class="number">0</span>, rpn_keep)</span><br><span class="line"></span><br><span class="line">        fg_cnt = torch.sum(rpn_label.data.ne(<span class="number">0</span>))</span><br><span class="line"></span><br><span class="line">        rpn_cross_entropy = F.cross_entropy(rpn_cls_score, rpn_label)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># box loss</span></span><br><span class="line">        rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights = rpn_data[<span class="number">1</span>:]</span><br><span class="line">        rpn_bbox_targets = torch.mul(rpn_bbox_targets, rpn_bbox_inside_weights)</span><br><span class="line">        rpn_bbox_pred = torch.mul(rpn_bbox_pred, rpn_bbox_inside_weights)</span><br><span class="line"></span><br><span class="line">        rpn_loss_box = F.smooth_l1_loss(rpn_bbox_pred, rpn_bbox_targets, size_average=<span class="literal">False</span>) / (fg_cnt + <span class="number">1e-4</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> rpn_cross_entropy, rpn_loss_box</span><br></pre></td></tr></table></figure>
+
+<h3 id="proposal-target-layer"><a href="#proposal-target-layer" class="headerlink" title="proposal target layer:"></a>proposal target layer:</h3><p>proposal target layer加了gt box在roi里面，但是直接加的话，会导致损失为0，所以要先抖动（稍微处理一下）。</p>
+<h4 id="1-给RPN输出的proposal分配标签；"><a href="#1-给RPN输出的proposal分配标签；" class="headerlink" title="1.给RPN输出的proposal分配标签；"></a>1.给RPN输出的proposal分配标签；</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Select foreground RoIs as those with &gt;= FG_THRESH overlap#找到IOU大于等于0.5的ROI，获得其引索</span></span><br><span class="line">fg_inds = np.where(max_overlaps &gt;= cfg.TRAIN.FG_THRESH)[<span class="number">0</span>]</span><br><span class="line"><span class="comment"># Select background RoIs as those within [BG_THRESH_LO, BG_THRESH_HI)</span></span><br><span class="line">bg_inds = np.where((max_overlaps &lt; cfg.TRAIN.BG_THRESH_HI) &amp;</span><br><span class="line">                   (max_overlaps &gt;= cfg.TRAIN.BG_THRESH_LO))[<span class="number">0</span>]</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-控制mini-batch里面的前景和背景ROI的数目"><a href="#2-控制mini-batch里面的前景和背景ROI的数目" class="headerlink" title="2.控制mini_batch里面的前景和背景ROI的数目"></a>2.控制mini_batch里面的前景和背景ROI的数目</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Guard against the case when an image has fewer than fg_rois_per_image</span></span><br><span class="line"><span class="comment"># foreground RoIs #设定的每张图片fg最多为90=0.3*300</span></span><br><span class="line">num_images = <span class="number">1</span></span><br><span class="line">rois_per_image = cfg.TRAIN.BATCH_SIZE / num_images<span class="comment">#300</span></span><br><span class="line">fg_rois_per_image = int(np.round(cfg.TRAIN.FG_FRACTION * rois_per_image))</span><br><span class="line">fg_rois_per_this_image = min(fg_rois_per_image, fg_inds.size)<span class="comment">#min(90,15)</span></span><br><span class="line">    </span><br><span class="line"><span class="comment"># Compute number of background RoIs to take from this image (guarding</span></span><br><span class="line">    <span class="comment"># against there being fewer than desired)</span></span><br><span class="line">    bg_rois_per_this_image = rois_per_image - fg_rois_per_this_image</span><br><span class="line">    bg_rois_per_this_image = min(bg_rois_per_this_image, bg_inds.size)</span><br></pre></td></tr></table></figure>
+
+<p>此处没有dontcare的样本</p>
+<h4 id="2-计算proposal和groundtruth-boxes的偏移量，用于网络最后一层参数的学习。"><a href="#2-计算proposal和groundtruth-boxes的偏移量，用于网络最后一层参数的学习。" class="headerlink" title="2.计算proposal和groundtruth boxes的偏移量，用于网络最后一层参数的学习。"></a>2.计算proposal和groundtruth boxes的偏移量，用于网络最后一层参数的学习。</h4><p>1.计算每个ROI和最佳匹配的GT的回归系数$t_x,t_y,t_w,t_h$.维度是【300，5】</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#传入值为rois的（x1,y1,x2,y2）,对应最佳匹配GT的（x1,y1,x2,y2），对应的labels,#返回[标签，dx,dy,dw,dh]，shape：（len（rois），5）[300,5]</span></span><br><span class="line">bbox_target_data = _compute_targets(</span><br><span class="line">    rois[:, <span class="number">1</span>:<span class="number">5</span>], gt_boxes[gt_assignment[keep_inds], :<span class="number">4</span>], labels)</span><br></pre></td></tr></table></figure>
+
+<p>即：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_compute_targets</span><span class="params">(ex_rois, gt_rois, labels)</span>:</span></span><br><span class="line">    <span class="string">"""Compute bounding-box regression targets for an image."""</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">assert</span> ex_rois.shape[<span class="number">0</span>] == gt_rois.shape[<span class="number">0</span>]</span><br><span class="line">    <span class="keyword">assert</span> ex_rois.shape[<span class="number">1</span>] == <span class="number">4</span></span><br><span class="line">    <span class="keyword">assert</span> gt_rois.shape[<span class="number">1</span>] == <span class="number">4</span></span><br><span class="line"></span><br><span class="line">    targets = bbox_transform(ex_rois, gt_rois)<span class="comment">#[300,4]</span></span><br><span class="line">    <span class="keyword">if</span> cfg.TRAIN.BBOX_NORMALIZE_TARGETS_PRECOMPUTED:</span><br><span class="line">        <span class="comment"># Optionally normalize targets by a precomputed mean and stdev</span></span><br><span class="line">        targets = ((targets - np.array(cfg.TRAIN.BBOX_NORMALIZE_MEANS))</span><br><span class="line">                   / np.array(cfg.TRAIN.BBOX_NORMALIZE_STDS))</span><br><span class="line">    <span class="keyword">return</span> np.hstack(</span><br><span class="line">        (labels[:, np.newaxis], targets)).astype(np.float32, copy=<span class="literal">False</span>)</span><br></pre></td></tr></table></figure>
+
+<p>2.再把目标拓展到每个类上：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bbox_targets, bbox_inside_weights = \</span><br><span class="line">       _get_bbox_regression_labels(bbox_target_data, num_classes)</span><br></pre></td></tr></table></figure>
+
+<p>即：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_get_bbox_regression_labels</span><span class="params">(bbox_target_data, num_classes)</span>:</span></span><br><span class="line">    <span class="string">"""Bounding-box regression targets (bbox_target_data) are stored in a</span></span><br><span class="line"><span class="string">    compact form N x (class, tx, ty, tw, th)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    This function expands those targets into the 4-of-4*K representation used</span></span><br><span class="line"><span class="string">    by the network (i.e. only one class has non-zero targets).</span></span><br><span class="line"><span class="string">拓展到300*4K*NUM_class上，即每个ROI将自己的回归系数写在对应类别处位置。</span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        bbox_target (ndarray): N x 4K blob of regression targets</span></span><br><span class="line"><span class="string">        bbox_inside_weights (ndarray): N x 4K blob of loss weights</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line"></span><br><span class="line">    clss = bbox_target_data[:, <span class="number">0</span>]<span class="comment">#300 bbox_target_data:[300,5]</span></span><br><span class="line">    bbox_targets = np.zeros((clss.size, <span class="number">4</span> * num_classes), dtype=np.float32)<span class="comment">#[300,8]</span></span><br><span class="line">    bbox_inside_weights = np.zeros(bbox_targets.shape, dtype=np.float32)</span><br><span class="line">    inds = np.where(clss &gt; <span class="number">0</span>)[<span class="number">0</span>]<span class="comment">#positives:15</span></span><br><span class="line">    <span class="keyword">for</span> ind <span class="keyword">in</span> inds:</span><br><span class="line">        cls = int(clss[ind]) <span class="comment">#得到第ind个roi的类别</span></span><br><span class="line">        start = <span class="number">4</span> * cls<span class="comment">#回归系数摆放的位置</span></span><br><span class="line">        end = start + <span class="number">4</span></span><br><span class="line">        bbox_targets[ind, start:end] = bbox_target_data[ind, <span class="number">1</span>:]</span><br><span class="line">        bbox_inside_weights[ind, start:end] = cfg.TRAIN.BBOX_INSIDE_WEIGHTS</span><br><span class="line">    <span class="keyword">return</span> bbox_targets, bbox_inside_weights</span><br></pre></td></tr></table></figure>
+
+<h3 id="ROIPooling"><a href="#ROIPooling" class="headerlink" title="ROIPooling"></a>ROIPooling</h3><p>池化：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">self.roi_pool = RoIPool(<span class="number">7</span>, <span class="number">7</span>, <span class="number">1.0</span>/<span class="number">16</span>)</span><br><span class="line">pooled_features = self.roi_pool(features, rois)<span class="comment">#[300, 512, 7, 7]</span></span><br><span class="line">x = pooled_features.view(pooled_features.size()[<span class="number">0</span>], <span class="number">-1</span>)<span class="comment">#[300,25088]</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="计算classification-层损失"><a href="#计算classification-层损失" class="headerlink" title="计算classification 层损失"></a>计算classification 层损失</h3><p>将pooling后的特征送入两个FC层后，产生预测的分数和边界框回归系数：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>计算分类损失</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">build_loss</span><span class="params">(self, cls_score, bbox_pred, roi_data)</span>:</span></span><br><span class="line">        <span class="comment"># classification loss</span></span><br><span class="line">		label = roi_data[<span class="number">1</span>].squeeze()<span class="comment">#300</span></span><br><span class="line">        cross_entropy = F.cross_entropy(cls_score, label, weight=ce_weights)</span><br></pre></td></tr></table></figure>
+
+<p><code>为什么这里的交叉熵损失的计算为什么送入的是cls_score  (softmax的输入），而不是cls_prob(softmax层的输出），参见附录A。</code></p>
+<p>计算回归损失</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># bounding box regression L1 loss</span></span><br><span class="line">       bbox_targets, bbox_inside_weights, bbox_outside_weights = roi_data[<span class="number">2</span>:]</span><br><span class="line">       bbox_targets = torch.mul(bbox_targets, bbox_inside_weights)</span><br><span class="line">       bbox_pred = torch.mul(bbox_pred, bbox_inside_weights)</span><br><span class="line"></span><br><span class="line">       loss_box = F.smooth_l1_loss(bbox_pred, bbox_targets, size_average=<span class="literal">False</span>) / (fg_cnt + <span class="number">1e-4</span>)</span><br></pre></td></tr></table></figure>
+
+<p>计算总损失：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">loss = net.loss + net.rpn.loss</span><br></pre></td></tr></table></figure>
+
+<h1 id="Appendix-交叉熵损失的代码实现"><a href="#Appendix-交叉熵损失的代码实现" class="headerlink" title="Appendix:交叉熵损失的代码实现"></a>Appendix:交叉熵损失的代码实现</h1><p>pytorch中<code>CrossEntropyLoss</code>是通过两个步骤计算出来的，第一步是计算<code>log softmax</code>，第二步是计算<code>cross entropy</code>（或者说是<code>negative log likehood</code>），<code>CrossEntropyLoss</code>不需要在网络的最后一层添加<code>softmax和log</code>层，直接输出全连接层即可。而<code>NLLLoss</code>则需要在定义网络的时候在最后一层添加softmax和log层。</p>
+<p>log softmax:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">log_softmax</span><span class="params">(input, dim=None, _stacklevel=<span class="number">3</span>)</span>:</span></span><br><span class="line">    <span class="string">r"""Applies a softmax followed by a logarithm.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    While mathematically equivalent to log(softmax(x)), doing these two</span></span><br><span class="line"><span class="string">    operations separately is slower, and numerically unstable. This function</span></span><br><span class="line"><span class="string">    uses an alternative formulation to compute the output and gradient correctly.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    See :class:`~torch.nn.LogSoftmax` for more details.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Arguments:</span></span><br><span class="line"><span class="string">        input (Variable): input</span></span><br><span class="line"><span class="string">        dim (int): A dimension along which log_softmax will be computed.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="keyword">if</span> dim <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        dim = _get_softmax_dim(<span class="string">'log_softmax'</span>, input.dim(), _stacklevel)</span><br><span class="line">    <span class="keyword">return</span> torch._C._nn.log_softmax(input, dim)</span><br></pre></td></tr></table></figure>
+
+<p>NLL loss:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">nll_loss</span><span class="params">(input, target, weight=None, size_average=True, ignore_index=<span class="number">-100</span>, reduce=True)</span>:</span></span><br><span class="line">    <span class="string">r"""The negative log likelihood loss.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    See :class:`~torch.nn.NLLLoss` for details.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        input: :math:`(N, C)` where `C = number of classes` or :math:`(N, C, H, W)`</span></span><br><span class="line"><span class="string">            in case of 2D Loss, or :math:`(N, C, d_1, d_2, ..., d_K)` where :math:`K &gt; 1`</span></span><br><span class="line"><span class="string">            in the case of K-dimensional loss.</span></span><br><span class="line"><span class="string">        target: :math:`(N)` where each value is `0 &lt;= targets[i] &lt;= C-1`,</span></span><br><span class="line"><span class="string">            or :math:`(N, C, d_1, d_2, ..., d_K)` where :math:`K &gt;= 1` for</span></span><br><span class="line"><span class="string">            K-dimensional loss.</span></span><br><span class="line"><span class="string">        weight (Tensor, optional): a manual rescaling weight given to each</span></span><br><span class="line"><span class="string">            class. If given, has to be a Tensor of size `C`</span></span><br><span class="line"><span class="string">        size_average (bool, optional): By default, the losses are averaged</span></span><br><span class="line"><span class="string">            over observations for each minibatch. If size_average</span></span><br><span class="line"><span class="string">            is False, the losses are summed for each minibatch. Default: ``True``</span></span><br><span class="line"><span class="string">        ignore_index (int, optional): Specifies a target value that is ignored</span></span><br><span class="line"><span class="string">            and does not contribute to the input gradient. When size_average is</span></span><br><span class="line"><span class="string">            True, the loss is averaged over non-ignored targets. Default: -100</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Example::</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        &gt;&gt;&gt; # input is of size N x C = 3 x 5</span></span><br><span class="line"><span class="string">        &gt;&gt;&gt; input = autograd.Variable(torch.randn(3, 5))</span></span><br><span class="line"><span class="string">        &gt;&gt;&gt; # each element in target has to have 0 &lt;= value &lt; C</span></span><br><span class="line"><span class="string">        &gt;&gt;&gt; target = autograd.Variable(torch.LongTensor([1, 0, 4]))</span></span><br><span class="line"><span class="string">        &gt;&gt;&gt; output = F.nll_loss(F.log_softmax(input), target)</span></span><br><span class="line"><span class="string">        &gt;&gt;&gt; output.backward()</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    dim = input.dim()</span><br><span class="line">    <span class="keyword">if</span> torch.is_tensor(weight):</span><br><span class="line">        weight = Variable(weight)</span><br><span class="line">    <span class="keyword">if</span> dim == <span class="number">2</span>:</span><br><span class="line">        <span class="keyword">return</span> torch._C._nn.nll_loss(input, target, weight, size_average, ignore_index, reduce)</span><br><span class="line">    <span class="keyword">elif</span> dim == <span class="number">4</span>:</span><br><span class="line">        <span class="keyword">return</span> torch._C._nn.nll_loss2d(input, target, weight, size_average, ignore_index, reduce)</span><br><span class="line">    <span class="keyword">elif</span> dim == <span class="number">3</span> <span class="keyword">or</span> dim &gt; <span class="number">4</span>:</span><br><span class="line">        n = input.size(<span class="number">0</span>)</span><br><span class="line">        c = input.size(<span class="number">1</span>)</span><br><span class="line">        out_size = (n,) + input.size()[<span class="number">2</span>:]</span><br><span class="line">        <span class="keyword">if</span> target.size()[<span class="number">1</span>:] != input.size()[<span class="number">2</span>:]:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">'Expected target size &#123;&#125;, got &#123;&#125;'</span>.format(</span><br><span class="line">                out_size, input.size()))</span><br><span class="line">        input = input.contiguous().view(n, c, <span class="number">1</span>, <span class="number">-1</span>)</span><br><span class="line">        target = target.contiguous().view(n, <span class="number">1</span>, <span class="number">-1</span>)</span><br><span class="line">        <span class="keyword">if</span> reduce:</span><br><span class="line">            <span class="keyword">return</span> torch._C._nn.nll_loss2d(input, target, weight, size_average, ignore_index, reduce)</span><br><span class="line">        out = torch._C._nn.nll_loss2d(input, target, weight, size_average, ignore_index, reduce)</span><br><span class="line">        <span class="keyword">return</span> out.view(out_size)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">'Expected 2 or more dimensions (got &#123;&#125;)'</span>.format(dim))</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/23/书单/" rel="next" title="2017-2018书目摘录">
+                <i class="fa fa-chevron-left"></i> 2017-2018书目摘录
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/26/OHEMvsFocalLoss/" rel="prev" title="OHEM_vs_OHNM_vs_FocalLoss">
+                OHEM_vs_OHNM_vs_FocalLoss <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Faster-RCNN训练流程"><span class="nav-number">1.</span> <span class="nav-text">Faster RCNN训练流程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-加载数据和配置文件和网络"><span class="nav-number">1.1.</span> <span class="nav-text">1.加载数据和配置文件和网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-设置优化器"><span class="nav-number">1.2.</span> <span class="nav-text">2.设置优化器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-训练初始化"><span class="nav-number">1.3.</span> <span class="nav-text">3.训练初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-训练"><span class="nav-number">1.4.</span> <span class="nav-text">4.训练</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#fastrcnn-cfg"><span class="nav-number">1.4.1.</span> <span class="nav-text">fastrcnn/cfg:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RPN"><span class="nav-number">1.4.2.</span> <span class="nav-text">RPN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#proposal-layer"><span class="nav-number">1.4.3.</span> <span class="nav-text">proposal layer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#anchor-target-layer"><span class="nav-number">1.4.4.</span> <span class="nav-text">anchor target layer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RPN损失"><span class="nav-number">1.4.5.</span> <span class="nav-text">RPN损失</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#proposal-target-layer"><span class="nav-number">1.4.6.</span> <span class="nav-text">proposal target layer:</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-给RPN输出的proposal分配标签；"><span class="nav-number">1.4.6.1.</span> <span class="nav-text">1.给RPN输出的proposal分配标签；</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-控制mini-batch里面的前景和背景ROI的数目"><span class="nav-number">1.4.6.2.</span> <span class="nav-text">2.控制mini_batch里面的前景和背景ROI的数目</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-计算proposal和groundtruth-boxes的偏移量，用于网络最后一层参数的学习。"><span class="nav-number">1.4.6.3.</span> <span class="nav-text">2.计算proposal和groundtruth boxes的偏移量，用于网络最后一层参数的学习。</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ROIPooling"><span class="nav-number">1.4.7.</span> <span class="nav-text">ROIPooling</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#计算classification-层损失"><span class="nav-number">1.4.8.</span> <span class="nav-text">计算classification 层损失</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Appendix-交叉熵损失的代码实现"><span class="nav-number">2.</span> <span class="nav-text">Appendix:交叉熵损失的代码实现</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

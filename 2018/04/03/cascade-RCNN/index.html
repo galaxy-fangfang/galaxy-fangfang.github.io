@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="Cascade RCNNAuthor:Lanfang Kong Email:kong875387859@outlook.com papercode 检测代码 CVPR2018的一篇论文，主要讲不同IOU阈值训练的级联检测器极大提升了目标检测的性能。">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cascade_RCNN">
+<meta property="og:url" content="http://yoursite.com/2018/04/03/cascade-RCNN/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="Cascade RCNNAuthor:Lanfang Kong Email:kong875387859@outlook.com papercode 检测代码 CVPR2018的一篇论文，主要讲不同IOU阈值训练的级联检测器极大提升了目标检测的性能。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/images/cascadeRCNN/1.png">
+<meta property="og:image" content="http://yoursite.com/images/cascadeRCNN/2.png">
+<meta property="og:image" content="http://yoursite.com/images/cascadeRCNN/3.png">
+<meta property="og:image" content="http://yoursite.com/images/cascadeRCNN/4.png">
+<meta property="og:image" content="http://yoursite.com/images/cascadeRCNN/5.png">
+<meta property="og:image" content="http://yoursite.com/images/cascadeRCNN/5.png">
+<meta property="og:image" content="http://yoursite.com/images/cascadeRCNN/6.png">
+<meta property="og:image" content="http://yoursite.com/images/cascadeRCNN/7.png">
+<meta property="og:image" content="http://yoursite.com/images/cascadeRCNN/9.png">
+<meta property="og:image" content="http://yoursite.com/images/cascadeRCNN/10.png">
+<meta property="og:updated_time" content="2019-07-14T07:17:35.955Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="cascade_RCNN">
+<meta name="twitter:description" content="Cascade RCNNAuthor:Lanfang Kong Email:kong875387859@outlook.com papercode 检测代码 CVPR2018的一篇论文，主要讲不同IOU阈值训练的级联检测器极大提升了目标检测的性能。">
+<meta name="twitter:image" content="http://yoursite.com/images/cascadeRCNN/1.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/04/03/cascade-RCNN/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>cascade_RCNN | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/03/cascade-RCNN/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">cascade_RCNN
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-04-03 09:53:18" itemprop="dateCreated datePublished" datetime="2018-04-03T09:53:18+08:00">2018-04-03</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:35" itemprop="dateModified" datetime="2019-07-14T15:17:35+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/" itemprop="url" rel="index"><span itemprop="name">paper</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/object-detection/" itemprop="url" rel="index"><span itemprop="name">object detection</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Cascade-RCNN"><a href="#Cascade-RCNN" class="headerlink" title="Cascade RCNN"></a>Cascade RCNN</h1><p>Author:Lanfang Kong</p>
+<p>Email:<a href="mailto:kong875387859@outlook.com" target="_blank" rel="noopener">kong875387859@outlook.com</a></p>
+<p><a href="https://arxiv.org/abs/1712.00726" target="_blank" rel="noopener">paper</a><br><a href="https://github.com/zhaoweicai/cascade-rcnn" target="_blank" rel="noopener">code</a></p>
+<p><a href="https://blog.csdn.net/e01528/article/details/80778562" target="_blank" rel="noopener">检测代码</a></p>
+<p>CVPR2018的一篇论文，主要讲不同IOU阈值训练的级联检测器极大提升了目标检测的性能。</p>
+<a id="more"></a>
+
+<h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p>目标检测中，使用IOU来定义正负样本。一个使用低IOU（比如0.5）训练的目标检测器通常会产生noise detection。但是，当IOU阈值上升，检测器的性能有会下降。原因是：</p>
+<ul>
+<li><strong>训练时过拟合</strong>。 因为IOU上升，正样本数呈指数下降。</li>
+<li>检测器最优的IOU和输入假设的IOU之间的<strong>前向推断时间不匹配。</strong></li>
+</ul>
+<p>CascadeRCNN是<strong>一个多阶段的检测框架，包括一组使用上升IOU训练的检测器，从而对close false positives更具有选择性。</strong>这组检测器是一个阶段接一个阶段训练的。通过<strong>重采样</strong>逐渐改进的假设，保证了所以检测器都能有相等数量的正样本，从而减少过拟合。 CascadeRCNN在COCO数据集上的性能比任何一个单模型的检测器都要好。</p>
+<h1 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h1><p>目标检测问题的两个任务：<strong>首先识别问题</strong>，在背景中把前景目标区分出来并且给他分配合适的类别标签；其次，<strong>必须解决定位问题</strong>，准确定位不同目标的边界框。<strong>检测器要处理许多close false positives</strong>(就是离得很近但是不是正确的边界框)。</p>
+<p><strong>two-stage detector</strong>:RCNN框架的，通常使用的IOU=0.5,最后的检测器会产生很多noise bounding box，如图1a。有很多人在一起的情况就会使得许多close false positives在前传时的IOU&gt;0.5.也就是说这个标准太单一化了。</p>
+<p>定义假设框和GT的IOU作为假设的quality，定义训练时候使用的IOU u作为detector的quality。本文的目的就是要研究高质量的检测器，能够输出很少的close false positives，如图1b。基本的idea是一个单独的detector只能对一个单个的quality level进行优化。在cost-sensitive 学习特征时，优化ROC曲线上不同点的优化需要考虑不同的损失函数。我们和他的不同就是考虑给定IOU的阈值进行优化，而不是false positive rate。</p>
+<p><img src="/images/cascadeRCNN/1.png" alt></p>
+<p>上图c,d中显示了我们使用不同IOU阈值训练的地三个检测器的定位和检测性能。</p>
+<p>图c:</p>
+<ol>
+<li>在图c中，横轴是输入proposal的IOU,纵轴是经过bbox回归之后的bbox和GT的IOU.</li>
+<li>可以看出，<strong>低IOU阈值训练对于低IOU的样本有更好的改善，但对于高IOU的样本就不如高阈值训练的有用。</strong></li>
+<li>所有的曲线都在灰色线上方，说明回归器的输出的IOU总是比输入的IOU好。</li>
+</ol>
+<p>图d:</p>
+<ol>
+<li><strong>图d显示阈值u=0.5的检测器的效果比u=0.6的检测器的效果在低IOU的样本上会更好</strong>。</li>
+</ol>
+<p>一般来说，在一个单一IOU上进行优化的检测器并不是在其他层次上都是最优的。也就是说，<strong>想要更高质量的检测，就需要检测器和假设之间更加接近的匹配。一般来说，检测器有了高质量的proposal之后才能拥有高质量的性能。</strong></p>
+<p>​    但是，简单的在训练中提高阈值并足够提高检测器的性能。但是当u=0.7的时候，性能却下降了。<strong>因为假设分布通常严重不均衡，倾向于低质量的样本。在训练时，使用更大的IOU往往会导致正样本的指数级下降。</strong></p>
+<p>​    本文的想法是，一个阶段的输出用来训练下一个阶段，因为回归器的输出的IOU总是比输入的IOU好。从图1c可以看出来，因为所有的曲线都在灰色线上方。<strong>这个跟boosttrapping很像，主要的不同是，cascade RCNN的重采样过程不是为了挖掘难样本，而是为了调整边界框，为训练下一个阶段挑选出一组好的close false positives。</strong> 这样可以避免过拟合。</p>
+<p>​    本文的方法只用了一个简单的思想牺牲了一些精度，就达到了大幅度的精度提升。</p>
+<h2 id="2-Related-Work"><a href="#2-Related-Work" class="headerlink" title="2.Related Work"></a>2.Related Work</h2><p>两阶段的目标检测方法：</p>
+<ol>
+<li>RCNN</li>
+<li>SPP-Net</li>
+<li>Fast RCNN</li>
+<li>Faster RCNN</li>
+<li>RFCN:提出了region-wise的全卷积且没有精度损失，避免了Faster RCNN中严重的region-wise的CNN计算。</li>
+<li>MS-CNN,FPN</li>
+</ol>
+<p>一阶段的目标检测方法：</p>
+<p><strong>这些方法的框架接近于滑动窗机制。。。。</strong></p>
+<ol>
+<li>YOLO：<strong>优点：</strong> 检测时候只用前传图片一次。实时但是精度一般。</li>
+<li>SSD:<strong>思想：</strong>类似RPN,但是使用不同分辨率的特征图来cover不同尺寸的目标。<strong>不足：</strong> 比两阶段精度低</li>
+<li>RetinaNet:<strong>解决了前景-背景的极度类别不均衡</strong>，比两阶段的结果好。</li>
+</ol>
+<p>多阶段的目标检测方法：</p>
+<ol>
+<li><a href="https://arxiv.org/abs/1505.01749" target="_blank" rel="noopener">Object detection via a multiregion and semantic segmentation-aware CNN model.</a> 迭代的边界框回归，来产生更好的边界框</li>
+<li>……</li>
+</ol>
+<h1 id="3-Object-detection"><a href="#3-Object-detection" class="headerlink" title="3.Object detection"></a>3.Object detection</h1><p>如下图a，第一阶段是个proposal sub-network(不知道咋翻译。。。。。)，<strong>H0</strong>,作用在整张输入图片上，产生原始的检测假设集合，也就是proposal。第二阶段，这些proposal被送入roi检测子网络<strong>H1</strong>,记做<strong>detection head</strong>。会给每个proposal分配一个<strong>分类分数C</strong>和一个<strong>边界框B</strong>.我们着重建模易分多阶段的<strong>detection sub-network</strong>检测子网络，且采用了不止RPN这一种网络来产生proposal。</p>
+<p><img src="/images/cascadeRCNN/2.png" alt></p>
+<h2 id="3-1-Bounding-box-regression"><a href="#3-1-Bounding-box-regression" class="headerlink" title="3.1 Bounding box regression"></a>3.1 Bounding box regression</h2><p>candidate bounding box:$\textbf{b}=(b_x,b_y,b_w,b_h)$ </p>
+<p>target bounding box:$\textbf{g}$</p>
+<p>回归器：$f(x,\textbf{b}_i)$ ,从一个训练样本${\textbf{g}_i,\textbf{b}_i}$学习，</p>
+<p>目标函数：<br>$$<br>R_{loc}[f]=\sum_{i=1}^NL_{loc}(f(x_i,\textbf{b}_i),\textbf{g}_i)\qquad(1)<br>$$<br>$L_loc$是$L_2$损失函数（RCNN中）。smooth$L_1$函数（FastRCNN中)。</p>
+<p><strong>为了使得回归对尺度和位置具有不变性</strong>，$L_{loc}$的作用对象是一个向量$\Delta=(\delta_x,\delta_y,delta_w,\delta_h)$定义如下：</p>
+<p><img src="/images/cascadeRCNN/3.png" alt></p>
+<p>边界框回归在执行的时候，对$b$的调整都是很微小的，因此这里的risk比分类的risk小的多（risk是什么意思啊……风险？？？）。<strong>为了提高多任务学习的效率，$\Delta$被归一化了（均值方差）</strong>。$\delta_x’=(\delta_x-\mu_x)/\sigma_x$ .</p>
+<h3 id="iterative-BBox-迭代的边界框回归方法"><a href="#iterative-BBox-迭代的边界框回归方法" class="headerlink" title="iterative BBox:迭代的边界框回归方法"></a>iterative BBox:迭代的边界框回归方法</h3><p>有些人认为，我们的回归步长$f$设的太小了对于精确定位不够。于是，$f$是迭代应用的，作为后处理步骤。<br>$$<br>f’(x,\textbf{b}=f<em>f</em>……*f(x,\textbf{b}))\qquad(3)<br>$$<br>来微调边界框$\textbf{b}$,这叫做迭代的边界框回归，记作<code>iterative BBox</code> .推断框架如图3(b)，其中，所有的head网络都一样。但是有两个问题：</p>
+<ol>
+<li>如图1，回归器$f$是在阈值$u=0.5$训练的，对于更高的IOU的假设集合来说不是最优的。对于IOU大于0.85的边界框来说拉低了性能。</li>
+<li>如图2，边界框的分布在每一次迭代后会变换剧烈。回归其对初始的分布来说是最优的，但是之后的就不是。</li>
+</ol>
+<p><img src="/images/cascadeRCNN/4.png" alt></p>
+<p><strong>缺点：</strong> 需要大量人工，比如proposal 积累，box投票。还没啥用，通常迭代liangci$f$就不会有用了。</p>
+<h2 id="3-2Classification"><a href="#3-2Classification" class="headerlink" title="3.2Classification"></a>3.2Classification</h2><p>分类器：$h(x)$.是$M+1$维的，是类别的后验分布的估计。例如：$h_k(x)=p(y=k|x)$. 其中，$y$是类别标签。分类任务：<br>$$<br>R_{cls}[h]=\sum_{i=1}^NL_{cls}(h(x_i),y_i)<br>$$<br>其中$L_{cls}$是交叉熵损失。</p>
+<h2 id="3-3Detection-quality"><a href="#3-3Detection-quality" class="headerlink" title="3.3Detection quality"></a>3.3Detection quality</h2><p>一般一个边界框包含目标和背景，很难区分是正样本还是负样本。通常设定IOU阈值来确定：<br>$$<br>y=\begin{cases}g_y,\quad IoU(x,g)\ge u\0,\quad otherwise\end{cases}\qquad(5)<br>$$<br>$g_y$是GT $g$的类别标签</p>
+<h3 id="u的设置矛盾："><a href="#u的设置矛盾：" class="headerlink" title="u的设置矛盾："></a>u的设置矛盾：</h3><p><strong>当u大的时候，正样本包含的背景少，但是很难集合足够多的正样本训练样本。</strong></p>
+<p><strong>当u小的时候，有更加丰富的多样的正样本训练集合，但是检测器会更难区分排除close false positives.</strong></p>
+<p>一般来说，很难让单个的分类器在所有IOU上表现的一样。前向推理时，因为RPN汇总selective search产生的大部分proposal都是低质量的，因此后面的检测器需要更具有判别能力。一个这种的做法就是设置$u=0.5$。但是这个阈值很低，使得检测的质量不高，就像图1(a)中的close false positives.</p>
+<h3 id="integral-loss-整行不同IOU阈值下的分类损失："><a href="#integral-loss-整行不同IOU阈值下的分类损失：" class="headerlink" title="integral loss:整行不同IOU阈值下的分类损失："></a>integral loss:整行不同IOU阈值下的分类损失：</h3><p>一种简单的做法就是图1(c).提出一种分类器集合。优化不同quality level的损失。<br>$$<br>L_{loc}(h(x),y)=\sum_{u\in U}L_{cls}(h_u(x),y_u),\quad(6)<br>$$<br>其中$U$是IOU阈值的集合。比如$U={0.5,0.55,……,0.75}$. 这是为了适应COCO的评价方式。</p>
+<p><strong>缺点：</strong> </p>
+<ul>
+<li>没能解决<strong>不同正样本数量下损失不同的问题。</strong></li>
+</ul>
+<ul>
+<li>如图4中第一张图所示，<strong>u升高的话正样本数目会很快减少</strong>。会导致<strong>过拟合。</strong></li>
+<li><strong>前向推断时</strong>，需要处理大量低质量的proposal，不是他们在训练时候优化的那种。</li>
+</ul>
+<p>这种方法提升微乎其微。</p>
+<p><img src="/images/cascadeRCNN/5.png" alt></p>
+<h1 id="4-Cascade-RCNN"><a href="#4-Cascade-RCNN" class="headerlink" title="4.Cascade RCNN"></a>4.Cascade RCNN</h1><h2 id="4-1Cascaded-bounding-box-regression"><a href="#4-1Cascaded-bounding-box-regression" class="headerlink" title="4.1Cascaded bounding box regression"></a><strong>4.1Cascaded bounding box regression</strong></h2><p>经cascade pose regression和face alignment激发，提出了级联RCNN.</p>
+<p>如图3(d):<br>$$<br>f(x,\textbf{b}=f_T<em>f_{T-1}</em>……*f_1(x,\textbf{b})),\qquad(7)<br>$$<br>$T$是总共的级联数目。注意每个回归器$f_t$是由到达相应阶段的采样分布来优化的，不是初始的分布{$\textbf{b}^1$}.</p>
+<h3 id="与iterative-bbox不一样："><a href="#与iterative-bbox不一样：" class="headerlink" title="与iterative bbox不一样："></a>与iterative bbox不一样：</h3><ol>
+<li>iterative Bbox框架如图3(b)，是一个后处理的过程，<strong>而级联回归则是重采样的过程，改变了不同阶段的假设分布。</strong></li>
+<li>在<strong>训练和前向推断时候都要用到，因此两个阶段没有差别矛盾</strong>（也就是说前向时候不会出现大量的close false positives,比训练的时候多得多的情况)。 </li>
+<li>回归器$f_T,f_{T-1},……，f_1$,是在<strong>不同阶段对重采样后的分布进行优化的，和式子(3)有本质不一样</strong>(式3是支队初始分布进行优化)。</li>
+</ol>
+<p>这种方法使得毕iterative bbox有更加准确的定位。</p>
+<p>同时，为了多任务学习的效率，每个阶段的$\Delta=(\delta_x,\delta_y,\delta_w,\delta_h)$ 在式2中都是经过均值方差归一化的。每次回归过程之后，这些数据也会变化，就像图2所示。在训练时，这些数据就会用来归一化每个阶段的$\Delta$.</p>
+<h2 id="4-2Cascaded-Detection"><a href="#4-2Cascaded-Detection" class="headerlink" title="4.2Cascaded Detection"></a>4.2Cascaded Detection</h2><p><img src="/images/cascadeRCNN/5.png" alt></p>
+<p>如图4左边，初始假设集的分布是RPN的proposal，倾向于低质量的proposal。</p>
+<p>cascade RCNN通过<code>resampling mechanism</code>来解决这一问题。<strong>基于事实：图1c中所示，所有的曲线都在对角灰色线的上方，也就是说一个特定$u$训练的边界框回归器往往能够产生更高IoU的边界框。</strong>因此，开始时样本集合$(x_i,\textbf{b}_i)$,级联的回归器能够重采样一个更高IoU的样本分布。所以可以将连续阶段的正样本的尺寸保持固定。</p>
+<p>如图4后，每次重采样之后，分布会朝向高质量的样本。</p>
+<ol>
+<li><strong>不再有过拟合</strong>，因为每个阶段的样本都很充足</li>
+<li><strong>更深阶段的检测器使用更高的IOU进行优化</strong></li>
+<li>在图2中可以看出来，<strong>一些异常点会被删除</strong>，使得训练的检测器更好</li>
+</ol>
+<p>每个阶段$t$，RCNN包含了一个<strong>分类器</strong>$h_t$和一个<strong>回归器</strong>$f_t$，优化的阈值是$u^t$,且$u^t&gt;u^{t-1}$, 优化以下损失可以保证这一点：<br>$$<br>L(x^t,g)=L_{cls}(h_t(x^t),y^t)+\lambda[y^t&gt;=1]L_<a href="f_t(x^t,\textbf{b}^t),g">loc</a>,\qquad(8)<br>$$<br>其中$\textbf{b}^t=f_{t-1}(x_{t-1},\textbf{b}^{t-1})$, $g$是$x^t$的ground truth的目标。$\lambda=1$.并且$y^t$是给定$u^t$下$x^t$的标签(式5)。不像<code>intergral loss</code> 式(6)，这点能够保证训练的检测器质量越来越高。<strong>在前向推断时，由于应用了级联检测器，假设集合的质量也在逐渐提高，并且高质量的检测器只会作用于高质量的假设集合上。</strong></p>
+<h1 id="5-实验结果"><a href="#5-实验结果" class="headerlink" title="5.实验结果"></a>5.实验结果</h1><p>MS-COCO2017有118k张训练图片，5k张验证集和20k的测试集。COCO在测评的时候通常使用IOU(0.5~0.95)阈值来计算平均精确度，间隔为0.05.</p>
+<h2 id="5-1实现细节"><a href="#5-1实现细节" class="headerlink" title="5.1实现细节"></a>5.1实现细节</h2><p>为了简单，所有的回归器都不考虑类别。<strong>所有的级联的检测阶段都有相同的架构。cascade RCNN总共有4个阶段：一个RPN和3个检测阶段</strong> 。($U={0.5,0.6,0.7}$).第一个检测阶段的采用和Faster RCNN中一样，下面的两个阶段，重采样是由之前阶段回归器的输出实现，和4.2节一样。数据增强只是用了水平翻转。前向推断实在单一的图像尺寸上实现。</p>
+<h3 id="5-1-1基础网络"><a href="#5-1-1基础网络" class="headerlink" title="5.1.1基础网络"></a>5.1.1基础网络</h3><p>Faster RCNN(VGG-net)</p>
+<p>R-FCN,FPN(ResNet)</p>
+<p>都是end-to-end training</p>
+<p>各实现细节见论文。。。</p>
+<h2 id="5-2Quality-Mismatch"><a href="#5-2Quality-Mismatch" class="headerlink" title="5.2Quality Mismatch"></a>5.2Quality Mismatch</h2><p><img src="/images/cascadeRCNN/6.png" alt></p>
+<p>该图5(a)显示的是使用上升阈值$U=0.5，0.6，0.7$单独训练的检测器的AP曲线。$u=0.5$训练的检测器在IOU低的阶段比$u=0.6$的效果好，但是在高iou时效果降低了。$u=0.7$训练的检测器效果比其他两个都差。</p>
+<p>图5b显示了当groundtruth proposal加入时，的结果。所有的检测器都提升了，且$u=0.7$是提升的最多的。由此可知：</p>
+<ol>
+<li>$u=0.5$对于精确检测来说不适用，只是对低质量的proposal来说比较鲁棒。</li>
+<li>高精度的检测器需要高质量的假设来匹配</li>
+</ol>
+<p><img src="/images/cascadeRCNN/7.png" alt></p>
+<p>如图6，联合训练的检测器比单独训练的精度要高(图5a).</p>
+<h2 id="5-3和iterative-bbox-回归比较"><a href="#5-3和iterative-bbox-回归比较" class="headerlink" title="5.3和iterative bbox 回归比较"></a>5.3和iterative bbox 回归比较</h2><p><img src="/images/cascadeRCNN/9.png" alt></p>
+<h2 id="5-4和其他方法比较"><a href="#5-4和其他方法比较" class="headerlink" title="5.4和其他方法比较"></a>5.4和其他方法比较</h2><p><img src="/images/cascadeRCNN/10.png" alt></p>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/28/Mask-RCNN/" rel="next" title="Mask_RCNN">
+                <i class="fa fa-chevron-left"></i> Mask_RCNN
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/22/rfcn/" rel="prev" title="rfcn">
+                rfcn <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Cascade-RCNN"><span class="nav-number">1.</span> <span class="nav-text">Cascade RCNN</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#摘要"><span class="nav-number">2.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#引言"><span class="nav-number">3.</span> <span class="nav-text">引言</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Related-Work"><span class="nav-number">3.1.</span> <span class="nav-text">2.Related Work</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-Object-detection"><span class="nav-number">4.</span> <span class="nav-text">3.Object detection</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-Bounding-box-regression"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 Bounding box regression</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#iterative-BBox-迭代的边界框回归方法"><span class="nav-number">4.1.1.</span> <span class="nav-text">iterative BBox:迭代的边界框回归方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2Classification"><span class="nav-number">4.2.</span> <span class="nav-text">3.2Classification</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3Detection-quality"><span class="nav-number">4.3.</span> <span class="nav-text">3.3Detection quality</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#u的设置矛盾："><span class="nav-number">4.3.1.</span> <span class="nav-text">u的设置矛盾：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#integral-loss-整行不同IOU阈值下的分类损失："><span class="nav-number">4.3.2.</span> <span class="nav-text">integral loss:整行不同IOU阈值下的分类损失：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-Cascade-RCNN"><span class="nav-number">5.</span> <span class="nav-text">4.Cascade RCNN</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-1Cascaded-bounding-box-regression"><span class="nav-number">5.1.</span> <span class="nav-text">4.1Cascaded bounding box regression</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#与iterative-bbox不一样："><span class="nav-number">5.1.1.</span> <span class="nav-text">与iterative bbox不一样：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-2Cascaded-Detection"><span class="nav-number">5.2.</span> <span class="nav-text">4.2Cascaded Detection</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-实验结果"><span class="nav-number">6.</span> <span class="nav-text">5.实验结果</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#5-1实现细节"><span class="nav-number">6.1.</span> <span class="nav-text">5.1实现细节</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-1基础网络"><span class="nav-number">6.1.1.</span> <span class="nav-text">5.1.1基础网络</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-2Quality-Mismatch"><span class="nav-number">6.2.</span> <span class="nav-text">5.2Quality Mismatch</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-3和iterative-bbox-回归比较"><span class="nav-number">6.3.</span> <span class="nav-text">5.3和iterative bbox 回归比较</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-4和其他方法比较"><span class="nav-number">6.4.</span> <span class="nav-text">5.4和其他方法比较</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

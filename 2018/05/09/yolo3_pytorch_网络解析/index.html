@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="YOLO3代码讲解">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="yolov3_PyTorch">
+<meta property="og:url" content="http://yoursite.com/2018/05/09/yolo3_pytorch_网络解析/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="YOLO3代码讲解">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-07-14T07:17:28.974Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="yolov3_PyTorch">
+<meta name="twitter:description" content="YOLO3代码讲解">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/05/09/yolo3_pytorch_网络解析/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>yolov3_PyTorch | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/09/yolo3_pytorch_网络解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">yolov3_PyTorch
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-05-09 17:26:33" itemprop="dateCreated datePublished" datetime="2018-05-09T17:26:33+08:00">2018-05-09</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:28" itemprop="dateModified" datetime="2019-07-14T15:17:28+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/code/" itemprop="url" rel="index"><span itemprop="name">code</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/code/yolov3/" itemprop="url" rel="index"><span itemprop="name">yolov3</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>YOLO3代码讲解</p>
+<a id="more"></a>
+
+<p><a href="https://blog.paperspace.com/how-to-implement-a-yolo-object-detector-in-pytorch/" target="_blank" rel="noopener">reference</a></p>
+<h1 id="1-yolov3-cfg"><a href="#1-yolov3-cfg" class="headerlink" title="1.yolov3.cfg"></a>1.yolov3.cfg</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">[convolutional]</span><br><span class="line">batch_normalize=<span class="number">1</span></span><br><span class="line">filters=<span class="number">64</span></span><br><span class="line">size=<span class="number">3</span></span><br><span class="line">stride=<span class="number">2</span></span><br><span class="line">pad=<span class="number">1</span></span><br><span class="line">activation=leaky</span><br><span class="line"></span><br><span class="line">[convolutional]</span><br><span class="line">batch_normalize=<span class="number">1</span></span><br><span class="line">filters=<span class="number">32</span></span><br><span class="line">size=<span class="number">1</span></span><br><span class="line">stride=<span class="number">1</span></span><br><span class="line">pad=<span class="number">1</span></span><br><span class="line">activation=leaky</span><br><span class="line"></span><br><span class="line">[convolutional]</span><br><span class="line">batch_normalize=<span class="number">1</span></span><br><span class="line">filters=<span class="number">64</span></span><br><span class="line">size=<span class="number">3</span></span><br><span class="line">stride=<span class="number">1</span></span><br><span class="line">pad=<span class="number">1</span></span><br><span class="line">activation=leaky</span><br><span class="line"></span><br><span class="line">[shortcut]</span><br><span class="line">from=<span class="number">-3</span></span><br><span class="line">activation=linear</span><br></pre></td></tr></table></figure>
+
+<p>在YOLO3的配置文件中，有5种类型的层：</p>
+<p><strong>convolutional</strong>,  </p>
+<p><strong>shortcut</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[shortcut]</span><br><span class="line">from=<span class="number">-3</span>  </span><br><span class="line">activation=linear</span><br></pre></td></tr></table></figure>
+
+<p>就是skip connection层，就行resnet用的，from -3的意思是该层输出是由前一层和前三层的输出<strong>叠加</strong>产生的。</p>
+<p><strong>upsample</strong>  </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[upsample]</span><br><span class="line">stride=<span class="number">2</span></span><br></pre></td></tr></table></figure>
+
+<p>双线性插值，因子为2</p>
+<p><strong>Route</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[route]</span><br><span class="line">layers = -4</span><br><span class="line"></span><br><span class="line">[route]</span><br><span class="line">layers = -1, 61</span><br></pre></td></tr></table></figure>
+
+<p>如果属性layer有一个值，表示这层输出的是前第4层的特征图。</p>
+<p>如果layer有两个值，表示这层输出的是这两个层通道拼接的特征图。</p>
+<p><strong>Yolo</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[yolo]</span><br><span class="line">mask = 0,1,2</span><br><span class="line">anchors = 10,13,  16,30,  33,23,  30,61,  62,45,  59,119,  116,90,  156,198,  373,326</span><br><span class="line">classes=80</span><br><span class="line">num=9</span><br><span class="line">jitter=.3</span><br><span class="line">ignore_thresh = .5</span><br><span class="line">truth_thresh = 1</span><br><span class="line">random=1</span><br></pre></td></tr></table></figure>
+
+<p>YOLO层代表了之前描述的Detection层，<code>anchor</code>表示9种anchor，但是只有被<code>mask</code>索引的anchor才会被用到。比如这里是0，1，2，表示第1，2，3个anchor会被用到。在detection层每个cell预测3个box,在3个尺度上预测，最后有9个anchor。</p>
+<p><strong>net</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[net]</span><br><span class="line"># Testing</span><br><span class="line">batch=1</span><br><span class="line">subdivisions=1</span><br><span class="line"># Training</span><br><span class="line"># batch=64</span><br><span class="line"># subdivisions=16</span><br><span class="line">width= 320</span><br><span class="line">height = 320</span><br><span class="line">channels=3</span><br><span class="line">momentum=0.9</span><br><span class="line">decay=0.0005</span><br><span class="line">angle=0</span><br><span class="line">saturation = 1.5</span><br><span class="line">exposure = 1.5</span><br><span class="line">hue=.1</span><br></pre></td></tr></table></figure>
+
+<p>下配置文件最开始有<code>net</code>层，描述了输入网络的参数信息。在前传时并没有用到。</p>
+<h1 id="2-create-module"><a href="#2-create-module" class="headerlink" title="2.create module"></a>2.create module</h1><h2 id="1-convolutional-layers"><a href="#1-convolutional-layers" class="headerlink" title="1.convolutional layers"></a>1.convolutional layers</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (x[<span class="string">"type"</span>] == <span class="string">"convolutional"</span>):</span><br><span class="line">            <span class="comment">#Get the info about the layer</span></span><br><span class="line">            activation = x[<span class="string">"activation"</span>]</span><br><span class="line">            <span class="keyword">try</span>:</span><br><span class="line">                batch_normalize = int(x[<span class="string">"batch_normalize"</span>])</span><br><span class="line">                bias = <span class="literal">False</span></span><br><span class="line">            <span class="keyword">except</span>:</span><br><span class="line">                batch_normalize = <span class="number">0</span></span><br><span class="line">                bias = <span class="literal">True</span></span><br><span class="line"></span><br><span class="line">            filters= int(x[<span class="string">"filters"</span>])</span><br><span class="line">            padding = int(x[<span class="string">"pad"</span>])</span><br><span class="line">            kernel_size = int(x[<span class="string">"size"</span>])</span><br><span class="line">            stride = int(x[<span class="string">"stride"</span>])</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> padding:</span><br><span class="line">                pad = (kernel_size - <span class="number">1</span>) // <span class="number">2</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                pad = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">#Add the convolutional layer</span></span><br><span class="line">            conv = nn.Conv2d(prev_filters, filters, kernel_size, stride, pad, bias = bias)</span><br><span class="line">            module.add_module(<span class="string">"conv_&#123;0&#125;"</span>.format(index), conv)</span><br><span class="line"></span><br><span class="line">            <span class="comment">#Add the Batch Norm Layer</span></span><br><span class="line">            <span class="keyword">if</span> batch_normalize:</span><br><span class="line">                bn = nn.BatchNorm2d(filters)</span><br><span class="line">                module.add_module(<span class="string">"batch_norm_&#123;0&#125;"</span>.format(index), bn)</span><br><span class="line"></span><br><span class="line">            <span class="comment">#Check the activation. </span></span><br><span class="line">            <span class="comment">#It is either Linear or a Leaky ReLU for YOLO</span></span><br><span class="line">            <span class="keyword">if</span> activation == <span class="string">"leaky"</span>:</span><br><span class="line">                activn = nn.LeakyReLU(<span class="number">0.1</span>, inplace = <span class="literal">True</span>)</span><br><span class="line">                module.add_module(<span class="string">"leaky_&#123;0&#125;"</span>.format(index), activn)</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-upsample"><a href="#2-upsample" class="headerlink" title="2.upsample"></a>2.upsample</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#If it's an upsampling layer</span></span><br><span class="line">       <span class="comment">#We use Bilinear2dUpsampling</span></span><br><span class="line">       <span class="keyword">elif</span> (x[<span class="string">"type"</span>] == <span class="string">"upsample"</span>):</span><br><span class="line">           stride = int(x[<span class="string">"stride"</span>])</span><br><span class="line">           upsample = nn.Upsample(scale_factor = <span class="number">2</span>, mode = <span class="string">"bilinear"</span>)</span><br><span class="line">           module.add_module(<span class="string">"upsample_&#123;&#125;"</span>.format(index), upsample)</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-yolo"><a href="#3-yolo" class="headerlink" title="3.yolo"></a>3.yolo</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#Yolo is the detection layer</span></span><br><span class="line">        <span class="keyword">elif</span> x[<span class="string">"type"</span>] == <span class="string">"yolo"</span>:</span><br><span class="line">            mask = x[<span class="string">"mask"</span>].split(<span class="string">","</span>)</span><br><span class="line">            mask = [int(x) <span class="keyword">for</span> x <span class="keyword">in</span> mask]</span><br><span class="line"></span><br><span class="line">            anchors = x[<span class="string">"anchors"</span>].split(<span class="string">","</span>)</span><br><span class="line">            anchors = [int(a) <span class="keyword">for</span> a <span class="keyword">in</span> anchors]</span><br><span class="line">            anchors = [(anchors[i], anchors[i+<span class="number">1</span>]) <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>, len(anchors),<span class="number">2</span>)]</span><br><span class="line">            anchors = [anchors[i] <span class="keyword">for</span> i <span class="keyword">in</span> mask]</span><br><span class="line"></span><br><span class="line">            detection = DetectionLayer(anchors)</span><br><span class="line">            module.add_module(<span class="string">"Detection_&#123;&#125;"</span>.format(index), detection)</span><br></pre></td></tr></table></figure>
+
+<p>yolo就是检测层，分别在82，94，106层上</p>
+<h1 id="3-输出处理"><a href="#3-输出处理" class="headerlink" title="3.输出处理"></a>3.输出处理</h1><p>中心坐标，objectness score经过sigmod函数变到0-1之间：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">#Sigmoid the  centre_X, centre_Y. and object confidencce</span></span><br><span class="line">prediction[:,:,<span class="number">0</span>] = torch.sigmoid(prediction[:,:,<span class="number">0</span>])<span class="comment">#tx,ty,tw,th,p0,p1,.....,pc</span></span><br><span class="line">prediction[:,:,<span class="number">1</span>] = torch.sigmoid(prediction[:,:,<span class="number">1</span>])</span><br><span class="line">prediction[:,:,<span class="number">4</span>] = torch.sigmoid(prediction[:,:,<span class="number">4</span>])</span><br></pre></td></tr></table></figure>
+
+<p>给中心坐标加上网格偏移：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#Add the center offsets</span></span><br><span class="line">   grid = np.arange(grid_size)</span><br><span class="line">   a,b = np.meshgrid(grid, grid)</span><br><span class="line"></span><br><span class="line">   x_offset = torch.FloatTensor(a).view(<span class="number">-1</span>,<span class="number">1</span>)</span><br><span class="line">   y_offset = torch.FloatTensor(b).view(<span class="number">-1</span>,<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">   <span class="keyword">if</span> CUDA:</span><br><span class="line">       x_offset = x_offset.cuda()</span><br><span class="line">       y_offset = y_offset.cuda()</span><br><span class="line"></span><br><span class="line">   x_y_offset = torch.cat((x_offset, y_offset), <span class="number">1</span>).repeat(<span class="number">1</span>,num_anchors).view(<span class="number">-1</span>,<span class="number">2</span>).unsqueeze(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">   prediction[:,:,:<span class="number">2</span>] += x_y_offset</span><br></pre></td></tr></table></figure>
+
+<p>class score进行sigmod:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">prediction[:,:,<span class="number">5</span>: <span class="number">5</span> + num_classes] = torch.sigmoid((prediction[:,:, <span class="number">5</span> : <span class="number">5</span> + num_classes]))</span><br></pre></td></tr></table></figure>
+
+<p>把检测特征图变成输入图片大小，</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">prediction[:,:,:<span class="number">4</span>] *= stride</span><br></pre></td></tr></table></figure>
+
+<p>最后把不同尺度的检测特征图拼接到一个大的tensor上，</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#Transform </span></span><br><span class="line">           x = x.data</span><br><span class="line">           x = predict_transform(x, inp_dim, anchors, num_classes, CUDA)</span><br><span class="line">           <span class="keyword">if</span> <span class="keyword">not</span> write:              <span class="comment">#if no collector has been intialised. </span></span><br><span class="line">               detections = x</span><br><span class="line">               write = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">           <span class="keyword">else</span>:       </span><br><span class="line">               detections = torch.cat((detections, x), <span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<p>最后输出的prediction维度为</p>
+<p>$$1,10647,85$$</p>
+<p>1-d:一个batch内的图片索引</p>
+<p>2-d: $13\times13\times3+26\times26\times3+52\times52\times3=10647$</p>
+<p>3-d: x,y,w,h,objrctness_score,class_score</p>
+<h1 id="4-做非极大值抑制。"><a href="#4-做非极大值抑制。" class="headerlink" title="4.做非极大值抑制。"></a>4.做非极大值抑制。</h1><p><strong>1.先做object confidence的阈值抑制：</strong></p>
+<p>预测的tensor中包含$B\times10647$个hound ing box.   objectness score低于阈值<strong>0.5</strong>的，把他的每个属性，即代表这个bounding box的整行都置为0.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">conf_mask = (prediction[:,:,<span class="number">4</span>] &gt; onfidence).float().unsqueeze(<span class="number">2</span>)</span><br><span class="line"><span class="comment">#prediction[:,:,4] &gt; onfidence:维度是【1，10647】</span></span><br><span class="line"><span class="comment">#unsequeeze后变成【1，10647，1】</span></span><br><span class="line"></span><br><span class="line">prediction = prediction*conf_mask</span><br></pre></td></tr></table></figure>
+
+<p><strong>2.把坐标（x,y,w,h)转换成（x1,y1,x2,y2)形式</strong></p>
+<p><strong>3.objectness_score和class_score处理</strong></p>
+<p>因为batch里面每张图片的真实检测个数可能不一样，所以每次只能执行一次非极大值抑制。<strong>也就是说，不能向量化这个非极大值抑制的操作</strong>。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">batch_size = prediction.size(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"> write = <span class="literal">False</span></span><br><span class="line"></span><br><span class="line"> <span class="keyword">for</span> ind <span class="keyword">in</span> range(batch_size):</span><br><span class="line">     image_pred = prediction[ind]          <span class="comment">#image Tensor,10647boxes,维度是：10647*85</span></span><br><span class="line">        <span class="comment">#confidence threshholding </span></span><br><span class="line">        <span class="comment">#NMS</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>write</strong>标志表示我们还没初始化输出，output.</p>
+<p>先关心calss score最大的，也就是那【5：5+class_numbers】中最大的。从每行中把那80个类别分数抹掉，加上分数最高的类别索引，和该类别的分数。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">  max_conf, max_conf_score = torch.max(image_pred[:,<span class="number">5</span>:<span class="number">5</span>+ num_classes], <span class="number">1</span>)<span class="comment">#torch.max()返回两个值，一个是最大值，另一个是索引值。函数第二个参数为1表示按行取最大值并返回对应的索引值。</span></span><br><span class="line"><span class="comment">#两个变成了10647维的向量</span></span><br><span class="line"><span class="comment">#max_conf:最大的分数</span></span><br><span class="line"><span class="comment">#max_conf_score:对应的类别索引</span></span><br><span class="line"></span><br><span class="line">    max_conf = max_conf.float().unsqueeze(<span class="number">1</span>)</span><br><span class="line">    <span class="comment">#squeeze函数，参数为0，1分别表示第一维度和第二维度。sequeeze(0)表示如果第一维度为1，而去掉，否则不变。比如b.size()=[1,3]则可以去掉1变成[3]。</span></span><br><span class="line">    <span class="comment">#unsequeeze同理。作用相反。unsequeeze(1)表示如果第二维度为0，则添加变成1.比如max_conf.size()=[10647]-&gt;[10647,1]</span></span><br><span class="line">    </span><br><span class="line">    max_conf_score = max_conf_score.float().unsqueeze(<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">    seq = (image_pred[:,:<span class="number">5</span>], max_conf, max_conf_score)</span><br><span class="line">    <span class="comment">#seq:10647*[5,1,1]</span></span><br><span class="line">    <span class="comment">#seq:0-4:x,y,w,h,objectness score,</span></span><br><span class="line"> </span><br><span class="line">    image_pred = torch.cat(seq, <span class="number">1</span>)</span><br><span class="line"><span class="comment">#torch.cat(,1)表示在第一维度上拼接，</span></span><br><span class="line"><span class="comment">#seq:10647*[5,1,1]-&gt;image_pred:10647*7</span></span><br></pre></td></tr></table></figure>
+
+<p>之前已经把objetness_score&lt;0.5行都置为0了，现在去掉他们，也就是去掉这些bounding box.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">    non_zero_ind =  (torch.nonzero(image_pred[:,<span class="number">4</span>]))</span><br><span class="line"><span class="comment">#【10647，1】-&gt;【15，1】只有15个box剩下来了</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        image_pred_ = image_pred[non_zero_ind.squeeze(),:].view(<span class="number">-1</span>,<span class="number">7</span>)</span><br><span class="line">        <span class="comment">#【10647，7】</span></span><br><span class="line">        <span class="comment">#image_pred_就是这15个box的类别【17，17，……，17】都是狗</span></span><br><span class="line">      </span><br><span class="line">    <span class="keyword">except</span>:</span><br><span class="line">        <span class="keyword">continue</span></span><br><span class="line">            <span class="comment">#Get the various classes detected in the image</span></span><br><span class="line">    img_classes = unique(image_pred_[:,<span class="number">-1</span>])</span><br><span class="line">    <span class="comment">#去重,得到检测出的类别</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">#For PyTorch 0.4 compatibility</span></span><br><span class="line">    <span class="comment">#Since the above code with not raise exception for no detection </span></span><br><span class="line">    <span class="comment">#as scalars are supported in PyTorch 0.4</span></span><br><span class="line">    <span class="keyword">if</span> image_pred_.shape[<span class="number">0</span>] == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">continue</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>4.然后执行非极大值抑制</strong></p>
+<p>首先提取出检测到的类别的detection。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> cls <span class="keyword">in</span> img_classes:</span><br><span class="line">    <span class="comment">#get the detections with one particular class</span></span><br><span class="line">    cls_mask = image_pred_*(image_pred_[:,<span class="number">-1</span>] == cls).float().unsqueeze(<span class="number">1</span>)</span><br><span class="line">    class_mask_ind = torch.nonzero(cls_mask[:,<span class="number">-2</span>]).squeeze()</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">    image_pred_class = image_pred_[class_mask_ind].view(<span class="number">-1</span>,<span class="number">7</span>)</span><br></pre></td></tr></table></figure>
+
+<p>根据objectness_score从高到低排序：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">conf_sort_index = torch.sort(image_pred_class[:,<span class="number">4</span>], descending = <span class="literal">True</span> )[<span class="number">1</span>]</span><br><span class="line">image_pred_class = image_pred_class[conf_sort_index]</span><br><span class="line">idx = image_pred_class.size(<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+
+<p>计算IOU的函数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">bbox_iou</span><span class="params">(box1, box2)</span>:</span></span><br><span class="line">    <span class="comment">#Get the coordinates of bounding boxes</span></span><br><span class="line">    b1_x1, b1_y1, b1_x2, b1_y2 = box1[:,<span class="number">0</span>], box1[:,<span class="number">1</span>], box1[:,<span class="number">2</span>], box1[:,<span class="number">3</span>]</span><br><span class="line">    b2_x1, b2_y1, b2_x2, b2_y2 = box2[:,<span class="number">0</span>], box2[:,<span class="number">1</span>], box2[:,<span class="number">2</span>], box2[:,<span class="number">3</span>]</span><br><span class="line"></span><br><span class="line">    <span class="comment">#get the corrdinates of the intersection rectangle</span></span><br><span class="line">    inter_rect_x1 =  torch.max(b1_x1, b2_x1)</span><br><span class="line">    inter_rect_y1 =  torch.max(b1_y1, b2_y1)</span><br><span class="line">    inter_rect_x2 =  torch.min(b1_x2, b2_x2)</span><br><span class="line">    inter_rect_y2 =  torch.min(b1_y2, b2_y2)</span><br><span class="line"></span><br><span class="line">    <span class="comment">#Intersection area</span></span><br><span class="line">    <span class="keyword">if</span> torch.cuda.is_available():</span><br><span class="line">            inter_area = torch.max(inter_rect_x2 - inter_rect_x1 + <span class="number">1</span>,torch.zeros(inter_rect_x2.shape).cuda())*torch.max(inter_rect_y2 - inter_rect_y1 + <span class="number">1</span>, torch.zeros(inter_rect_x2.shape).cuda())</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">            inter_area = torch.max(inter_rect_x2 - inter_rect_x1 + <span class="number">1</span>,torch.zeros(inter_rect_x2.shape))*torch.max(inter_rect_y2 - inter_rect_y1 + <span class="number">1</span>, torch.zeros(inter_rect_x2.shape))</span><br><span class="line"></span><br><span class="line">    <span class="comment">#Union Area</span></span><br><span class="line">    b1_area = (b1_x2 - b1_x1 + <span class="number">1</span>)*(b1_y2 - b1_y1 + <span class="number">1</span>)</span><br><span class="line">    b2_area = (b2_x2 - b2_x1 + <span class="number">1</span>)*(b2_y2 - b2_y1 + <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    iou = inter_area / (b1_area + b2_area - inter_area)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> iou</span><br></pre></td></tr></table></figure>
+
+<p><strong>非极大值抑制</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> nms:</span><br><span class="line">    <span class="comment">#For each detection</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(idx):</span><br><span class="line">        <span class="comment">#Get the IOUs of all boxes that come after the one we are looking at </span></span><br><span class="line">        <span class="comment">#in the loop</span></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="comment">#计算第i个box的iou值</span></span><br><span class="line">            ious = bbox_iou(image_pred_class[i].unsqueeze(<span class="number">0</span>), image_pred_class[i+<span class="number">1</span>:])</span><br><span class="line">           <span class="comment">#第i个box和其他的box求ious</span></span><br><span class="line">        </span><br><span class="line">            <span class="keyword">except</span> ValueError:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">                <span class="keyword">except</span> IndexError:</span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">                    <span class="comment">#Zero out all the detections that have IoU &gt; treshhold</span></span><br><span class="line">                    iou_mask = (ious &lt; nms_conf).float().unsqueeze(<span class="number">1</span>)</span><br><span class="line">                    <span class="comment">#nms_conf=0.4,</span></span><br><span class="line">                    <span class="comment">#举例：第0个detection是objectness_score最大的，计算剩下的14个和他的IOU,如果iou&lt;0.4，则保留，否则去掉。剩下第二次循环时，就剩下比如11个box了。</span></span><br><span class="line">                    </span><br><span class="line">                    image_pred_class[i+<span class="number">1</span>:] *= iou_mask       </span><br><span class="line"></span><br><span class="line">                    <span class="comment">#Remove the non-zero entries</span></span><br><span class="line">                    non_zero_ind = torch.nonzero(image_pred_class[:,<span class="number">4</span>]).squeeze()</span><br><span class="line">                    image_pred_class = image_pred_class[non_zero_ind].view(<span class="number">-1</span>,<span class="number">7</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ol>
+<li><p>根据objectness_score的阈值筛一波，把不符合要求的整行全部置零，剩下15个box</p>
+</li>
+<li><p>把剩下的box的class_score处理，取最大值，得到每个box的类别</p>
+</li>
+<li><p>对每一个类别进行非极大值抑制</p>
+<p>a.将该类的box按照objectness_score从高到低排列，</p>
+<p>b.计算第i个和第i+1到最后一个box的iou,将&gt;阈值的box筛掉，</p>
+<p>c.再迭代。</p>
+</li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/09/faster-pytorch框架/" rel="next" title="faster-RCNN 流程详解">
+                <i class="fa fa-chevron-left"></i> faster-RCNN 流程详解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/20/Darknet代码CNN部分/" rel="prev" title="Darknet CNN部分代码阅读">
+                Darknet CNN部分代码阅读 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-yolov3-cfg"><span class="nav-number">1.</span> <span class="nav-text">1.yolov3.cfg</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-create-module"><span class="nav-number">2.</span> <span class="nav-text">2.create module</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-convolutional-layers"><span class="nav-number">2.1.</span> <span class="nav-text">1.convolutional layers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-upsample"><span class="nav-number">2.2.</span> <span class="nav-text">2.upsample</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-yolo"><span class="nav-number">2.3.</span> <span class="nav-text">3.yolo</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-输出处理"><span class="nav-number">3.</span> <span class="nav-text">3.输出处理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-做非极大值抑制。"><span class="nav-number">4.</span> <span class="nav-text">4.做非极大值抑制。</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.1.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

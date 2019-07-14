@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.2.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.2.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.2.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    translation: {
+      copy_button: 'Copiar',
+      copy_success: 'Copiado',
+      copy_failure: 'Copiar falló'
+    }
+  };
+</script>
+
+
+
+  <meta name="description" content="code paper 摘要:目前目标检测精度最高的是RCNN引导的两阶段的方法，相反，一阶段的方法更快更简单，但是精度落后很多.   我们发现这种根本原因是因为在训练过程中正负样本不均衡。本文提出了改变标准交叉熵损失：降低易分样本的损失权重的方法来解决这种类别不平衡方法。为了检验方法的有效性，还提出了一个RetinaNet,速度可以和一阶段的检测器相媲美而且检测精度也很高。 处理样本不均衡的常用方">
+<meta name="keywords" content="ObjectDetection">
+<meta property="og:type" content="article">
+<meta property="og:title" content="focal_loss">
+<meta property="og:url" content="http://yoursite.com/2018/05/01/focal-loss/index.html">
+<meta property="og:site_name" content="友人帐">
+<meta property="og:description" content="code paper 摘要:目前目标检测精度最高的是RCNN引导的两阶段的方法，相反，一阶段的方法更快更简单，但是精度落后很多.   我们发现这种根本原因是因为在训练过程中正负样本不均衡。本文提出了改变标准交叉熵损失：降低易分样本的损失权重的方法来解决这种类别不平衡方法。为了检验方法的有效性，还提出了一个RetinaNet,速度可以和一阶段的检测器相媲美而且检测精度也很高。 处理样本不均衡的常用方">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/05/01/focal-loss/%5Cimages%5CFocalLoss%5C1.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/01/focal-loss/%5Cimages%5CFocalLoss%5C2.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/01/focal-loss/%5Cimages%5CFocalLoss%5C3.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/01/focal-loss/%5Cimages%5CFocalLoss%5C%E5%9B%BE%E7%89%871.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/05/01/focal-loss/%5Cimages%5CFocalLoss%5Cfocal_loss7.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/05/01/focal-loss/%5Cimages%5CFocalLoss%5C4.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/01/focal-loss/%5Cimages%5CFocalLoss%5C5.png">
+<meta property="og:updated_time" content="2019-07-14T07:17:33.467Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="focal_loss">
+<meta name="twitter:description" content="code paper 摘要:目前目标检测精度最高的是RCNN引导的两阶段的方法，相反，一阶段的方法更快更简单，但是精度落后很多.   我们发现这种根本原因是因为在训练过程中正负样本不均衡。本文提出了改变标准交叉熵损失：降低易分样本的损失权重的方法来解决这种类别不平衡方法。为了检验方法的有效性，还提出了一个RetinaNet,速度可以和一阶段的检测器相媲美而且检测精度也很高。 处理样本不均衡的常用方">
+<meta name="twitter:image" content="http://yoursite.com/2018/05/01/focal-loss/%5Cimages%5CFocalLoss%5C1.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2018/05/01/focal-loss/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>focal_loss | 友人帐</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">友人帐</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Cambiar a barra de navegación">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Inicio</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>Sobre mi</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Etiquetas</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categorías</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archivo</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/01/focal-loss/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lanfang">
+      <meta itemprop="description" content="个人小站，论文笔记加杂记~~~欢迎打赏~">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="友人帐">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">focal_loss
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+
+          
+          
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Publicado el</span>
+              
+
+              
+                
+              
+
+              <time title="Creado por: 2018-05-01 21:56:15" itemprop="dateCreated datePublished" datetime="2018-05-01T21:56:15+08:00">2018-05-01</time>
+            </span>
+          
+
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Editado el</span>
+                
+                <time title="Modificado por: 2019-07-14 15:17:33" itemprop="dateModified" datetime="2019-07-14T15:17:33+08:00">2019-07-14</time>
+              </span>
+            
+          
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">En</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/" itemprop="url" rel="index"><span itemprop="name">paper</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/paper/object-detection/" itemprop="url" rel="index"><span itemprop="name">object detection</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          <br>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><a href="https://github.com/facebookresearch/Detectron" target="_blank" rel="noopener">code</a></p>
+<p><a href="https://arxiv.org/abs/1708.02002" target="_blank" rel="noopener">paper</a></p>
+<h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要:"></a>摘要:</h1><p>目前目标检测精度最高的是RCNN引导的两阶段的方法，相反，一阶段的方法更快更简单，但是精度落后很多.   <strong>我们发现这种根本原因是因为在训练过程中正负样本不均衡。本文提出了改变标准交叉熵损失：降低易分样本的损失权重的方法来解决这种类别不平衡方法。</strong>为了检验方法的有效性，还提出了一个RetinaNet,速度可以和一阶段的检测器相媲美而且检测精度也很高。</p>
+<p>处理样本不均衡的常用方法：</p>
+<ul>
+<li><strong>SSD+hard negative mining(OHNM):</strong>匹配default box之后根据box的confidence排序得到正样本三倍数量的负样本（正负比例1:3）</li>
+<li><strong>Fast RCNN+ONEM:</strong>引入read only层先forward一遍样本，选取loss最大的前N个重新送入ROIpooling，仅解决了easy example的问题。</li>
+<li><strong>Class Balanced Loss:</strong>分别计算正负样本的loss，引入权重来实现平衡，主要考虑类间平衡。</li>
+<li><strong>Focal Loss:</strong>改进的CE loss，动态调整参数均衡正负样本不均衡。</li>
+</ul>
+<a id="more"></a>
+
+<p>RetinaNet-101 = ResNet-101-FPN</p>
+<h1 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h1><p>​    两阶段目标检测算法精度一直在各个榜单遥遥领先，本文就是提出了一个一阶段的检测器，并且精度能够媲美二阶段目标检测器，比如FPN,或者Faster RCNN的变体Mask RCNN.本文认为，妨碍一阶段检测器达到较高精度的主要障碍是，<strong>类别不平衡。</strong></p>
+<h2 id="RCNNs中的正负样本均衡的原因"><a href="#RCNNs中的正负样本均衡的原因" class="headerlink" title="RCNNs中的正负样本均衡的原因"></a>RCNNs中的正负样本均衡的原因</h2><p>​    在RCNN这样的检测器中，类别不平衡问题已经被两阶段级联和采样的启发式方法解决了。</p>
+<ul>
+<li><strong>区域提议阶段</strong>（selective search，edgebox，deepmask，RPN）阶段可以迅速降低候选目标区域的数目（1-2k)，过滤掉大部分的背景sample。</li>
+<li><strong>分类阶段</strong>，通过启发式采样方法，比如：在mini batch中固定的正负样本比例（1:3），在线难样本挖掘（OHEM），来达到前景和背景之间的平衡。</li>
+</ul>
+<h2 id="one-stage的类别不均衡原因"><a href="#one-stage的类别不均衡原因" class="headerlink" title="one-stage的类别不均衡原因"></a>one-stage的类别不均衡原因</h2><ul>
+<li>one-stage检测器需要处理在整张图上采样下来的大量候选目标区域，实际中，因为需要<strong>遍历各个空间位置，尺度，和纵横比</strong>，这个数量会达到大约100k。<code>In practice this often amounts to enumerating ∼100k locations that densely cover spatial positions,scales, and aspect ratios</code>. </li>
+</ul>
+<ul>
+<li><p>虽然one-stage也用了启发式的采样方法如（boostrapping)，比如SSD中使用OHEM控制正负样本比例在1:3左右，仍然是没用，因为<strong>训练过程仍然被易分的背景样例所主导。</strong><code>While similar sampling heuristics may also be applied, they are inefficient as the training procedure is still dominated by easily classified background examples.</code> </p>
+<p>​</p>
+</li>
+</ul>
+<h2 id="本文方法"><a href="#本文方法" class="headerlink" title="本文方法"></a>本文方法</h2><p>​    本文提出了一种新的损失函数方法，能够<strong>动态放缩交叉熵损失</strong>。如图1.当正确类别的系数上升时，这个放缩因子就会降到0.另外这个放缩因子能够自动的降低易分样本在训练中的贡献，并且迅速关注那些难分样本。</p>
+<p><img src="%5Cimages%5CFocalLoss%5C1.png" alt></p>
+<p>​    focal-loss的具体形式不重要，别的形式也能达到相似的效果。</p>
+<p>👀 作者也没说自己的方法为什么比OHEM之类的好。。。。。</p>
+<h2 id="RetinaNet"><a href="#RetinaNet" class="headerlink" title="RetinaNet"></a>RetinaNet</h2><p>​    <strong>one-stage detector,网络内部包含特征金字塔和anchor的使用</strong>。backbone是ResNet101-FPN在COCO测试集达到了39.1的AP并且速度每秒5帧，超过了所有一阶段、二阶段的单模型检测器。如图2.</p>
+<p><img src="%5Cimages%5CFocalLoss%5C2.png" alt></p>
+<h1 id="Related-work"><a href="#Related-work" class="headerlink" title="Related work"></a>Related work</h1><h2 id="Class-Imbalance"><a href="#Class-Imbalance" class="headerlink" title="Class Imbalance"></a>Class Imbalance</h2><p>​    所有一阶段检测器，包括增强detector（boosted detector)，DPM或者SSD都面临严重的类别不平衡问题。<strong>每张图需要处理$10^4-10^5$候选区域而只有少数是真正包含目标的。</strong>这导致了两个问题：</p>
+<ol>
+<li>训练没有效率：大部分位置都是负样本，导致无效的学习。</li>
+<li>负样本会压倒训练，导致产生不了模型。</li>
+</ol>
+<p>常见的方法就是：</p>
+<ol>
+<li>按照class比例加权重：最常处理类别不平衡问题的方式</li>
+<li>OHEM:只保留loss高的那些样本，完全忽略掉简单样本</li>
+<li>难样本挖掘+按class比例sample：在前者基础上，在保证正负样本3：1</li>
+</ol>
+<p>我们的方法就是能够自动处理这种不均衡，<strong>允许我们在所有样本上训练</strong>，并且过程中没有压倒性的负样本损失和梯度。</p>
+<h2 id="Robust-Estimation"><a href="#Robust-Estimation" class="headerlink" title="Robust Estimation"></a>Robust Estimation</h2><p>robust loss:减少了异常点outlier的贡献，通过降低hard example的损失权重。</p>
+<p>focal loss：降低了inliers(easy example)的权重，因此他们对整体损失的贡献就降低了即使他们的数目很多。</p>
+<h1 id="Focal-loss"><a href="#Focal-loss" class="headerlink" title="Focal loss"></a>Focal loss</h1><p>正负样本不均衡，比如1:1000.</p>
+<p>二元分类的交叉熵：<br>$$<br>CE(p,y)=\begin{cases}-log(p)\qquad if \quad y=1 \ -log(1-p)\qquad otherwise\end{cases}\qquad(1)<br>$$<br>以上式子中，$y\in{\pm1}$表示ground truth的标签。$p\in[0,1]$是模型估计$y=1$的类别概率。定义$p_t$如下：<br>$$<br>p_t=\begin{cases}p\qquad if\quad y=1\1-p\qquad otherwise\qquad(2)\end{cases}<br>$$</p>
+<p>$$<br>CE(p,y)=CE(p_t)=-log(p_t)<br>$$</p>
+<p>就是图1上面的那个蓝色的线。即使:</p>
+<p>​                        <strong>易分样本（$p_t&gt;&gt;0.5)$</strong></p>
+<p>也会有很大的损失。当大量易分样本叠加时，这些损失会最终压倒那些稀少的样本。</p>
+<h2 id="平衡交叉熵"><a href="#平衡交叉熵" class="headerlink" title="平衡交叉熵"></a>平衡交叉熵</h2><p>​    引入一个权重因子$\alpha\in[0,1]$给类别1，$1-\alpha$给类别-1.实际操作中，$\alpha$通常是设置成类别频数的倒数，或者由交叉验证来设置。</p>
+<p>$\alpha$平衡的CEloss定义如下：<br>$$<br>CE(p_t)=-\alpha_tlog(p_t)\qquad(3)<br>$$</p>
+<h2 id="Focal-Loss-Definition"><a href="#Focal-Loss-Definition" class="headerlink" title="Focal Loss Definition"></a>Focal Loss Definition</h2><p>易分的负样本包含了损失的绝大部分，主导了梯度。虽然$\alpha$平衡了正负样本的重要性，但是他没能区分简单样本和难样本了。</p>
+<p><code>Easily classified negatives comprise the majority of the loss and dominate the gradient.</code><br><code>While α balances the importance of positive/negative examples, it does not differentiate between easy/hard examples.</code></p>
+<p>我们提出的方法能够重构这个损失，降低易分样本的权重，专注于难分负样本的训练。<code>Instead,we propose to reshape the loss function to down-weight easy examples and thus focus training on hard negatives.</code> </p>
+<p>引入调制因子$(1-p_t)^{\gamma}$可调的<em>focusing</em> 参数$\gamma\ge0$.<br>$$<br>\textbf{FL}(p_t)=-(1-p_t)^{\gamma}log(p_t)<br>$$<br>在图1中$\gamma\in[0,5]$ 可视化。</p>
+<p>focal loss有两个属性：</p>
+<ol>
+<li>$p_t$很小（难样本）时，调制因子接近1，loss没有影响。当$p_t-&gt;1$（易分样本）,因子接近0，loss就会比重降低。</li>
+<li>$\gamma$能够平滑的调整易分样本权重下降的速度。当$\gamma$为0，$\textbf{FL}$等同于$\textbf{CE}$ 。当$\gamma$上升，调制因子的作用也会上升。（$\gamma=2$时候效果最好）。</li>
+</ol>
+<p>举例：当$\gamma=2$时，$p_t=0.9$的样本的损失和交叉熵的损失比会下降100倍，$p_t=0.968$样本的损失会下降1000倍。反过来就会提升错分样本的重要性，对于$p_t\le0.5,\gamma=2$的情况，其loss会缩放到4倍。</p>
+<p>实际操作中的focal loss形式：<br>$$<br>\textbf{FL}(p_t)=-\alpha_t(1-p_t)^{\gamma}log(p_t)\qquad(5)<br>$$<br>有了$\alpha$效果会好些，sigmod计算$p$效果也会更稳定些。</p>
+<h2 id="Class-Imbalance-and-Model-Initialization"><a href="#Class-Imbalance-and-Model-Initialization" class="headerlink" title="Class Imbalance and Model Initialization"></a>Class Imbalance and Model Initialization</h2><p>训练时，数量很多的类别(background)会起主导作用，导致不稳定。为了早期训练的稳定性，作者设置了稀少类别(foreground)的值$\pi$ 这样模型估计前景的概率就比较小，比如0.01.</p>
+<h2 id="Class-Imbalance-and-Two-stage-Detectors"><a href="#Class-Imbalance-and-Two-stage-Detectors" class="headerlink" title="Class Imbalance and Two-stage Detectors"></a>Class Imbalance and Two-stage Detectors</h2><p>之前讲过RCNNs这样的两阶段检测器通过<strong>(1)两级级联(2)有偏好的采样</strong> 解决了样本不平衡的问题。而我们的方法直接通过损失函数来解决。</p>
+<h1 id="RetinaNet-Detector"><a href="#RetinaNet-Detector" class="headerlink" title="RetinaNet Detector"></a>RetinaNet Detector</h1><p>由一个backbone和两个特定任务的子网络组成。backbone是负责计算输入图片的特征。第一个自网络进行目标分类，第二个进行bbox 回归。</p>
+<p><img src="%5Cimages%5CFocalLoss%5C3.png" alt></p>
+<h2 id="FPN"><a href="#FPN" class="headerlink" title="FPN"></a>FPN</h2><p><strong>FPN增加了一个自上而下的旁路，和横向连接，因此网络可以在单一分辨率的输入图像上构建丰富的，多尺度的特征金字塔。</strong></p>
+<blockquote>
+<p>In brief, FPN augments a standard convolutional network with <strong>a top-down pathway</strong> and <strong>lateral connections</strong> so the network efficiently constructs <strong>a rich, multi-scale feature pyramid</strong> from <strong>a single resolution input image</strong>.</p>
+</blockquote>
+<p>如图b.每层都能检测一个尺度，在RPN,Faster RCNN,Mask RCNN上都提高了精度。</p>
+<p>在ResNet上构建FPN,从第3层到第7层.（$P_l$比输入分辨率降低了$2^l$）。在FPN论文离所有金字塔层的通道都是256.</p>
+<p><img src="%5Cimages%5CFocalLoss%5C%E5%9B%BE%E7%89%871.jpg" alt></p>
+<p><code>RetinaNet uses feature pyramid levels P3 to P7, where P3 to P5 are computed from the output of the corresponding ResNet residual stage (C3 through C5) using top-down and lateral connections just as in [20], P6 is obtained via a 3×3 stride-2 conv on C5, and P7 is computed by applying ReLU followed by a 3×3  tride-2 conv on P6. This differs slightly from [20]: (1) we don’t use the high-resolution pyramid level P2 for computational reasons, (2) P6 is computed by strided convolution instead of downsampling, and (3) we include P7 to improve large object detection. These minor modifications improve speed while  maintaining accuracy .</code></p>
+<p>细节如上，懒得翻译了。。。</p>
+<h2 id="Anchors"><a href="#Anchors" class="headerlink" title="Anchors"></a>Anchors</h2><p>​      取ResNet的$C_3,C_4,C_5$层，构建金字塔  $P_3-P_7$，每层对应的anchor面积分别为$32^2,64^2,128^2,256^2,512^2$.aspect ratio：${1:2,1:1,2:1}$ ，anchor的尺度：${2^0,2^{1/3},2^{2/3}}$.最后每层有$A=9$个anchor，能够覆盖$32-813$像素。（$32\times2^0=32,512\times2^{2/3}=813$).</p>
+<p>​    每个anchor有：</p>
+<ul>
+<li>一个长度为$K$的one-hot向量，负责分类，$K$表示目标种类</li>
+<li>一个4维的向量用来回归。</li>
+</ul>
+<p>分配细节：<code>Specifically,anchors are assigned to ground-truth object boxes using an intersection-over-union (IoU) threshold of 0.5; and to background if their IoU is in [0, 0.4). As each anchor is assigned to at most one object box, we set the corresponding entry in its length K label vector to 1 and all other entries to 0. If an anchor is unassigned, which may happen with overlap in [0.4, 0.5), it is ignored during training.</code>  </p>
+<h2 id="Classifination-Subnet"><a href="#Classifination-Subnet" class="headerlink" title="Classifination Subnet:"></a>Classifination Subnet:</h2><h2 id="Box-Regression-Subnet"><a href="#Box-Regression-Subnet" class="headerlink" title="Box Regression Subnet:"></a>Box Regression Subnet:</h2><p>两个子网络虽然框架一样，但是参数独立。</p>
+<h1 id="Inference-and-Training"><a href="#Inference-and-Training" class="headerlink" title="Inference and Training"></a>Inference and Training</h1><h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><ul>
+<li>ResNet-50和ResNet-101都是在ImageNet1k上面的预训练模型。</li>
+<li>FPN初始化使用的原文中初始化的方法。所有的卷积层（除了最后的子网络）都是初始化为$b=0,高斯权重\theta=0.01$。</li>
+<li>子网络的分类层将bias初始化为：$b=-log((1-\pi)/\pi)$,论文使用$\pi=0.01$，<strong>表示每个anchor被标记为前景的概率(confidence)为0.01.</strong></li>
+</ul>
+<p><strong>关于bias的设置问题：</strong></p>
+<p><img src="%5Cimages%5CFocalLoss%5Cfocal_loss7.jpg" alt></p>
+<p><strong>原因：</strong> </p>
+<p>为了将训练初始阶段的anchor概率设为0.01，即当做前景的概率为0.01，<strong>即为文章中定义的难样本，这样可以保证在训练开始时，数目稀少的前景anchor能够产生较大的focal loss，防止数目较多的背景anchor在第一次迭代的时候就产生overwhelming的不稳定损失。</strong></p>
+<p><code>This initialization prevents the large number of background anchors from generating a large, destabilizing loss value in the first iteration of training.</code></p>
+<p>效果如下：<img src="%5Cimages%5CFocalLoss%5C4.png" alt></p>
+<h2 id="优化方法"><a href="#优化方法" class="headerlink" title="优化方法"></a>优化方法</h2><p>$$<br>Loss=sum(focal loss)+L_1Smooth<br>$$</p>
+<p>只有分类层使用focalloss。</p>
+<h2 id="OHEM-VS-FL"><a href="#OHEM-VS-FL" class="headerlink" title="OHEM VS FL"></a>OHEM VS FL</h2><p>OHEM:每个样本都对loss进行排序，再进行非极大值抑制，也就是说mini-batch里面都是loss最高的样本。和focal loss类似，OHEM更加关注错分样本，但是他完全抛弃了易分样本。效果对比如上图d</p>
+<p><code>Like the focal loss,OHEM puts more emphasis on misclassified examples, but unlike FL, OHEM completely discards easy examples.</code> </p>
+<h2 id="Single-model-Objecto-Detector-vs-RetinaNet"><a href="#Single-model-Objecto-Detector-vs-RetinaNet" class="headerlink" title="Single-model Objecto Detector vs RetinaNet"></a>Single-model Objecto Detector vs RetinaNet</h2><p><img src="%5Cimages%5CFocalLoss%5C5.png" alt></p>
+
+      
+    </div>
+
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/ObjectDetection/" rel="tag"># ObjectDetection</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/01/YOLOv2/" rel="next" title="YOLOv2">
+                <i class="fa fa-chevron-left"></i> YOLOv2
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/06/YOLOv3/" rel="prev" title="YOLOv3">
+                YOLOv3 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Tabla de contenidos
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Inicio
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">lanfang</p>
+              <div class="site-description motion-element" itemprop="description">个人小站，论文笔记加杂记~~~欢迎打赏~</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">36</span>
+                    <span class="site-state-item-name">entradas</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">categorías</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/galaxy-fangfang" title="GitHub &rarr; https://github.com/galaxy-fangfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.kaggle.com/konglanfang" title="Kaggle &rarr; https://www.kaggle.com/konglanfang" rel="noopener" target="_blank"><i class="fa fa-fw fa-kaggle"></i>Kaggle</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://weibo.com/u/2977394557?refer_flag=1001030101_" title="微博 &rarr; https://weibo.com/u/2977394557?refer_flag=1001030101_" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>微博</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#摘要"><span class="nav-number">1.</span> <span class="nav-text">摘要:</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#引言"><span class="nav-number">2.</span> <span class="nav-text">引言</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#RCNNs中的正负样本均衡的原因"><span class="nav-number">2.1.</span> <span class="nav-text">RCNNs中的正负样本均衡的原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#one-stage的类别不均衡原因"><span class="nav-number">2.2.</span> <span class="nav-text">one-stage的类别不均衡原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#本文方法"><span class="nav-number">2.3.</span> <span class="nav-text">本文方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RetinaNet"><span class="nav-number">2.4.</span> <span class="nav-text">RetinaNet</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Related-work"><span class="nav-number">3.</span> <span class="nav-text">Related work</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Class-Imbalance"><span class="nav-number">3.1.</span> <span class="nav-text">Class Imbalance</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Robust-Estimation"><span class="nav-number">3.2.</span> <span class="nav-text">Robust Estimation</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Focal-loss"><span class="nav-number">4.</span> <span class="nav-text">Focal loss</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#平衡交叉熵"><span class="nav-number">4.1.</span> <span class="nav-text">平衡交叉熵</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Focal-Loss-Definition"><span class="nav-number">4.2.</span> <span class="nav-text">Focal Loss Definition</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Class-Imbalance-and-Model-Initialization"><span class="nav-number">4.3.</span> <span class="nav-text">Class Imbalance and Model Initialization</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Class-Imbalance-and-Two-stage-Detectors"><span class="nav-number">4.4.</span> <span class="nav-text">Class Imbalance and Two-stage Detectors</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RetinaNet-Detector"><span class="nav-number">5.</span> <span class="nav-text">RetinaNet Detector</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#FPN"><span class="nav-number">5.1.</span> <span class="nav-text">FPN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Anchors"><span class="nav-number">5.2.</span> <span class="nav-text">Anchors</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Classifination-Subnet"><span class="nav-number">5.3.</span> <span class="nav-text">Classifination Subnet:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Box-Regression-Subnet"><span class="nav-number">5.4.</span> <span class="nav-text">Box Regression Subnet:</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Inference-and-Training"><span class="nav-number">6.</span> <span class="nav-text">Inference and Training</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#初始化"><span class="nav-number">6.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优化方法"><span class="nav-number">6.2.</span> <span class="nav-text">优化方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OHEM-VS-FL"><span class="nav-number">6.3.</span> <span class="nav-text">OHEM VS FL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Single-model-Objecto-Detector-vs-RetinaNet"><span class="nav-number">6.4.</span> <span class="nav-text">Single-model Objecto Detector vs RetinaNet</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lanfang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Creado mediante <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Tema – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+
+
+  <script src="/js/utils.js?v=7.2.0"></script>
+
+  <script src="/js/motion.js?v=7.2.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.2.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.2.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.2.0"></script>
+<script src="/js/post-details.js?v=7.2.0"></script>
+
+
+
+  <script src="/js/next-boot.js?v=7.2.0"></script>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>
