@@ -103,18 +103,18 @@
 <meta property="og:site_name" content="友人帐">
 <meta property="og:description" content="papercode 一般多人姿态估计都是使用人体检测器，然后再进行姿态估计的方法，这种方法不可靠，同时，人越多，计算量越大。相比较，自下而上的方法就很鲁棒。但是自下而上的方法并没有直接使用全局上下文线索。比如，deepcut这个方法提出了联合地标记身体部件和将身体部件联系成一个人上。但是解全连接图上的整数线性规划问题是一个NP难的问题并且处理时间非常久。后来的deepercut虽然使用了ResNe">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://yoursite.com/images/overall%20pipeline.png">
+<meta property="og:image" content="http://yoursite.com/images/overallpipeline.png">
 <meta property="og:image" content="http://yoursite.com/images/arch.png">
 <meta property="og:image" content="http://yoursite.com/images/confidence%20maps%20and%20PAF.png">
 <meta property="og:image" content="http://yoursite.com/images/midpoint.png">
 <meta property="og:image" content="http://yoursite.com/images/枝干.png">
 <meta property="og:image" content="http://yoursite.com/images/graph%20matching.png">
 <meta property="og:image" content="http://yoursite.com/images/the_state_of_the_art.png">
-<meta property="og:updated_time" content="2019-07-14T08:59:16.790Z">
+<meta property="og:updated_time" content="2019-07-14T09:00:13.823Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="open pose">
 <meta name="twitter:description" content="papercode 一般多人姿态估计都是使用人体检测器，然后再进行姿态估计的方法，这种方法不可靠，同时，人越多，计算量越大。相比较，自下而上的方法就很鲁棒。但是自下而上的方法并没有直接使用全局上下文线索。比如，deepcut这个方法提出了联合地标记身体部件和将身体部件联系成一个人上。但是解全连接图上的整数线性规划问题是一个NP难的问题并且处理时间非常久。后来的deepercut虽然使用了ResNe">
-<meta name="twitter:image" content="http://yoursite.com/images/overall%20pipeline.png">
+<meta name="twitter:image" content="http://yoursite.com/images/overallpipeline.png">
 
 
 
@@ -397,7 +397,7 @@
                 
                   <span class="post-meta-item-text">Bearbeitet am</span>
                 
-                <time title="Geändert am: 2019-07-14 16:59:16" itemprop="dateModified" datetime="2019-07-14T16:59:16+08:00">2019-07-14</time>
+                <time title="Geändert am: 2019-07-14 17:00:13" itemprop="dateModified" datetime="2019-07-14T17:00:13+08:00">2019-07-14</time>
               </span>
             
           
@@ -461,7 +461,7 @@
         <p><a href="https://arxiv.org/abs/1611.08050" target="_blank" rel="noopener">paper</a><br><a href="https://github.com/ZheC/Realtime_Multi-Person_Pose_Estimation" target="_blank" rel="noopener">code</a></p>
 <p>一般多人姿态估计都是使用人体检测器，然后再进行姿态估计的方法，这种方法不可靠，同时，人越多，计算量越大。相比较，自下而上的方法就很鲁棒。但是自下而上的方法并没有直接使用全局上下文线索。比如，<a href="http://pose.mpi-inf.mpg.de/#code" target="_blank" rel="noopener">deepcut</a>这个方法提出了联合地标记身体部件和将身体部件联系成一个人上。但是解全连接图上的整数线性规划问题是一个NP难的问题并且处理时间非常久。后来的<a href="http://pose.mpi-inf.mpg.de/#code" target="_blank" rel="noopener">deepercut</a>虽然使用了ResNet和依赖图像的pairwise scores并且极大的提高了速度，但是还是很慢，并且proposals的数目有限制。</p>
 <a id="more"></a>
-<p>本文提出了一种有效的多人姿态估计的方法，融合了检测部件位置和身体部件之间的联系的处理框架。自底向上推理，逐像素分析。<br><img src="/images/overall pipeline.png" alt="overallpipeline"><br>系统以w*h的图片作为输入，最后输出的是图片中每个人的关键点的2D位置。如图所示，一个前馈网络同时预测身体部位位置产生一组2D置信图(confidence maps)<strong>S</strong>,和一组身体部位关系的2D矢量<strong>L</strong>，它同时融入了身体部位联系的程度。<br>其中$\textbf{S}=(\textbf{S}_1,\textbf{S}_2,…,\textbf{S}_J)$一共有J个置信图，每个身体部位一个，且$\textbf{S}_j\in R^{w*h},j\in {1…J}$<strong>这里表示的是对图片的每个像素有一个概率，表示它是不是属于身体部位的一部分，也就是每个身体部位都单独生成了一个置信图</strong><br>而$\textbf{L}=(\textbf{L}_1,\textbf{L}_2,…,\textbf{L}_C)$一共有C个矢量，同样是每个身体枝干一个，而$\textbf{L}_c\in R^{w*h*2},c\in {1…C}$。枝干的关系自然是必须包含两个身体部位之间的关系，所以需要的是w*h*2。文章说每个图片的位置在$L_c$中都编成2D矢量，<strong>2D矢量是指PAFs包含了位置和方向双重信息，所以需要二维矢量</strong>。最后就是分析置信图和身体部位联系场来最终给出图片中所有人的关键点的位置。</p>
+<p>本文提出了一种有效的多人姿态估计的方法，融合了检测部件位置和身体部件之间的联系的处理框架。自底向上推理，逐像素分析。<br><img src="/images/overallpipeline.png" alt="overallpipeline"><br>系统以w*h的图片作为输入，最后输出的是图片中每个人的关键点的2D位置。如图所示，一个前馈网络同时预测身体部位位置产生一组2D置信图(confidence maps)<strong>S</strong>,和一组身体部位关系的2D矢量<strong>L</strong>，它同时融入了身体部位联系的程度。<br>其中$\textbf{S}=(\textbf{S}_1,\textbf{S}_2,…,\textbf{S}_J)$一共有J个置信图，每个身体部位一个，且$\textbf{S}_j\in R^{w*h},j\in {1…J}$<strong>这里表示的是对图片的每个像素有一个概率，表示它是不是属于身体部位的一部分，也就是每个身体部位都单独生成了一个置信图</strong><br>而$\textbf{L}=(\textbf{L}_1,\textbf{L}_2,…,\textbf{L}_C)$一共有C个矢量，同样是每个身体枝干一个，而$\textbf{L}_c\in R^{w*h*2},c\in {1…C}$。枝干的关系自然是必须包含两个身体部位之间的关系，所以需要的是w*h*2。文章说每个图片的位置在$L_c$中都编成2D矢量，<strong>2D矢量是指PAFs包含了位置和方向双重信息，所以需要二维矢量</strong>。最后就是分析置信图和身体部位联系场来最终给出图片中所有人的关键点的位置。</p>
 <h2 id="论文框架"><a href="#论文框架" class="headerlink" title="论文框架"></a>论文框架</h2><p><img src="/images/arch.png" alt="arch"><br>如上图所示，图片首先由一个传统的网络分析处理生成一组feature maps <strong>F</strong>作为第一阶段的输入。网络的每个阶段都被分成两个分支，上面一个检测身体部位置信图，下面一个预测部位与部位之间关系的联系场，<br>每一个分支都是一个迭代预测过程。在第一阶段，网络产生一组检测的置信图$\textbf{S}^1=\rho^1(\textbf{F})$和一组联系场$\textbf{L}^t=\phi^1(\textbf{F})$。$\rho^1$和$\phi^1$都是表示经过CNN的处理。<br>而在之后的阶段都会将前一阶段的置信图和联系场加上原始的VGG-19产生的feature maps一起来微调预测结果使其更精确，其公式如下： </p>
 <script type="math/tex; mode=display">\textbf{S}^t=\rho^t(\textbf{F},\textbf{S}^{t-1},\textbf{L}^{t-1}),\quad \forall t\geq 2,\qquad (1)</script><script type="math/tex; mode=display">\textbf{L}^t=\phi^t(\textbf{F},\textbf{S}^{t-1},\textbf{L}^{t-1}),\quad \forall t\geq 2,\qquad (2)</script><p>按照文章所说，每个阶段都有一个监督，说的应该是每次损失函数将其与基准的位置进行比较吧。<br>也就是按照下图所示：<br><img src="/images/confidence maps and PAF.png" alt="confidence maps and PAF.pngconfidence maps and PAF.png"><br>虽然开始可能存在错误，但经过多次的微调，上图第一行的右手手腕检测越来越正确，而左手的手腕显示的效果在削弱。第二列显示的是右前臂的检测效果，感觉看的不是很明显。<br>文章也就是对每个分支在其结尾处应用两个损失函数$L_2$来评估预测的位置以及关系与基准的差别。其评估公式如下： </p>
 <script type="math/tex; mode=display">f_S^t=\sum_{j=1}^J\sum_p\textbf{W}(\textbf{p})*||\textbf{S}_j^t(\textbf{p})-\textbf{S}_j^*(\textbf{p})||_2^2,\qquad (3)</script><script type="math/tex; mode=display">f_L^t=\sum_{c=1}^C\sum_p\textbf{W}(\textbf{p})*||\textbf{L}_c^t(\textbf{p})-\textbf{L}_c^*(\textbf{p})||_2^2,\qquad (4)</script><p>其中，$\textbf{S}_j^*$和$\textbf{L}_c^*$分别表示基准的部位置信图和基准的部位联系矢量场。而$\textbf{W}$是一个二元掩膜，简单来说如果该位置被标记，<br>则$\textbf{w}(p)=1$否则$\textbf{w}(p)=0$。mask的目的是避免惩罚在训练过程中的正确的预测<strong>因为在实际的数据集中并没有标记人的全部信息</strong>。最终的目标函数：</p>
