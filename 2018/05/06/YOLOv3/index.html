@@ -103,20 +103,20 @@
 <meta property="og:site_name" content="友人帐">
 <meta property="og:description" content="YOLO3介绍paper 效果">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5C20180329130047560.png">
-<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5C20180329123629193.png">
-<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5C1_d4Eg17IVJ0L41e7CTWLLSg.png">
-<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5Cv2-ffbc5b713c98c13e2659bb528b05fd67_r.jpg">
-<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5Cyolo_Scales-1.png">
-<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5Cyolo-5.png">
-<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5CScreen-Shot-2018-04-10-at-3.18.08-PM.png">
-<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5Cyolo-regression-1.png">
-<meta property="og:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5C0_u4UXzV2E_opHIkNs.png">
-<meta property="og:updated_time" content="2019-07-14T07:17:27.826Z">
+<meta property="og:image" content="http://yoursite.com/images/YOLOv3/20180329130047560.png">
+<meta property="og:image" content="http://yoursite.com/images/YOLOv3/20180329123629193.png">
+<meta property="og:image" content="http://yoursite.com/images/YOLOv3/1_d4Eg17IVJ0L41e7CTWLLSg.png">
+<meta property="og:image" content="http://yoursite.com/images/YOLOv3/v2-ffbc5b713c98c13e2659bb528b05fd67_r.jpg">
+<meta property="og:image" content="http://yoursite.com/images/YOLOv3/yolo_Scales-1.png">
+<meta property="og:image" content="http://yoursite.com/images/YOLOv3/yolo-5.png">
+<meta property="og:image" content="http://yoursite.com/images/YOLOv3/Screen-Shot-2018-04-10-at-3.18.08-PM.png">
+<meta property="og:image" content="http://yoursite.com/images/YOLOv3/yolo-regression-1.png">
+<meta property="og:image" content="http://yoursite.com/images/YOLOv3/0_u4UXzV2E_opHIkNs.png">
+<meta property="og:updated_time" content="2019-07-15T02:41:12.987Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="YOLOv3">
 <meta name="twitter:description" content="YOLO3介绍paper 效果">
-<meta name="twitter:image" content="http://yoursite.com/2018/05/06/YOLOv3/%5Cimages%5CYOLOv3%5C20180329130047560.png">
+<meta name="twitter:image" content="http://yoursite.com/images/YOLOv3/20180329130047560.png">
 
 
 
@@ -399,7 +399,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-07-14 15:17:27" itemprop="dateModified" datetime="2019-07-14T15:17:27+08:00">2019-07-14</time>
+                <time title="修改时间：2019-07-15 10:41:12" itemprop="dateModified" datetime="2019-07-15T10:41:12+08:00">2019-07-15</time>
               </span>
             
           
@@ -461,37 +461,35 @@
 
       
         <p>YOLO3介绍<br><a href="https://arxiv.org/abs/1804.02767" target="_blank" rel="noopener">paper</a></p>
-<h1 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h1><p><img src="%5Cimages%5CYOLOv3%5C20180329130047560.png" alt></p>
-<a id="more"></a>
-
+<h1 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h1><p><img src="/images/YOLOv3/20180329130047560.png" alt><br><a id="more"></a></p>
 <h1 id="DarkNet53"><a href="#DarkNet53" class="headerlink" title="DarkNet53"></a>DarkNet53</h1><p>YOLOv2使用的框架是DarkNet19,负责提取特征，再加上11层来进行目标检测。只有30层的网络结构对于小目标的检测来说很困难。因为网络中对输入进行了下采样，使得底层的精细化的特征丢失。所以v2使用了单位映射，把前面层的特征图拼接到当前层。但是，仍然没有一些比如残差块residual block，跨层连接skip connection，上采样upsampling这样的操作。</p>
 <p><strong>YOLO v3使用了53层预训练网络，然后又添加了53层进行检测，最后是106层的全卷积框架。</strong> 因此v3比v2慢。</p>
 <p>yolov3的特征提取模型是一个杂交的模型，它使用了yolov2，Darknet-19以及Resnet，这个模型使用了很多有良好表现的$3\times3$和$1\times1$的卷积层，也在后边增加了一些shortcut connection结构。最终他有53个卷积层，因此作者也把它们叫成Darknet-53。它们的结构是这样的：</p>
-<p><img src="%5Cimages%5CYOLOv3%5C20180329123629193.png" alt></p>
+<p><img src="/images/YOLOv3/20180329123629193.png" alt></p>
 <p>最后论文说明这个模型的优良之后还说了一句，Resnet模型后边有太多层并且不是很有效。</p>
-<h1 id="Multiscale-detection"><a href="#Multiscale-detection" class="headerlink" title="Multiscale detection"></a>Multiscale detection</h1><p><img src="%5Cimages%5CYOLOv3%5C1_d4Eg17IVJ0L41e7CTWLLSg.png" alt></p>
+<h1 id="Multiscale-detection"><a href="#Multiscale-detection" class="headerlink" title="Multiscale detection"></a>Multiscale detection</h1><p><img src="/images/YOLOv3/1_d4Eg17IVJ0L41e7CTWLLSg.png" alt></p>
 <p>YOLOv3在3个尺度行进行检测。</p>
-<p><img src="%5Cimages%5CYOLOv3%5Cv2-ffbc5b713c98c13e2659bb528b05fd67_r.jpg" alt></p>
+<p><img src="/images/YOLOv3/v2-ffbc5b713c98c13e2659bb528b05fd67_r.jpg" alt></p>
 <p>ü检测时的卷积核大小为1 x 1 x(B x (5 + C) ).B是一个cell的Bbox的数目。YOLOv3上COCO上，B=3,C=80,所以卷积核大小是1 x 1x 255。</p>
 <p>输入$416\times415$图片，三层的步长是32,16,8，也就是说预测的特征图是$13\times13,26\times26,52\times52$.第一次检测是在82层，在第81层会有一个步长为32，特征图尺寸是$13\times13$,然后经过$1\times1$的卷积核，得到检测特征图为$13\times13\times255$.</p>
 <p>然后，第79层的特征图经过上采样，因子为2，变成$26\times26$,再和第61层的特征图通道拼接，经过几个$1\times1$的卷积层进行特征融合，最后第二个detection在第94层的特征图上进行，检测特征图为$26\times26\times255$.</p>
 <p>第91层的特征图经过几个卷积层然后和第36层的特征图进行通道拼接，拼接的特征图经过几个$1\times1$的卷积层进行特征融合，最后在第106层进行最后一策检测，检测特征图为$52\times52\times255$.</p>
-<p><img src="%5Cimages%5CYOLOv3%5Cyolo_Scales-1.png" alt></p>
+<p><img src="/images/YOLOv3/yolo_Scales-1.png" alt></p>
 <p>作者说，这使得YOLOv3在检测小目标上的性能提升了。因为上采样的原因，可以和之前的layers进行拼接是的保留了精细化的特征，更好的检测小目标。不同尺度进行检测大、中、小的目标。</p>
 <h1 id="边界框的预测"><a href="#边界框的预测" class="headerlink" title="边界框的预测"></a>边界框的预测</h1><h2 id="全卷积网络"><a href="#全卷积网络" class="headerlink" title="全卷积网络"></a>全卷积网络</h2><p>YOLO全是卷积层组成的，有75层卷积层，跨层连接，上采样层。</p>
 <p><strong>YOLO没有pooling层，直接使用一个步长为2的卷积层进行下采样。</strong> 这样可以防止丢失低层的特征。</p>
 <p>作为全卷积层，YOLO对输入图像的尺寸不敏感，但是实际操作中必须固定输入尺寸避免一些问题，比如如果想批处理的话。</p>
 <p><strong>一般来说，网络的步长就是输出尺寸比输入小的倍数。</strong></p>
-<h2 id="Interpreting-Output"><a href="#Interpreting-Output" class="headerlink" title="Interpreting Output"></a>Interpreting Output</h2><p>在YOLO中使用$1\times1$的卷积层输出的特征图进行预测。在特征图上，有$B\times(5+C)$个预测量，$B$表示在检测特定目标时，每个cell预测的bounding box数目 。每个bounding box有$5+C$个属性，表示中心坐标，维度，objectness score和C个类别概率。YOLO3每个cell预测3个bounding box.****</p>
+<h2 id="Interpreting-Output"><a href="#Interpreting-Output" class="headerlink" title="Interpreting Output"></a>Interpreting Output</h2><p>在YOLO中使用$1\times1$的卷积层输出的特征图进行预测。在特征图上，有$B\times(5+C)$个预测量，$B$表示在检测特定目标时，每个cell预测的bounding box数目 。每个bounding box有$5+C$个属性，表示中心坐标，维度，objectness score和C个类别概率。YOLO3每个cell预测3个bounding box.<em>**</em></p>
 <p><strong>我们希望在特征图上，通过每个cell的一个bounding box预测目标的中心是否在这个cell的感受野内。</strong>在训练时候，给定目标，只有一个bounding box负责检测。我们首先得确定这个bounding box属于哪个cell。</p>
-<p>举个例子：输入$416\times416$的图片，网络步长为32，最后特征图就是$13\times13$的，我们把输入图片划分成$13\times13$的。<br><img src="%5Cimages%5CYOLOv3%5Cyolo-5.png" alt></p>
+<p>举个例子：输入$416\times416$的图片，网络步长为32，最后特征图就是$13\times13$的，我们把输入图片划分成$13\times13$的。<br><img src="/images/YOLOv3/yolo-5.png" alt></p>
 <p>包含groundtruth中心的那个cell来预测目标，图中就是那个红色的cell，包含了小狗的真实标签的中心。</p>
 <h2 id="Anchor-box"><a href="#Anchor-box" class="headerlink" title="Anchor box"></a>Anchor box</h2><p><strong>预测bounding box的宽高在训练的时候会导致梯度传播不稳定</strong>。于是，利用对数域的变换，或者直接预测预定义的default box的偏移。YOLOv3每个cell有3个anchor。</p>
 <p>每个尺度上，每个cell预测3个bounding box，（即3个anchor）。anchor总数为9.</p>
 <p>也就是，和groundtruth拥有最高IOU分数的那个anchor来负责检测小狗。</p>
-<h2 id="Making-Predictions"><a href="#Making-Predictions" class="headerlink" title="Making Predictions"></a>Making Predictions</h2><p><img src="%5Cimages%5CYOLOv3%5CScreen-Shot-2018-04-10-at-3.18.08-PM.png" alt></p>
+<h2 id="Making-Predictions"><a href="#Making-Predictions" class="headerlink" title="Making Predictions"></a>Making Predictions</h2><p><img src="/images/YOLOv3/Screen-Shot-2018-04-10-at-3.18.08-PM.png" alt></p>
 <p>$t_x,t_y$是网络的输出，$c_x,c_y$是网格左上角的坐标，$p_w,p_h$是anchor的维度。$b_x,b_y,b_w,b_h$是预测的中心坐标，和宽高。</p>
-<p><img src="%5Cimages%5CYOLOv3%5Cyolo-regression-1.png" alt></p>
+<p><img src="/images/YOLOv3/yolo-regression-1.png" alt></p>
 <h3 id="中心坐标预测："><a href="#中心坐标预测：" class="headerlink" title="中心坐标预测："></a>中心坐标预测：</h3><p>输出经过了一个激活函数，使得输出在0-1之间，YOLO没有预测bounding box中心的绝对坐标，他是预测了偏移：</p>
 <ol>
 <li>预测目标的那个网格，相对于左上角的坐标</li>
@@ -502,7 +500,7 @@
 <p>比如：例如$b_x,b_y$预测值是（0.3,0.8），那么真实的特征图上的宽高就是$13\times0.3,13\times0.8$。</p>
 <h3 id="Objectness-Score"><a href="#Objectness-Score" class="headerlink" title="Objectness Score"></a>Objectness Score</h3><p>red cell及周围的cell的objectness score是约等于1，grid角落的几乎是0.</p>
 <h1 id="分类class-confidence"><a href="#分类class-confidence" class="headerlink" title="分类class confidence"></a>分类class confidence</h1><p>v3之前的版本类别分数,是softmax函数，现在作者采用logistics函数。IOU分数也变成logisitic函数求得的。因为softmax预测的类别是互斥的。</p>
-<p><img src="%5Cimages%5CYOLOv3%5C0_u4UXzV2E_opHIkNs.png" alt></p>
+<p><img src="/images/YOLOv3/0_u4UXzV2E_opHIkNs.png" alt></p>
 <h2 id="输出处理"><a href="#输出处理" class="headerlink" title="输出处理"></a>输出处理</h2><p>对于$416\times416$的输入图片，YOLO预测了$((52\times52)+(26\times26)+(13\times13))\times3=10647$个边界框。当图中只有一个目标，怎么把检测从10674减到1呢。</p>
 <ol>
 <li>Object Confidence Threshold:低于阈值的忽略掉</li>
